@@ -1,0 +1,32 @@
+#!/bin/sh
+
+if [ ! -d source ] ; then
+        echo Please run the script in the workspace
+        exit 1
+fi
+if [ -z "${BUILD_NUMBER}" ] ; then
+        echo No BUILD_NUMBER defined, please run it in jenkins
+        exit 1
+fi
+
+cd source
+
+tag=$(git describe  $(git rev-list --tags='[^ju]*' --max-count=1))
+last_merge=$(git describe $(git rev-list --all --merges --max-count=1))
+since=${tag}
+if [ -n "$last_merge" ] ; then
+        m_date=$(git log ${last_merge} --pretty="format:%at" -1)
+        t_date=$(git log ${tag} --pretty="format:%at" -1)
+        if [ ${m_date} -gt ${t_date} ] ; then
+                since=${last_merge}
+        fi
+
+fi
+
+export DEBEMAIL="jenkins.grml.org Autobuilder <autobuild@grml.org>"
+git-dch -S -s "${since}" --multimaint-merge  --snapshot-number=${BUILD_NUMBER} --ignore-branch
+debchange  --release  ""
+
+# vs.
+# git-dch -S --auto --multimaint-merge  --snapshot-number=${BUILD_NUMBER} --ignore-branch
+# debchange  --release  ""

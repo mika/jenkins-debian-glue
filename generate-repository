@@ -1,0 +1,9 @@
+#!/bin/sh
+apt-ftparchive packages . | gzip > Packages.gz
+apt-ftparchive contents . > Contents
+cat <<EOF >Release
+Origin: Grml Autobuild
+Label: Grml Autobuild
+NotAutomatic: yes
+EOF
+apt-ftparchive release . >> Release
