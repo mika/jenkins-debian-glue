@@ -1,0 +1,5 @@
+jenkins-debian-glue (0.0-1) UNRELEASED; urgency=low
+
+  * Initial release.
+
+ -- Michael Prokop <mika@debian.org>  Fri, 05 Aug 2011 18:39:59 +0200

@@ -1,0 +1,48 @@
+#!/bin/sh
+
+set -x
+set -e
+
+[ -n "$DEBEMAIL" ] || DEBEMAIL="jenkins.grml.org Autobuilder <jenkins@grml.org>"
+export DEBEMAIL
+
+if [ ! -d source ] ; then
+  echo "Please run the script in the jenkins workspace." >&2
+  exit 1
+fi
+
+if [ -z "${BUILD_NUMBER}" ] ; then
+  echo "No BUILD_NUMBER defined, please run it in jenkins." >&2
+  exit 1
+fi
+
+echo "***  source package build phase ***"
+rm -f ./* || true
+
+cd source
+
+if [ "$1" = "auto" ] ; then
+  git-dch -S --auto --multimaint-merge --snapshot-number=${BUILD_NUMBER} --ignore-branch
+else
+  tag=$(git describe  $(git rev-list --tags='[^ju]*' --max-count=1))
+  last_merge=$(git describe $(git rev-list --all --merges --max-count=1))
+  since=${tag}
+
+  if [ -n "$last_merge" ] ; then
+    m_date=$(git log ${last_merge} --pretty="format:%at" -1)
+    t_date=$(git log ${tag} --pretty="format:%at" -1)
+    if [ ${m_date} -gt ${t_date} ] ; then
+      since=${last_merge}
+    fi
+  fi
+
+  git-dch -S -s "${since}" --multimaint-merge --snapshot-number=${BUILD_NUMBER} --ignore-branch
+fi
+
+debchange --release ""
+
+cd ..
+dpkg-source -b source
+
+# needed for deploying artifacts
+mkdir -p ${JENKINS_HOME}/userContent/${JOB_NAME}/

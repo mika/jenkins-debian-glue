@@ -1,0 +1,44 @@
+#!/bin/sh
+
+set -x
+set -e
+
+if ! [ -r /srv/repository/conf/distributions ] ; then
+  echo "Error: could not read /srv/repository/conf/distributions." >&2
+  exit 1
+fi
+
+if [ "$#" -lt 1 ] ; then
+  echo "Usage: $0 <codename>" >&2
+  exit 1
+fi
+
+# repository/codename that should be added
+REPOS="$1"
+
+# support setting key id
+if [ -n "$2" ] ; then
+  KEY_ID="$2"
+else # using a default (TODO - suppport configuration from outside)
+  KEY_ID="52D4A654"
+fi
+
+if grep -q "^Codename: ${REPOS}$" /srv/repository/conf/distributions ; then
+  echo "Codename/repository $REPOS exists already, ignoring request to add again."
+  exit 0
+fi
+
+cat >> /srv/repository/conf/distributions << EOF
+
+Codename: ${REPOS}
+AlsoAcceptFor: unstable
+Architectures: amd64 i386 source
+Components: main
+DebIndices: Packages Release . .gz
+DscIndices: Sources Release .gz
+Tracking: minimal
+SignWith: ${KEY_ID}
+
+EOF
+
+echo "Added $REPOS as new codename/repos to the reprepro configuration."

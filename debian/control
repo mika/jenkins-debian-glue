@@ -1,0 +1,19 @@
+Source: jenkins-debian-glue
+Section: admin
+Priority: extra
+Maintainer: Michael Prokop <mika@debian.org>
+Build-Depends: debhelper (>= 8.0.0)
+Standards-Version: 3.9.2
+Homepage: https://github.com/mika/jenkins-debian-glue
+Vcs-Git: git://github.com/mika/jenkins-debian-glue.git
+Vcs-Browser: https://github.com/mika/jenkins-debian-glue
+
+Package: jenkins-debian-glue
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, cowbuilder, devscripts, dpkg-dev, sudo
+Description: glue scripts for building Debian packages inside Jenkins
+ This package provides scripts which should make building Debian
+ package inside Jenkins (a Continuous Integration suite) easier.
+ .
+ It's meant to make Q/A builds of Debian packages inside Jenkins
+ as manageable and homogeneous as possible.

@@ -1,0 +1,114 @@
+* Background
+
+This Debian package provides scripts for building Debian packages
+inside Jenkins (being a Continuous integration system).  Currently
+being a test driven and user needs driven prototype it's meant to make
+Q/A builds of Debian packages inside Jenkins as manageable and
+homogeneous as possible.
+
+* System requirements
+
++ Jenkins
++ Cowbuilder
++ Reprepro
+
+* Setup instructions
+
+Jenkins jobs for a given Debian package /foobar/ needs to be named
+/foobar-binaries/ and /foobar-source/. /foobar-source/ is the job name
+where the source package is being built and /foobar-binaries/ is the
+job name where the Debian binary packages are being built.
+
+If a second job for an already existing job for the Debian package
+/foobar/ should be available then the name /foobar-test/ with the
+according Jenkins jobs /foobar-test-source/ and /foobar-test-binaries/
+is supported.
+
+** Source job configuration (foobar-source)
+
+Choose "/This build is parameterized/" to be able to build specific
+branches.
+
+Enable and configure "/Source Code Management/", currently only Git is
+supported by the /generate-git-snapshot/ script.
+(NOTE: Scripts for other version control systems are highly welcome!)
+*Important*: set the "/Local subdirectory for repo (optional)/" option
+under /Advanced/ settings to "/source/".
+
+Enable "/Trigger builds remotely/" and set an user-defined authentication
+token.
+
+Use /@daily/ inside "/Poll SCM/".
+
+In the "/Build/" section add a build step "/Execute shell/" using:
+
+#+BEGIN_EXAMPLE
+/usr/bin/generate-git-snapshot auto
+#+END_EXAMPLE
+
+Under "/Post-build Actions/" select "/Archive the artifacts/" using:
+
+#+BEGIN_EXAMPLE
+*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes
+#+END_EXAMPLE
+
+Select the binaries job (/foobar-binaries/) under "/Build other
+projects/" with the "/Trigger only if build succeeds/" option enabled.
+
+For "/Files to deploy/" enable "/Deploy artifacts from workspace to
+remote directories/" using:
+
+#+BEGIN_EXAMPLE
+*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes
+#+END_EXAMPLE
+
+and for the "/Remote directory/" use:
+
+#+BEGIN_EXAMPLE
+${JENKINS_HOME}/userContent/${JOB_NAME}/
+#+END_EXAMPLE
+
+Enable "/Record fingerprints of files to track usage/" and
+"/Fingerprint all archived artifacts/".
+
+** Binaries job configuration (foobar-binaries)
+
+Add a "/Configuration Matrix/" with user-defined Axis titled
+"/architecture/" and values "/amd64 i386/", specifying the
+architectures that should be built. Choose "/Run each configuration
+sequentially/".
+
+In the "/Build/" section add a build step "/Execute shell/" using:
+
+#+BEGIN_EXAMPLE
+/usr/bin/build-and-provide-package
+#+END_EXAMPLE
+
+Under "/Post-build Actions/" select "/Archive the artifacts/" using:
+
+#+BEGIN_EXAMPLE
+*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes
+#+END_EXAMPLE
+
+* Scripts
+
++ *build-and-provide-package*: searches for newest package version in /${HUDSON_HOME}/userContent/${PACKAGE}-source// and uses the dsc file for building a binary package for the specific /$architecture/ of the matrix build using cowbuilder. The resulting binary package will be installed in reprepro to provide it for usage via APT. i386 builds are binary-only builds (limited to architecture dependent packages) and amd64 builds are binary-only builds (no source files are to be built). With the amd64 build the original dsc file is being installed in reprepro as source package.
+
++ *generate-git-snapshot*: generates snapshot version in debian/changelog Debian package using git-dch.  Use 'auto' as command line option to use git-dch's magic to build changelog, without the 'auto' option the version string will be build based on last tag/merge.
+
++ *generate-local-repository*: scans the current working directory for Debian packages and generates Packages.gz, Contents and Release files. Meant for usage if reprepro would be overkill (e.g. no signed repository is needed).
+
++ *generate-reprepro-codename*: takes a repository/codename as command line option and adds an according repository/codename definition to /srv/repository/conf/distributions (iff the codename is not present yet). As second command line option the GnuPG key ID for signing the repository can be specified (defaults to a static value otherwise).
+
+* Known TODOs
+
++ Make configuration more flexible (key id, repository path,
+  cowbuilder base dirs,...).
++ Separate cowbuilder and reprepro steps in build-and-provide-package
+  (e.g. to use generate-local-repository instead of reprepro).
++ Make sure scaling with slave node works (including tagging of hosts, deploying files,...).
++ Provide Jenkins plugin to deploy and configure cowbuilder.
++ Provide Jenkins plugin to deploy and configure reprepro (including gpg key).
+
+* Author
+Michael Prokop <mika@debian.org>

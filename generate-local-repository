@@ -1,4 +1,8 @@
 #!/bin/sh
+
+set -x
+set -e
+
 apt-ftparchive packages . | gzip > Packages.gz
 apt-ftparchive contents . > Contents
 cat <<EOF >Release
