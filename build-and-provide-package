@@ -29,7 +29,7 @@ else
   echo "No repository supplied, using package name $REPOS"
 fi
 
-echo "*** looking for newest package version ***"
+echo "*** identifying newest package version ***"
 newest_version="0"
 for file in "${HUDSON_HOME}/userContent/${PACKAGE}-source/"*.dsc ; do
   p="$(basename $file .dsc)"
@@ -47,6 +47,7 @@ done
 echo "${newest_version}"
 echo "*** found package version $newest_version ***"
 
+
 echo "*** cowbuilder build phase for arch $architecture ***"
 case "$architecture" in
   # -B -> binary-only build, limited to architecture dependent packages
@@ -56,7 +57,7 @@ case "$architecture" in
       --basepath /var/cache/pbuilder/base32.cow --debbuildopts -B
     ;;
   # -b -> binary-only build, no source files are to be built and/or distributed
-  amd64)
+  amd64|all)
     sudo cowbuilder --buildresult "$WORKSPACE" \
       --build "${HUDSON_HOME}/userContent/${PACKAGE}-source/${BINARY_PACKAGE}"_*"${newest_version}".dsc \
       --basepath /var/cache/pbuilder/base.cow --debbuildopts -b
@@ -78,15 +79,25 @@ for p in $(dcmd "${WORKSPACE}/${BINARY_PACKAGE}"_*"${newest_version}_${architect
     all remove "${REPOS}" "${binpackage}" || true
 done
 
+archall=false
+case $architecture in
+  all) archall=true
+       architecture='*' # support as file expansion in reprepro cmdline
+       ;;
+esac
 
 echo "*** including binary packages in repository $REPOS ***"
-sudo reprepro -v -b /srv/repository --waitforlock 1000 --architecture "$architecture" \
-  include "${REPOS}" "${WORKSPACE}/${BINARY_PACKAGE}"_*"${newest_version}_${architecture}.changes"
-
+if $archall ; then
+  sudo reprepro -v -b /srv/repository --waitforlock 1000 \
+    include "${REPOS}" "${WORKSPACE}/${BINARY_PACKAGE}"_*"${newest_version}"_${architecture}.changes
+else
+  sudo reprepro -v -b /srv/repository --waitforlock 1000 --architecture "$architecture" \
+    include "${REPOS}" "${WORKSPACE}/${BINARY_PACKAGE}"_*"${newest_version}_${architecture}.changes"
+fi
 
 # include the source package only in *one* architecture, being amd64
 echo "*** including source package in repository $REPOS ***"
-if [ "$architecture" = "amd64" ] ; then
+if [ "$architecture" = "amd64" ] || $archall ; then
   sudo reprepro -v -b /srv/repository --waitforlock 1000 includedsc \
     "${REPOS}" "${HUDSON_HOME}/userContent/${PACKAGE}-source/${BINARY_PACKAGE}"_*"${newest_version}".dsc
 fi
