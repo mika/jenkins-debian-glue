@@ -87,13 +87,8 @@ case $architecture in
 esac
 
 echo "*** including binary packages in repository $REPOS ***"
-if $archall ; then
-  sudo reprepro -v -b /srv/repository --waitforlock 1000 \
-    include "${REPOS}" "${WORKSPACE}/${BINARY_PACKAGE}"_*"${newest_version}"_${architecture}.changes
-else
-  sudo reprepro -v -b /srv/repository --waitforlock 1000 --architecture "$architecture" \
-    include "${REPOS}" "${WORKSPACE}/${BINARY_PACKAGE}"_*"${newest_version}_${architecture}.changes"
-fi
+sudo reprepro -v -b /srv/repository --waitforlock 1000 \
+  include "${REPOS}" "${WORKSPACE}/${BINARY_PACKAGE}"_*"${newest_version}"_${architecture}.changes
 
 # include the source package only in *one* architecture, being amd64
 echo "*** including source package in repository $REPOS ***"
