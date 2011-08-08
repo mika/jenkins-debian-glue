@@ -1,5 +1,5 @@
 #!/bin/sh
-# git hook: post-receive-email
+# git hook: post-receive
 
 # !!! PLEASE ADJUST !!!
 projectname=ADJUSTME
