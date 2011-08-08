@@ -42,7 +42,11 @@ fi
 debchange --release ""
 
 cd ..
-dpkg-source -b source
+if ! dpkg-source -b source ; then
+	echo "dpkg-source did not work (missing upstream sources?), trying git-buildpackage"
+	cd source
+	git-buildpackage -tc --git-ignore-new -S -us -uc
+fi
 
 # needed for deploying artifacts
 mkdir -p ${JENKINS_HOME}/userContent/${JOB_NAME}/
