@@ -41,11 +41,10 @@ fi
 
 debchange --release ""
 
-cd ..
-if ! dpkg-source -b source ; then
-	echo "dpkg-source did not work (missing upstream sources?), trying git-buildpackage"
-	cd source
-	git-buildpackage -tc --git-ignore-new -S -us -uc
+if ! git-buildpackage -tc --git-ignore-new -S -us -uc ; then
+  echo "git-buildpackage did not work, trying dpkg-source"
+  cd ..
+  dpkg-source -b source
 fi
 
 # needed for deploying artifacts
