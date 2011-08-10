@@ -94,11 +94,13 @@ Under "/Post-build Actions/" select "/Archive the artifacts/" using:
 
 + *build-and-provide-package*: searches for newest package version in /${HUDSON_HOME}/userContent/${PACKAGE}-source// and uses the dsc file for building a binary package for the specific /$architecture/ of the matrix build using cowbuilder. The resulting binary package will be installed in reprepro to provide it for usage via APT. i386 builds are binary-only builds (limited to architecture dependent packages) and amd64 builds are binary-only builds (no source files are to be built). With the amd64 build the original dsc file is being installed in reprepro as source package.
 
-+ *generate-git-snapshot*: generates snapshot version in debian/changelog Debian package using git-dch.  Use 'auto' as command line option to use git-dch's magic to build changelog, without the 'auto' option the version string will be build based on last tag/merge.
++ *generate-git-snapshot*: generates a snapshot version of a Debian package using git-dch. Use 'auto' as command line option to use git-dch's magic to build changelog, without the 'auto' option the version string will be build based on last tag/merge.
 
 + *generate-local-repository*: scans the current working directory for Debian packages and generates Packages.gz, Contents and Release files. Meant for usage if reprepro would be overkill (e.g. no signed repository is needed).
 
 + *generate-reprepro-codename*: takes a repository/codename as command line option and adds an according repository/codename definition to /srv/repository/conf/distributions (iff the codename is not present yet). As second command line option the GnuPG key ID for signing the repository can be specified (defaults to a static value otherwise).
+
++ *generate-svn-snapshot*: generates snapshot version of a Debian package using svn log, svn2cl and some dirty shell magic.
 
 * Known TODOs
 
