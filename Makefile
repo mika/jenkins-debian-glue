@@ -1,6 +1,6 @@
 PREFIX := /usr
 
-PROGRAMS := build-and-provide-package generate-git-snapshot generate-local-repository generate-reprepro-codename
+PROGRAMS := build-and-provide-package generate-git-snapshot generate-local-repository generate-reprepro-codename generate-svn-snapshot
 
 build:
 	@echo nothing to do
