@@ -105,5 +105,8 @@ rm -f "$SVN_CHANGELOG"
 cd ..
 dpkg-source --tar-ignore=\.svn -b source
 
+# revert to original debian/changelog to avoid highly increasing version numbers with each build
+( cd source ; svn revert debian/changelog )
+
 # needed for deploying artifacts
 mkdir -p ${JENKINS_HOME}/userContent/${JOB_NAME}/
