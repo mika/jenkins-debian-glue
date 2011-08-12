@@ -53,7 +53,7 @@ then
     sourcefile="${HUDSON_HOME}/userContent/${PACKAGE}-source/${BINARY_PACKAGE}"_*"${newest_version}".dsc
 else
     sourcefile=$( echo "${sources}/"*.dsc)
-    p="$(basename $file .dsc)"
+    p="$(basename $sourcefile .dsc)"
     newest_version="${p#*_}"
     echo "*** use $sourcefile (${newest_version}) from $sources"
 fi
