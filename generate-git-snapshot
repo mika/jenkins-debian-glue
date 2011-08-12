@@ -2,8 +2,9 @@
 
 set -x
 set -e
+set -u
 
-[ -n "$DEBEMAIL" ] || DEBEMAIL="jenkins.grml.org Autobuilder <jenkins@grml.org>"
+[ -n "${DEBEMAIL:-}" ] || DEBEMAIL="jenkins.grml.org Autobuilder <jenkins@grml.org>"
 export DEBEMAIL
 
 if [ ! -d source ] ; then
@@ -11,7 +12,7 @@ if [ ! -d source ] ; then
   exit 1
 fi
 
-if [ -z "${BUILD_NUMBER}" ] ; then
+if [ -z "${BUILD_NUMBER:-}" ] ; then
   echo "No BUILD_NUMBER defined, please run it in jenkins." >&2
   exit 1
 fi
@@ -21,10 +22,15 @@ rm -f ./* || true
 
 cd source
 
-if [ "$1" = "auto" ] ; then
+if [ "${1:-}" = "auto" ] ; then
+  echo "Using git-dch with auto mode."
   git-dch -S --auto --multimaint-merge --snapshot-number=${BUILD_NUMBER} --ignore-branch
 else
-  tag=$(git describe  $(git rev-list --tags='[^ju]*' --max-count=1))
+  echo "Trying to identify latest tag / merge..."
+  git checkout -- debian/changelog
+  OLD_VERSION=$(dpkg-parsechangelog  | awk '/^Version: / {print $2}')
+
+  tag=$(git describe $(git rev-list --tags='[^ju]*' --max-count=1))
   last_merge=$(git describe $(git rev-list --all --merges --max-count=1))
   since=${tag}
 
@@ -36,7 +42,17 @@ else
     fi
   fi
 
+  echo "Last tag / merge seems to be $since"
   git-dch -S -s "${since}" --multimaint-merge --snapshot-number=${BUILD_NUMBER} --ignore-branch
+
+  NEW_VERSION=$(dpkg-parsechangelog  | awk '/^Version: / {print $2}')
+
+  if dpkg --compare-versions "$NEW_VERSION" lt "$OLD_VERSION" ; then
+    echo "Calculated version is older than last release, falling back to auto mode."
+    git checkout -- debian/changelog
+    git-dch -S --auto --multimaint-merge --snapshot-number=${BUILD_NUMBER} --ignore-branch
+  fi
+
 fi
 
 debchange --release ""
