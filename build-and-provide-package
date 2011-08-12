@@ -56,19 +56,24 @@ else
     echo "*** use $sourcefile (${newest_version}) from $sources"
 fi
 
+if [ -n ${distribution} ]
+then
+    cwb="-${distribution}-"
+fi
+
 echo "*** cowbuilder build phase for arch $architecture ***"
 case "$architecture" in
   # -B -> binary-only build, limited to architecture dependent packages
   i386)
     linux32 sudo cowbuilder --buildresult "$WORKSPACE" \
       --build $sourcefile \
-      --basepath /var/cache/pbuilder/base32.cow --debbuildopts -B
+      --basepath /var/cache/pbuilder/base${cwb}32.cow --debbuildopts -B
     ;;
   # -b -> binary-only build, no source files are to be built and/or distributed
   amd64|all)
     sudo cowbuilder --buildresult "$WORKSPACE" \
       --build $sourcefile \
-      --basepath /var/cache/pbuilder/base.cow --debbuildopts -b
+      --basepath /var/cache/pbuilder/base${cwb}.cow --debbuildopts -b
     ;;
   *)
     echo "Unsupported architecture: $architecture" >&2
