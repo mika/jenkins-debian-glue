@@ -56,7 +56,7 @@ BASE_VERSION=$(echo ${PREVIOUS_VERSION} | sed 's/\(-.*\)\|\(~.*\)$//')
 
 # if a Debian version is present, then use '-1' inside snapshot version
 DEBIAN_VERSION=''
-if echo $PREVIOUS_VERSION | grep -- '-' ; then
+if echo $PREVIOUS_VERSION | grep -q -- '-' ; then
   DEBIAN_VERSION='-1'
 fi
 
