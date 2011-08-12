@@ -58,7 +58,7 @@ fi
 
 if [ -n ${distribution} ]
 then
-    cwb="-${distribution}-"
+    cwb="-${distribution}"
 fi
 
 echo "*** cowbuilder build phase for arch $architecture ***"
