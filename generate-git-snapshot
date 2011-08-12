@@ -22,7 +22,7 @@ rm -f ./* || true
 cd source
 
 if [ "$1" = "auto" ] ; then
-  if [ -z "${distribution}" ]
+  if [ -n "${distribution}" ]
   then
    git-dch -S --auto --multimaint-merge -n \
        "${BUILD_NUMBER}+$(increase-version-number $( parsechangelog -c 1 | awk '/Version/ {print $2}'))~${distribution}"\
