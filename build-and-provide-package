@@ -108,7 +108,7 @@ sudo reprepro -v -b /srv/repository --waitforlock 1000 \
 # include the source package only in *one* architecture, being amd64
 echo "*** including source package in repository $REPOS ***"
 if [ "$architecture" = "amd64" ] || $archall ; then
-  sudo reprepro -v -b /srv/repository --waitforlock 1000 includedsc \
+  sudo reprepro -v -b /srv/repository --waitforlock 1000 includedsc ${REPOS}\
     ${sourcefile}
 fi
 
