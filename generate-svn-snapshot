@@ -73,7 +73,12 @@ else
 fi
 
 # raise version number (2 -> 3)
-RAISE_VERSION=$((LAST_PART + 1))
+if echo "$LAST_PART" | grep -q -- '^0' ; then
+  # digit starts with leading zero (as in 2008.01.02), so prepend it
+  RAISE_VERSION="0$((LAST_PART + 1))"
+else
+  RAISE_VERSION=$((LAST_PART + 1))
+fi
 
 # concat first part and raised version number (0.9.3)
 INCR_VERSION="${FIRST_PART}.${RAISE_VERSION}"
