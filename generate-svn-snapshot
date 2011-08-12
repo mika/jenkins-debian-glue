@@ -4,6 +4,9 @@ set -x
 set -e
 set -u
 
+export LC_ALL=C
+export LANG=C
+
 [ -n "${DEBEMAIL:-}" ] || DEBEMAIL="jenkins.grml.org Autobuilder <jenkins@grml.org>"
 export DEBEMAIL
 
@@ -37,7 +40,7 @@ rm -f ./* || true
 
 cd source
 
-SINCE_REVISION=$(svn blame debian/changelog 2>/dev/null | head -1 | awk '{print $1}')
+SINCE_REVISION=$(svn info debian/changelog 2>/dev/null | awk '/Last Changed Rev:/ {print $4}')
 
 if [ -z "${SINCE_REVISION:-}" ] ; then
   echo "Error: could not detect svn revision which modified debian/changelog." >&2
