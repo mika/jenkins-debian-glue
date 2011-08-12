@@ -60,11 +60,17 @@ if echo $PREVIOUS_VERSION | grep -q -- '-' ; then
   DEBIAN_VERSION='-1'
 fi
 
-# first part of version number (0.9.2 -> 0.9)
-FIRST_PART=$(echo $BASE_VERSION | sed 's/\(\.[0-9]\)$//')
+# make sure single digit version numbers (2 -> 2.1) are handled
+if ! echo "$PREVIOUS_VERSION" | grep -q -- '\.' ; then
+  FIRST_PART="$PREVIOUS_VERSION"
+  LAST_PART=""
+else
+  # first part of version number (0.9.2 -> 0.9)
+  FIRST_PART=$(echo $BASE_VERSION | sed 's/\(\.[0-9]\)$//')
 
-# last digit(s) of version number (0.9.2 -> 2)
-LAST_PART=$(echo $BASE_VERSION | sed 's/.*\.\([0-9]*\)$/\1/')
+  # last digit(s) of version number (0.9.2 -> 2)
+  LAST_PART=$(echo $BASE_VERSION | sed 's/.*\.\([0-9]*\)$/\1/')
+fi
 
 # raise version number (2 -> 3)
 RAISE_VERSION=$((LAST_PART + 1))
