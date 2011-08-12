@@ -1,4 +1,4 @@
-jenkins-debian-glue (0.0-1) UNRELEASED; urgency=low
+jenkins-debian-glue (0.0.1) UNRELEASED; urgency=low
 
   * Initial release.
 
