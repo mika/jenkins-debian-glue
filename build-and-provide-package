@@ -29,7 +29,7 @@ else
   echo "No repository supplied, using package name $REPOS"
 fi
 
-if [ -n "${sources}" ];
+if [ -z "${sources}" ];
 then
     echo "*** identifying newest package version ***"
     newest_version="0"
