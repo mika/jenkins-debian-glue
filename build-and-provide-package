@@ -52,7 +52,7 @@ then
     echo "*** found package version $newest_version ***"
     sourcefile="${HUDSON_HOME}/userContent/${PACKAGE}-source/${BINARY_PACKAGE}"_*"${newest_version}".dsc
 else
-    sourcefile="${sources}/"*.dsc
+    sourcefile=$( echo "${sources}/"*.dsc)
     p="$(basename $file .dsc)"
     newest_version="${p#*_}"
     echo "*** use $sourcefile (${newest_version}) from $sources"
