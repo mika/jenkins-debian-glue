@@ -22,18 +22,31 @@ rm -f ./* || true
 
 cd source
 
+# support overriding git-dch options
+if [ -n "${DCH_OPTS:-}" ] ; then
+  echo "Found environment variable DCH_OPTS, set to ${DCH_OPTS}"
+else
+  DCH_OPTS="-S --multimaint-merge --ignore-branch"
+  echo "Using default git-dch options (${DCH_OPTS})"
+fi
+
+# support overriding extra options for git-dch
+if [ -n "${DCH_EXTRA_OPTS:-}" ] ; then
+  echo "Found environment variable DCH_EXTRA_OPTS, set to ${DCH_EXTRA_OPTS}"
+else
+  # support customizing the version number from outside
+  if [ -n "${distribution:-}" ] ; then
+    echo "Found environment variable distribution, set to $distribution"
+    DCH_EXTRA_OPTS="-n $(increase-version-number $(parsechangelog -c 1 | awk '/Version/ {print $2}'))~${BUILD_NUMBER}+${distribution}"
+  else
+    DCH_EXTRA_OPTS="--snapshot-number=${BUILD_NUMBER}"
+  fi
+  echo "Using extra git-dch options (${DCH_EXTRA_OPTS})"
+fi
+
 if [ "${1:-}" = "auto" ] ; then
   echo "Using git-dch with auto mode."
-  git-dch -S --auto --multimaint-merge --snapshot-number=${BUILD_NUMBER} --ignore-branch
-
-  if [ -z "${distribution}" ] ; then
-    git-dch -S --auto --multimaint-merge --snapshot-number=${BUILD_NUMBER} --ignore-branch
-  else
-    git-dch -S --auto --multimaint-merge -n \
-     "$(increase-version-number $(parsechangelog -c 1 | awk '/Version/
-        {print $2}'))~${BUILD_NUMBER}+${distribution}" \
-     --ignore-branch
-  fi
+  git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
 else
   echo "Trying to identify latest tag / merge..."
   git checkout -- debian/changelog
@@ -52,14 +65,14 @@ else
   fi
 
   echo "Last tag / merge seems to be $since"
-  git-dch -S -s "${since}" --multimaint-merge --snapshot-number=${BUILD_NUMBER} --ignore-branch
+  git-dch -s "${since}" $DCH_OPTS $DCH_EXTRA_OPTS
 
   NEW_VERSION=$(dpkg-parsechangelog  | awk '/^Version: / {print $2}')
 
   if dpkg --compare-versions "$NEW_VERSION" lt "$OLD_VERSION" ; then
     echo "Calculated version is older than last release, falling back to auto mode."
     git checkout -- debian/changelog
-    git-dch -S --auto --multimaint-merge --snapshot-number=${BUILD_NUMBER} --ignore-branch
+    git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
   fi
 
 fi
