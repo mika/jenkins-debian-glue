@@ -26,41 +26,59 @@ if [ -n "$1" ] ; then
   echo "Using supplied repository name $REPOS"
 else
   REPOS="${JOB_NAME%-binaries*}"
-  echo "No repository supplied, using package name $REPOS"
+  if [ -z "${distribution:-}" ]; then
+    echo "No repository supplied, using repository name $REPOS"
+  else
+    REPOS="${REPOS}-${distribution}"
+    echo "No repository supplied but distribution has been set, using repository name $REPOS"
+  fi
 fi
 
-echo "*** identifying newest package version ***"
-newest_version="0"
-for file in "${HUDSON_HOME}/userContent/${PACKAGE}-source/"*.dsc ; do
-  p="$(basename $file .dsc)"
-  if [ "$p" = '*' ] ; then
-    echo "No source package found (forgot to deploy via source job?)" >&2
-    exit 1
-  fi
-  cur_version="${p#*_}"
-  if dpkg --compare-versions "${cur_version}" gt "${newest_version}" ; then
-    newest_version="${cur_version}"
-  else
-    base_version="${cur_version}"
-  fi
-done
-echo "${newest_version}"
-echo "*** found package version $newest_version ***"
+if [ -n "${sources:-}" ]; then
+  sourcefile=$(echo "${sources}/"*.dsc)
+  p="$(basename $sourcefile .dsc)"
+  newest_version="${p#*_}"
+else
+  sources="unset"
+  echo "*** Identifying newest package version ***"
+  newest_version="0"
+  for file in "${HUDSON_HOME}/userContent/${PACKAGE}-source/"*.dsc ; do
+    p="$(basename $file .dsc)"
+    if [ "$p" = '*' ] ; then
+      echo "No source package found (forgot to deploy via source job?)" >&2
+      exit 1
+    fi
+    cur_version="${p#*_}"
+    if dpkg --compare-versions "${cur_version}" gt "${newest_version}" ; then
+      newest_version="${cur_version}"
+    else
+      base_version="${cur_version}"
+    fi
+  done
+  echo "*** Found package version $newest_version ***"
+  sourcefile="${HUDSON_HOME}/userContent/${PACKAGE}-source/${BINARY_PACKAGE}"_*"${newest_version}".dsc
+fi
 
+echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
+
+if [ -n ${distribution:-} ]; then
+  echo "*** Using cowbuilder base for distribution ${distribution} ***"
+  cwb="-${distribution}"
+fi
 
 echo "*** cowbuilder build phase for arch $architecture ***"
 case "$architecture" in
   # -B -> binary-only build, limited to architecture dependent packages
   i386)
     linux32 sudo cowbuilder --buildresult "$WORKSPACE" \
-      --build "${HUDSON_HOME}/userContent/${PACKAGE}-source/${BINARY_PACKAGE}"_*"${newest_version}".dsc \
-      --basepath /var/cache/pbuilder/base32.cow --debbuildopts -B
+      --build $sourcefile \
+      --basepath /var/cache/pbuilder/base${cwb}32.cow --debbuildopts -B
     ;;
   # -b -> binary-only build, no source files are to be built and/or distributed
   amd64|all)
     sudo cowbuilder --buildresult "$WORKSPACE" \
-      --build "${HUDSON_HOME}/userContent/${PACKAGE}-source/${BINARY_PACKAGE}"_*"${newest_version}".dsc \
-      --basepath /var/cache/pbuilder/base.cow --debbuildopts -b
+      --build $sourcefile \
+      --basepath /var/cache/pbuilder/base${cwb}.cow --debbuildopts -b
     ;;
   *)
     echo "Unsupported architecture: $architecture" >&2
@@ -93,7 +111,7 @@ sudo reprepro -v -b /srv/repository --waitforlock 1000 \
 # include the source package only in *one* architecture, being amd64
 echo "*** including source package in repository $REPOS ***"
 if [ "$architecture" = "amd64" ] || $archall ; then
-  sudo reprepro -v -b /srv/repository --waitforlock 1000 includedsc \
-    "${REPOS}" "${HUDSON_HOME}/userContent/${PACKAGE}-source/${BINARY_PACKAGE}"_*"${newest_version}".dsc
+  sudo reprepro -v -b /srv/repository --waitforlock 1000 includedsc "${REPOS}" \
+    "${sourcefile}"
 fi
 
