@@ -12,6 +12,10 @@ testEquality()
   assertEquals "$($SCRIPT 1:0.42-2)"   1:0.43-1
   assertEquals "$($SCRIPT 2008.01.02)" 2008.01.03
   assertEquals "$($SCRIPT 0.42~2)"     0.43
+  assertEquals "$($SCRIPT 0.9.0)"      0.9.1
+  assertEquals "$($SCRIPT 0.9.00)"     0.9.01
+  assertEquals "$($SCRIPT 0.8)"        0.9
+  assertEquals "$($SCRIPT 0.9)"        0.10
 }
 
 . /usr/share/shunit2/shunit2
