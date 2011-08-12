@@ -102,6 +102,9 @@ Under "/Post-build Actions/" select "/Archive the artifacts/" using:
 
 + *generate-svn-snapshot*: generates snapshot version of a Debian package using svn log, svn2cl and some dirty shell magic.
 
++ *increase-version-number*: takes a version number as commandline argument and raises the version number for usage as new snapshot
+version. It does not append any special characters, so you can use it with your own suffix and build numbers.
+
 * Known TODOs
 
 + Make configuration more flexible (key id, repository path,

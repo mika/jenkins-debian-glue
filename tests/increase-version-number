@@ -1,0 +1,17 @@
+#!/bin/sh
+
+SCRIPT=./increase-version-number
+
+testEquality()
+{
+  assertEquals "$($SCRIPT 0.23)"       0.24
+  assertEquals "$($SCRIPT 23)"         23.1
+  assertEquals "$($SCRIPT 0.23-1)"     0.24-1
+  assertEquals "$($SCRIPT 0.1.23-1)"   0.1.24-1
+  assertEquals "$($SCRIPT 0.1.23-3)"   0.1.24-1
+  assertEquals "$($SCRIPT 1:0.42-2)"   1:0.43-1
+  assertEquals "$($SCRIPT 2008.01.02)" 2008.01.03
+  assertEquals "$($SCRIPT 0.42~2)"     0.43
+}
+
+. /usr/share/shunit2/shunit2

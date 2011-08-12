@@ -1,9 +1,9 @@
 PREFIX := /usr
 
-PROGRAMS := build-and-provide-package generate-git-snapshot generate-local-repository generate-reprepro-codename generate-svn-snapshot
+PROGRAMS := build-and-provide-package generate-git-snapshot generate-local-repository generate-reprepro-codename generate-svn-snapshot increase-version-number
 
 build:
-	@echo nothing to do
+	tests/increase-version-number
 
 install: $(scripts)
 	mkdir -p $(DESTDIR)/$(PREFIX)/bin/
@@ -11,4 +11,4 @@ install: $(scripts)
 		install -m 0755 $$prog $(DESTDIR)/$(PREFIX)/bin; \
 	done
 
-.PHONY: install
+.PHONY: build install
