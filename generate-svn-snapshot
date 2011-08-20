@@ -38,7 +38,8 @@ fi
 echo "***  source package build phase ***"
 rm -f ./* || true
 
-cd source
+ORIG_DIR=$(pwd)
+cd source/${branch}
 
 SINCE_REVISION=$(svn info debian/changelog 2>/dev/null | awk '/Last Changed Rev:/ {print $4}')
 
@@ -83,11 +84,11 @@ cat debian/changelog >> debian/changelog.new
 mv debian/changelog.new debian/changelog
 rm -f "$SVN_CHANGELOG"
 
-cd ..
-dpkg-source --tar-ignore=\.svn -b source
+cd $ORIG_DIR
+dpkg-source --tar-ignore=\.svn -b source/${branch}
 
 # revert to original debian/changelog to avoid highly increasing version numbers with each build
-( cd source ; svn revert debian/changelog )
+( cd source/${branch} ; svn revert debian/changelog )
 
 # needed for deploying artifacts
 mkdir -p ${JENKINS_HOME}/userContent/${JOB_NAME}/
