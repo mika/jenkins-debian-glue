@@ -61,7 +61,9 @@ fi
 
 echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
 
-if [ -n ${distribution:-} ]; then
+if [ -z "${distribution:-}" ]; then
+  echo "*** No distribution set, not setting base.cow for cowbuilder. ***"
+else
   echo "*** Using cowbuilder base for distribution ${distribution} ***"
   cwb="-${distribution}"
 fi
