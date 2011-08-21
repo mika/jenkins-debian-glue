@@ -1,41 +1,68 @@
 #!/bin/sh
 
 set -x
-set -e
+set -u
 
-if [ -z "${JOB_NAME}" ] ; then
+if [ -z "${JOB_NAME:-}" ] ; then
   echo "No JOB_NAME defined, please run it in jenkins." >&2
   exit 1
 fi
 
-if [ -z "${architecture}" ] ; then
+if [ -z "${architecture:-}" ] ; then
   echo "No architecture defined, please run it with matrix configuration using architecture." >&2
   exit 1
 fi
 
+# make sure we don't leave files for next run
+bailout() {
+  if [ -n "${sources:-}" ]; then
+    echo "*** Removing sources file. ***"
+    rm -f "${sources}/"*
+  fi
+
+  [ -n "${1:-}" ] && EXIT="${1}" || EXIT=0
+  [ -n "${2:-}" ] && echo "$2" >&2
+  exit $EXIT
+}
+
+trap bailout 1 2 3 3 6 9 14 15
+
 PACKAGE=${JOB_NAME%-binaries*}
 BINARY_PACKAGE=${PACKAGE%-test*}
-if [ -z "$PACKAGE" ] ; then
-  echo "Error: could not identify Debian package name based on job name ${JOB_NAME}." >&2
-  exit 1
+if [ -z "${PACKAGE:-}" ] ; then
+  echo "Error: could not identify Debian package name based on job name ${JOB_NAME:-}." >&2
+  bailout 1
 fi
-echo "===== building binary package $BINARY_PACKAGE ====="
 
-if [ -n "$1" ] ; then
+# remove results from previous (possibly failed) runs
+cd "${WORKSPACE}"
+rm -f *.deb *.changes *.dsc *.tar.gz
+
+echo "===== Building binary package $BINARY_PACKAGE ====="
+if [ -n "${1:-}" ] ; then
   REPOS="$1"
-  echo "Using supplied repository name $REPOS"
+  echo "*** Using supplied repository name $REPOS ***"
 else
   REPOS="${JOB_NAME%-binaries*}"
   if [ -z "${distribution:-}" ]; then
-    echo "No repository supplied, using repository name $REPOS"
+    echo "*** No repository supplied, using repository name $REPOS ***"
   else
     REPOS="${REPOS}-${distribution}"
-    echo "No repository supplied but distribution has been set, using repository name $REPOS"
+    echo "*** No repository supplied but distribution has been set, using repository name $REPOS ***"
   fi
 fi
 
 if [ -n "${sources:-}" ]; then
   sourcefile=$(echo "${sources}/"*.dsc)
+  if [ "$sourcefile" = 'sources/*.dsc' ] ; then
+    echo "Error: no sourcefile (*.dsc) found. Exiting." >&2
+    bailout 1
+  fi
+  case "$sourcefile" in
+    *\ *) echo "Error: Found multiple source files (*.dsc)." >&2
+          bailout 1
+      ;;
+  esac
   p="$(basename $sourcefile .dsc)"
   newest_version="${p#*_}"
 else
@@ -46,7 +73,7 @@ else
     p="$(basename $file .dsc)"
     if [ "$p" = '*' ] ; then
       echo "No source package found (forgot to deploy via source job?)" >&2
-      exit 1
+      bailout 1
     fi
     cur_version="${p#*_}"
     if dpkg --compare-versions "${cur_version}" gt "${newest_version}" ; then
@@ -63,41 +90,66 @@ echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
 
 if [ -z "${distribution:-}" ]; then
   echo "*** No distribution set, not setting base.cow for cowbuilder. ***"
+  cwb=''
 else
   echo "*** Using cowbuilder base for distribution ${distribution} ***"
   cwb="-${distribution}"
 fi
 
 echo "*** cowbuilder build phase for arch $architecture ***"
+mkdir -p "$WORKSPACE"/binaries/
 case "$architecture" in
   # -B -> binary-only build, limited to architecture dependent packages
   i386)
-    linux32 sudo cowbuilder --buildresult "$WORKSPACE" \
+    linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
       --build $sourcefile \
       --basepath /var/cache/pbuilder/base${cwb}32.cow --debbuildopts -B
+    [ $? -eq 0 ] || bailout 1 "Failed to build with cowbuilder."
     ;;
   # -b -> binary-only build, no source files are to be built and/or distributed
   amd64|all)
-    sudo cowbuilder --buildresult "$WORKSPACE" \
+    sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
       --build $sourcefile \
       --basepath /var/cache/pbuilder/base${cwb}.cow --debbuildopts -b
+    [ $? -eq 0 ] || bailout 1 "Failed to build with cowbuilder."
     ;;
   *)
     echo "Unsupported architecture: $architecture" >&2
-    exit 1
+    bailout 1
     ;;
 esac
 
-
-echo "*** removing previous versions from repository ***"
-for p in $(dcmd "${WORKSPACE}/${BINARY_PACKAGE}"_*"${newest_version}_${architecture}.changes") ; do
+echo "*** Removing previous versions from repository ***"
+for p in $(dcmd "${WORKSPACE}/binaries/${BINARY_PACKAGE}"_*"${newest_version}_${architecture}.changes") ; do
   file="$(basename $p)"
   binpackage="${file%%_*}"
-  sudo reprepro -v -b /srv/repository --waitforlock 1000 --architecture \
-    "$architecture" remove "${REPOS}" "${binpackage}" || true
-  sudo reprepro -v -b /srv/repository --waitforlock 1000 --architecture \
-    all remove "${REPOS}" "${binpackage}" || true
+  binary_list="${binary_list:-} ${binpackage}"
+  # note: "removesrc" would remove foreign arch files (of different builds)
+  case "$file" in
+     *_all.deb)
+       echo "*** Architecture all package found, removing from all architectures. ***"
+       sudo reprepro -v -b /srv/repository --waitforlock 1000 remove "${REPOS}" "${binpackage}"
+       ;;
+      *)
+       sudo reprepro -v -b /srv/repository --waitforlock 1000 --architecture \
+         "$architecture" remove "${REPOS}" "${binpackage}" || true
+       sudo reprepro -v -b /srv/repository --waitforlock 1000 --architecture \
+         all remove "${REPOS}" "${binpackage}" || true
+       ;;
+  esac
 done
+
+for p in $(sudo reprepro -v -b /srv/repository --waitforlock 1000 listmatched $PACKAGE '*' | awk '{print $2}' | sort -u); do
+  echo "$binary_list" | grep -q "$p" || missing_packages="${missing_packages:-} $p"
+done
+
+if echo "${missing_packages:-}" | grep -q '[a-z0-9]' ; then
+  echo "*** Binary package(s) found, missing in build version: ${missing_packages:-} ***"
+  for p in $missing_packages ; do
+    echo "Removing $p from $REPOS to avoid out-of-date data ***"
+    sudo reprepro -v -b /srv/repository --waitforlock 1000 remove "${REPOS}" "${p}"
+  done
+fi
 
 archall=false
 case $architecture in
@@ -108,12 +160,16 @@ esac
 
 echo "*** including binary packages in repository $REPOS ***"
 sudo reprepro -v -b /srv/repository --waitforlock 1000 \
-  include "${REPOS}" "${WORKSPACE}/${BINARY_PACKAGE}"_*"${newest_version}"_${architecture}.changes
+  include "${REPOS}" "${WORKSPACE}/binaries/${BINARY_PACKAGE}"_*"${newest_version}"_${architecture}.changes
 
 # include the source package only in *one* architecture, being amd64
-echo "*** including source package in repository $REPOS ***"
+echo "*** Including source package in repository $REPOS ***"
 if [ "$architecture" = "amd64" ] || $archall ; then
   sudo reprepro -v -b /srv/repository --waitforlock 1000 includedsc "${REPOS}" \
-    "${sourcefile}"
+    ${sourcefile}
 fi
 
+echo "*** Moving binaries files to workspace. ***"
+mv "${WORKSPACE}/binaries/"* "${WORKSPACE}/"
+
+bailout 0
