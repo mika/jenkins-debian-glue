@@ -11,4 +11,7 @@ install: $(scripts)
 		install -m 0755 $$prog $(DESTDIR)/$(PREFIX)/bin; \
 	done
 
+	mkdir -p $(DESTDIR)/usr/share/jenkins-debian-glue/examples/
+	install -m 0664 examples/* $(DESTDIR)/usr/share/jenkins-debian-glue/examples/
+
 .PHONY: build install

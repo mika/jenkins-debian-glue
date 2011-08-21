@@ -106,8 +106,7 @@ Under "/Post-build Actions/" select "/Archive the artifacts/" using:
 
 * Known TODOs
 
-+ Make configuration more flexible (key id, repository path,
-  cowbuilder base dirs,...).
++ Make configuration more flexible (repository path, cowbuilder base dirs,...).
 + Separate cowbuilder and reprepro steps in build-and-provide-package
   (e.g. to use generate-local-repository instead of reprepro).
 + Make sure scaling with slave node works (including tagging of hosts, deploying files,...).

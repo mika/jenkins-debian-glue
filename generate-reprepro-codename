@@ -16,11 +16,16 @@ fi
 # repository/codename that should be added
 REPOS="$1"
 
+if [ -r /etc/jenkins/debian_glue ] ; then
+  echo "*** Sourcing /etc/jenkins/debian_glue ***"
+  . /etc/jenkins/debian_glue
+fi
+
 # support setting key id
-if [ -n "$2" ] ; then
-  KEY_ID="$2"
-else # using a default (TODO - suppport configuration from outside)
-  KEY_ID="52D4A654"
+if [ -z "${KEY_ID:-}" ] ; then
+  echo "*** WARNING: No KEY_ID found, can not sign repository. ***"
+  echo "***          Please set up /etc/jenkins/debian_glue, see"
+  echo "***          /usr/share/jenkins-debian-glue/examples/debian_glue"
 fi
 
 if grep -q "^Codename: ${REPOS}$" /srv/repository/conf/distributions ; then
@@ -37,8 +42,11 @@ Components: main
 DebIndices: Packages Release . .gz
 DscIndices: Sources Release .gz
 Tracking: minimal
-SignWith: ${KEY_ID}
-
 EOF
+
+if [ -n "${KEY_ID:-}" ] ; then
+  echo "*** Signing repository with Key ID $KEY_ID ***"
+  printf "SignWith: ${KEY_ID}\n\n" >> /srv/repository/conf/distributions
+fi
 
 echo "Added $REPOS as new codename/repos to the reprepro configuration."

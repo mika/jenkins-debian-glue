@@ -1,0 +1,5 @@
+# Example configuration file for the jenkins-debian-glue software.
+# Install this file as /etc/jenkins/debian_glue to enable it.
+
+# Set GnuPG ID that should be used for signing the reprepro repository.
+# KEY_ID=
