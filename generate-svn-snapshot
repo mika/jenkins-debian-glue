@@ -54,6 +54,7 @@ PACKAGE=$(dpkg-parsechangelog --count 1 | awk '/^Source: / {print $2}')
 # get newest version number from changelog
 PREVIOUS_VERSION=$(dpkg-parsechangelog --count 1 | awk '/^Version: / {print $2}')
 
+build_snapshot() {
 # calculate new snapshot version
 SNAPSHOT_VERSION="$(increase-version-number "$PREVIOUS_VERSION")~${BUILD_NUMBER}.svn${SINCE_REVISION}"
 
@@ -83,6 +84,12 @@ cat debian/changelog >> debian/changelog.new
 # finally install new changelog
 mv debian/changelog.new debian/changelog
 rm -f "$SVN_CHANGELOG"
+}
+
+case "$branch" in
+  trunk) build_snapshot;;
+  tags/*) echo "Building a tag version, not modifying the package" ;;
+esac
 
 cd $ORIG_DIR
 dpkg-source --tar-ignore=\.svn -b source/${branch}
