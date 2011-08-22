@@ -3,6 +3,15 @@
 set -x
 set -e
 
+if [ -r /etc/jenkins/debian_glue ] ; then
+  . /etc/jenkins/debian_glue
+fi
+
+if "${REMOTE_REPOS:-}" ; then
+  echo "REMOTE_REPOS is set, ignoring request to generate local repository."
+  exit 0
+fi
+
 if ! [ -r /srv/repository/conf/distributions ] ; then
   echo "Error: could not read /srv/repository/conf/distributions." >&2
   exit 1

@@ -3,3 +3,7 @@
 
 # Set GnuPG ID that should be used for signing the reprepro repository.
 # KEY_ID=
+
+# Don't use local reprepro repository.
+# Supported values: [true|false]
+# REMOTE_REPOS=true

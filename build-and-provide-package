@@ -3,6 +3,11 @@
 set -x
 set -u
 
+
+if [ -r /etc/jenkins/debian_glue ] ; then
+  . /etc/jenkins/debian_glue
+fi
+
 if [ -z "${JOB_NAME:-}" ] ; then
   echo "No JOB_NAME defined, please run it in jenkins." >&2
   exit 1
@@ -119,6 +124,7 @@ case "$architecture" in
     ;;
 esac
 
+reprepro_wrapper() {
 echo "*** Removing previous versions from repository ***"
 for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${architecture}.changes") ; do
   file="$(basename $p)"
@@ -169,6 +175,14 @@ if [ "$architecture" = "amd64" ] || $archall ; then
   sudo reprepro -v -b /srv/repository --waitforlock 1000 includedsc "${REPOS}" \
     ${sourcefile}
   [ $? -eq 0 ] || bailout 1 "Failed to include source package in $REPOS repository."
+fi
+}
+
+
+if "${REMOTE_REPOS:-}" ; then
+  echo "REMOTE_REPOS is set, ignoring request to generate local repository."
+else
+  reprepro_wrapper
 fi
 
 echo "*** Moving binaries files to workspace. ***"
