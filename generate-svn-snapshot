@@ -55,35 +55,45 @@ PACKAGE=$(dpkg-parsechangelog --count 1 | awk '/^Source: / {print $2}')
 PREVIOUS_VERSION=$(dpkg-parsechangelog --count 1 | awk '/^Version: / {print $2}')
 
 build_snapshot() {
-# calculate new snapshot version
-SNAPSHOT_VERSION="$(increase-version-number "$PREVIOUS_VERSION")~${BUILD_NUMBER}.svn${SINCE_REVISION}"
 
-## generate changelog
-SVN_CHANGELOG=$(mktemp)
-svn2cl --reparagraph --stdout --include-rev -r HEAD:$SINCE_REVISION | sed -n '/^.*\[r/,/^$/p' > $SVN_CHANGELOG
-# shorten tabs at beginning of lines
-sed -i 's/\t/  /' $SVN_CHANGELOG
+  DISTRIBUTION=$(dpkg-parsechangelog --count 1 | awk '/^Distribution/ {print $2}')
 
-cat > debian/changelog.new << EOF
+  if [ "$DISTRIBUTION" = "UNRELEASED" ] ; then
+    # we do NOT raise the version number, if we detect an unreleased version
+    SNAPSHOT_VERSION="${PREVIOUS_VERSION}~${BUILD_NUMBER}.svn${SINCE_REVISION}"
+  else
+    # calculate new snapshot version
+    SNAPSHOT_VERSION="$(increase-version-number "$PREVIOUS_VERSION")~${BUILD_NUMBER}.svn${SINCE_REVISION}"
+  fi
+
+  # generate changelog
+  SVN_CHANGELOG=$(mktemp)
+  # build GNU like changelog with svn2cl as helper tool
+  svn2cl --reparagraph --stdout --include-rev -r HEAD:$SINCE_REVISION | sed -n '/^.*\[r/,/^$/p' > $SVN_CHANGELOG
+
+  # shorten tabs at beginning of lines
+  sed -i 's/\t/  /' $SVN_CHANGELOG
+
+  cat > debian/changelog.new << EOF
 $PACKAGE ($SNAPSHOT_VERSION) unstable; urgency=low
 
   ** SNAPSHOT build **
 
 EOF
 
-cat $SVN_CHANGELOG >> debian/changelog.new
+  cat $SVN_CHANGELOG >> debian/changelog.new
 
-cat >> debian/changelog.new << EOF
+  cat >> debian/changelog.new << EOF
  -- $DEBEMAIL  $(date -u -R)
 
 EOF
 
-# append original changelog
-cat debian/changelog >> debian/changelog.new
+  # append original changelog
+  cat debian/changelog >> debian/changelog.new
 
-# finally install new changelog
-mv debian/changelog.new debian/changelog
-rm -f "$SVN_CHANGELOG"
+  # finally install new changelog
+  mv debian/changelog.new debian/changelog
+  rm -f "$SVN_CHANGELOG"
 }
 
 case "$branch" in
