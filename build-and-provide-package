@@ -120,7 +120,7 @@ case "$architecture" in
 esac
 
 echo "*** Removing previous versions from repository ***"
-for p in $(dcmd "${WORKSPACE}/binaries/${BINARY_PACKAGE}"_*"${newest_version}_${architecture}.changes") ; do
+for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${architecture}.changes") ; do
   file="$(basename $p)"
   binpackage="${file%%_*}"
   binary_list="${binary_list:-} ${binpackage}"
@@ -158,15 +158,17 @@ case $architecture in
        ;;
 esac
 
-echo "*** including binary packages in repository $REPOS ***"
+echo "*** Including binary packages in repository $REPOS ***"
 sudo reprepro -v -b /srv/repository --waitforlock 1000 \
-  include "${REPOS}" "${WORKSPACE}/binaries/${BINARY_PACKAGE}"_*"${newest_version}"_${architecture}.changes
+  include "${REPOS}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
+[ $? -eq 0 ] || bailout 1 "Failed to include binary package in $REPOS repository."
 
 # include the source package only in *one* architecture, being amd64
 echo "*** Including source package in repository $REPOS ***"
 if [ "$architecture" = "amd64" ] || $archall ; then
   sudo reprepro -v -b /srv/repository --waitforlock 1000 includedsc "${REPOS}" \
     ${sourcefile}
+  [ $? -eq 0 ] || bailout 1 "Failed to include source package in $REPOS repository."
 fi
 
 echo "*** Moving binaries files to workspace. ***"
