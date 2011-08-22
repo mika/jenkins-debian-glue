@@ -9,8 +9,8 @@ fi
 
 PREVIOUS_VERSION="$1"
 
-# remove Debian parts of version number (-1*, ~1*)
-BASE_VERSION=$(echo ${PREVIOUS_VERSION} | sed 's/\(-.*\)\|\(~.*\)$//')
+# remove Debian parts of version number (-1*, ~1*, +1*)
+BASE_VERSION=$(echo ${PREVIOUS_VERSION} | sed 's/\(-.*\)\|\(~.*\)\|\(+.*\)$//')
 
 # if a Debian version is present, then use '-1' inside snapshot version
 DEBIAN_VERSION=''
