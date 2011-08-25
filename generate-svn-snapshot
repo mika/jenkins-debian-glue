@@ -20,6 +20,11 @@ if [ -z "${BUILD_NUMBER:-}" ] ; then
   exit 1
 fi
 
+if [ -z "${SVN_REVISION:-}" ] ; then
+  echo "No SVN_REVISION defined, please run it with a subversion repository." >&2
+  exit 1
+fi
+
 if ! [ -x "$(which svn2cl)" ] ; then
   echo "Error: svn2cl not available, please install subversion-tools." >&2
   exit 1
@@ -63,7 +68,7 @@ build_snapshot() {
     SNAPSHOT_VERSION="${PREVIOUS_VERSION}~${BUILD_NUMBER}.svn${SINCE_REVISION}"
   else
     # calculate new snapshot version
-    SNAPSHOT_VERSION="$(increase-version-number "$PREVIOUS_VERSION")~${BUILD_NUMBER}.svn${SINCE_REVISION}"
+    SNAPSHOT_VERSION="$(increase-version-number "$PREVIOUS_VERSION")~${BUILD_NUMBER}.svn${SVN_REVISION}"
   fi
 
   # generate changelog
