@@ -102,8 +102,8 @@ EOF
 }
 
 case "${branch:-}" in
-  trunk) build_snapshot;;
   tags/*) echo "Building a tag version, not modifying the package" ;;
+  *) build_snapshot;;
 esac
 
 cd $ORIG_DIR
