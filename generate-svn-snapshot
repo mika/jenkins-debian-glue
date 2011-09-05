@@ -46,6 +46,11 @@ rm -f ./* || true
 ORIG_DIR=$(pwd)
 cd source/${branch:-}
 
+if ! [ -r debian/changelog ] ; then
+  echo "Error: could not find debian/changelog (not a Debian package or wrong tag/branch?)" >&2
+  exit 1
+fi
+
 SINCE_REVISION=$(svn info debian/changelog 2>/dev/null | awk '/Last Changed Rev:/ {print $4}')
 
 if [ -z "${SINCE_REVISION:-}" ] ; then
