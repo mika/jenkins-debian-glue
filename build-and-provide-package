@@ -172,9 +172,19 @@ sudo reprepro -v -b /srv/repository --waitforlock 1000 \
 # include the source package only in *one* architecture, being amd64
 echo "*** Including source package in repository $REPOS ***"
 if [ "$architecture" = "amd64" ] || $archall ; then
-  sudo reprepro -v -b /srv/repository --waitforlock 1000 includedsc "${REPOS}" \
-    ${sourcefile}
-  [ $? -eq 0 ] || bailout 1 "Failed to include source package in $REPOS repository."
+  RC=0
+  if ! sudo reprepro -v -b /srv/repository --waitforlock 1000 \
+       includedsc "${REPOS}" ${sourcefile} ; then
+    RC=1
+
+    # iff section/priority is empty then reprepro will complain
+    # about "No section and no priority for" and error out in the
+    # cmdline above, therefore we retry with -S and -P being set
+    sudo reprepro -v -S unstable -P extra -b /srv/repository --waitforlock 1000 \
+      includedsc "${REPOS}" ${sourcefile}
+    RC=$?
+  fi
+  [ $RC -eq 0 ] || bailout 1 "Failed to include source package in $REPOS repository."
 fi
 }
 
