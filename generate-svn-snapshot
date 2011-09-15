@@ -81,12 +81,11 @@ build_snapshot() {
   # build GNU like changelog with svn2cl as helper tool
   # timeout after 15 seconds without progress, we might be running into e.g.
   # "xsltApplyXSLTTemplate: A potential infinite template recursion was detected."
-  timeout -k 15 15 svn2cl --reparagraph --stdout --include-rev -r HEAD:$SINCE_REVISION > $SVN_CHANGELOG
-  if [ $? -ne 0 ] ; then
+  if ! timeout -k 16 16 svn2cl --reparagraph --stdout --include-rev -r HEAD:$SINCE_REVISION > $SVN_CHANGELOG ; then
     echo '  * Sorry, generating changelog using svn2cl failed. :(' > $SVN_CHANGELOG
   fi
 
-  sed -in '/^.*\[r/,/^$/p' > $SVN_CHANGELOG
+  sed -in '/^.*\[r/,/^$/p' $SVN_CHANGELOG
 
   # shorten tabs at beginning of lines
   sed -i 's/\t/  /' $SVN_CHANGELOG
