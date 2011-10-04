@@ -165,7 +165,7 @@ case $architecture in
 esac
 
 echo "*** Including binary packages in repository $REPOS ***"
-sudo reprepro -v -b /srv/repository --waitforlock 1000 \
+sudo reprepro -v -b /srv/repository --waitforlock 1000 --ignore=wrongdistribution \
   include "${REPOS}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
 [ $? -eq 0 ] || bailout 1 "Failed to include binary package in $REPOS repository."
 
@@ -173,7 +173,7 @@ sudo reprepro -v -b /srv/repository --waitforlock 1000 \
 echo "*** Including source package in repository $REPOS ***"
 if [ "$architecture" = "amd64" ] || $archall ; then
   RC=0
-  if ! sudo reprepro -v -b /srv/repository --waitforlock 1000 \
+  if ! sudo reprepro -v -b /srv/repository --waitforlock 1000 --ignore=wrongdistribution \
        includedsc "${REPOS}" ${sourcefile} ; then
     RC=1
 
@@ -181,6 +181,7 @@ if [ "$architecture" = "amd64" ] || $archall ; then
     # about "No section and no priority for" and error out in the
     # cmdline above, therefore we retry with -S and -P being set
     sudo reprepro -v -S unstable -P extra -b /srv/repository --waitforlock 1000 \
+      --ignore=wrongdistribution \
       includedsc "${REPOS}" ${sourcefile}
     RC=$?
   fi
