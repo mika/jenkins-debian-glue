@@ -49,7 +49,9 @@ if [ "${1:-}" = "auto" ] ; then
   git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
 else
   echo "Trying to identify latest tag / merge..."
-  git checkout -- debian/changelog
+  # debian/changelog might be a symlink (e.g. because debian points to
+  # pkg/debian), so make sure we don't access a non-existing file
+  git checkout -- $(readlink -f debian/changelog)
   OLD_VERSION=$(dpkg-parsechangelog  | awk '/^Version: / {print $2}')
 
   tag=$(git describe $(git rev-list --tags='[^ju]*' --max-count=1))
@@ -71,7 +73,9 @@ else
 
   if dpkg --compare-versions "$NEW_VERSION" lt "$OLD_VERSION" ; then
     echo "Calculated version is older than last release, falling back to auto mode."
-    git checkout -- debian/changelog
+    # debian/changelog might be a symlink (e.g. because debian points to
+    # pkg/debian), so make sure we don't access a non-existing file
+    git checkout -- $(readlink -f debian/changelog)
     git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
   fi
 
