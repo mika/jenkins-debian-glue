@@ -85,7 +85,8 @@ build_snapshot() {
     echo '  * Sorry, generating changelog using svn2cl failed. :(' > $SVN_CHANGELOG
   fi
 
-  sed -in '/^.*\[r/,/^$/p' $SVN_CHANGELOG
+  # reduce changelog to just the first line of the commit message
+  sed -in '/^\t*\s*\* \[r/,/^\t*\s*$/p' "$SVN_CHANGELOG"
 
   # shorten tabs at beginning of lines
   sed -i 's/\t/  /' $SVN_CHANGELOG
