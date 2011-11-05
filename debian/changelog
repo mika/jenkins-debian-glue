@@ -1,3 +1,9 @@
+jenkins-debian-glue (0.0.2) UNRELEASED; urgency=low
+
+  * create or update cowbuilder base directory
+
+ -- Thomas Clavier <tom@tcweb.org>  Sat, 05 Nov 2011 10:54:45 +0100
+
 jenkins-debian-glue (0.0.1) UNRELEASED; urgency=low
 
   * Initial release.

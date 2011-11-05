@@ -93,29 +93,47 @@ fi
 
 echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
 
+
 if [ -z "${distribution:-}" ]; then
-  echo "*** No distribution set, not setting base.cow for cowbuilder. ***"
-  cwb=''
+  echo "*** No distribution set, cowbuilder will use sid. ***"
+  DIST='sid'
 else
   echo "*** Using cowbuilder base for distribution ${distribution} ***"
-  cwb="-${distribution}"
+  DIST="${distribution}"
 fi
 
-echo "*** cowbuilder build phase for arch $architecture ***"
+if [ -z "${architecture:-}" ]; then
+  echo "*** No architecture set, cowbuilder will use system arch ***"
+	ARCH=`dpkg-architecture -qDEB_HOST_ARCH`
+  BASE="/var/cache/pbuilder/base-${DIST}.cow"
+else
+  echo "*** Using cowbuilder base for architecture ${architecture} ***"
+	ARCH="${architecture}"
+  BASE="/var/cache/pbuilder/base-${DIST}-${architecture}.cow"
+fi
+
 mkdir -p "$WORKSPACE"/binaries/
+if [ ! -d "${BASE}" ]; then
+	sudo cowbuilder --create --basepath $BASE --distribution $DIST --debootstrapopts --arch --debootstrapopts $ARCH
+  [ $? -eq 0 ] || bailout 1 "Failed to create cowbuilder base $BASE."
+else 
+	sudo cowbuilder --update --basepath $BASE
+  [ $? -eq 0 ] || bailout 1 "Failed to update cowbuilder base $BASE."
+fi
+
 case "$architecture" in
   # -B -> binary-only build, limited to architecture dependent packages
   i386)
     linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
       --build $sourcefile \
-      --basepath /var/cache/pbuilder/base${cwb}32.cow --debbuildopts -B
+      --basepath $BASE --debbuildopts -B
     [ $? -eq 0 ] || bailout 1 "Failed to build with cowbuilder."
     ;;
   # -b -> binary-only build, no source files are to be built and/or distributed
   amd64|all)
     sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
       --build $sourcefile \
-      --basepath /var/cache/pbuilder/base${cwb}.cow --debbuildopts -b
+      --basepath $BASE --debbuildopts -b
     [ $? -eq 0 ] || bailout 1 "Failed to build with cowbuilder."
     ;;
   *)
