@@ -94,28 +94,52 @@ fi
 echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
 
 if [ -z "${distribution:-}" ]; then
-  echo "*** No distribution set, not setting base.cow for cowbuilder. ***"
-  cwb=''
+  echo "*** No distribution set, using sid for base.cow if it does not exist yet. ***"
+  COWBUILDER_DIST="sid"
 else
   echo "*** Using cowbuilder base for distribution ${distribution} ***"
-  cwb="-${distribution}"
+  DIST="-${distribution}"
+  COWBUILDER_DIST="${distribution}"
 fi
+
+if [ -z "${architecture:-}" ] || [ "${architecture:-}" = "all" ] ; then
+  echo "*** No architecture set or architecture set to 'all', using system arch for cowbuilder ***"
+  ARCH="$(dpkg-architecture -qDEB_HOST_ARCH)"
+  BASE="/var/cache/pbuilder/base${DIST:-}.cow"
+else
+  echo "*** Using cowbuilder base for architecture ${architecture} ***"
+  ARCH="${architecture}"
+  BASE="/var/cache/pbuilder/base${DIST:-}-${architecture}.cow"
+fi
+
+if [ ! -d "${BASE}" ]; then
+  echo "*** Creating cowbuilder base $BASE for arch $ARCH and distribution $COWBUILDER_DIST ***"
+  sudo cowbuilder --create --basepath "${BASE}" --distribution "${COWBUILDER_DIST}" \
+       --debootstrapopts --arch --debootstrapopts "$ARCH"
+  [ $? -eq 0 ] || bailout 1 "Failed to create cowbuilder base ${BASE}."
+else
+  echo "*** Updating cowbuilder cow base ***"
+  sudo cowbuilder --update --basepath "${BASE}"
+  [ $? -eq 0 ] || bailout 1 "Failed to update cowbuilder base ${BASE}."
+fi
+
 
 echo "*** cowbuilder build phase for arch $architecture ***"
 mkdir -p "$WORKSPACE"/binaries/
+
 case "$architecture" in
   # -B -> binary-only build, limited to architecture dependent packages
   i386)
     linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
       --build $sourcefile \
-      --basepath /var/cache/pbuilder/base${cwb}32.cow --debbuildopts -B
+      --basepath $BASE --debbuildopts -B
     [ $? -eq 0 ] || bailout 1 "Failed to build with cowbuilder."
     ;;
   # -b -> binary-only build, no source files are to be built and/or distributed
   amd64|all)
     sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
       --build $sourcefile \
-      --basepath /var/cache/pbuilder/base${cwb}.cow --debbuildopts -b
+      --basepath $BASE --debbuildopts -b
     [ $? -eq 0 ] || bailout 1 "Failed to build with cowbuilder."
     ;;
   *)
