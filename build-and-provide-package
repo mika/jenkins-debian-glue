@@ -18,6 +18,10 @@ if [ -z "${architecture:-}" ] ; then
   exit 1
 fi
 
+if [ -z "${REPOSITORY:-}" ] ; then
+  REPOSITORY='/srv/repository'
+fi
+
 # make sure we don't leave files for next run
 bailout() {
   if [ -n "${sources:-}" ]; then
@@ -149,6 +153,11 @@ case "$architecture" in
 esac
 
 reprepro_wrapper() {
+if ! [ -d "$REPOSITORY" ] ; then
+  echo "Error: repository ${REPOSITORY} does not exist." >&2
+  exit 1
+fi
+
 echo "*** Removing previous versions from repository ***"
 for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${ARCH}.changes") ; do
   file="$(basename $p)"
@@ -158,18 +167,18 @@ for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${ARCH}.changes") ; 
   case "$file" in
      *_all.deb)
        echo "*** Architecture all package found, removing from all architectures. ***"
-       sudo reprepro -v -b /srv/repository --waitforlock 1000 remove "${REPOS}" "${binpackage}"
+       sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
        ;;
       *)
-       sudo reprepro -v -b /srv/repository --waitforlock 1000 --architecture \
+       sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --architecture \
          "$architecture" remove "${REPOS}" "${binpackage}" || true
-       sudo reprepro -v -b /srv/repository --waitforlock 1000 --architecture \
+       sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --architecture \
          all remove "${REPOS}" "${binpackage}" || true
        ;;
   esac
 done
 
-for p in $(sudo reprepro -v -b /srv/repository --waitforlock 1000 listmatched $PACKAGE '*' | awk '{print $2}' | sort -u); do
+for p in $(sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 listmatched $PACKAGE '*' | awk '{print $2}' | sort -u); do
   echo "$binary_list" | grep -q "$p" || missing_packages="${missing_packages:-} $p"
 done
 
@@ -177,7 +186,7 @@ if echo "${missing_packages:-}" | grep -q '[a-z0-9]' ; then
   echo "*** Binary package(s) found, missing in build version: ${missing_packages:-} ***"
   for p in $missing_packages ; do
     echo "Removing $p from $REPOS to avoid out-of-date data ***"
-    sudo reprepro -v -b /srv/repository --waitforlock 1000 remove "${REPOS}" "${p}"
+    sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${p}"
   done
 fi
 
@@ -189,7 +198,7 @@ case $architecture in
 esac
 
 echo "*** Including binary packages in repository $REPOS ***"
-sudo reprepro -v -b /srv/repository --waitforlock 1000 --ignore=wrongdistribution \
+sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
   include "${REPOS}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
 [ $? -eq 0 ] || bailout 1 "Failed to include binary package in $REPOS repository."
 
@@ -197,14 +206,14 @@ sudo reprepro -v -b /srv/repository --waitforlock 1000 --ignore=wrongdistributio
 echo "*** Including source package in repository $REPOS ***"
 if [ "$architecture" = "amd64" ] || $archall ; then
   RC=0
-  if ! sudo reprepro -v -b /srv/repository --waitforlock 1000 --ignore=wrongdistribution \
+  if ! sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
        includedsc "${REPOS}" ${sourcefile} ; then
     RC=1
 
     # iff section/priority is empty then reprepro will complain
     # about "No section and no priority for" and error out in the
     # cmdline above, therefore we retry with -S and -P being set
-    sudo reprepro -v -S unstable -P extra -b /srv/repository --waitforlock 1000 \
+    sudo reprepro -v -S unstable -P extra -b "${REPOSITORY}" --waitforlock 1000 \
       --ignore=wrongdistribution \
       includedsc "${REPOS}" ${sourcefile}
     RC=$?
