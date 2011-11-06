@@ -1,3 +1,11 @@
+jenkins-debian-glue (0.0.2) UNRELEASED; urgency=low
+
+  * create or update cowbuilder base directory
+  * passing base reprepro directory in parameter
+  * create and init reprepro directory if not exist
+
+ -- Thomas Clavier <tom@tcweb.org>  Sat, 05 Nov 2011 10:54:45 +0100
+
 jenkins-debian-glue (0.0.1) UNRELEASED; urgency=low
 
   * Initial release.

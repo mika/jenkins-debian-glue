@@ -57,6 +57,9 @@ else
   fi
 fi
 
+[ -n ${2:-} ] && REPOSITORY="$2" || REPOSITORY="/srv/repository"
+echo "*** Using directory repository : $REPOSITORY. ***"
+
 if [ -n "${sources:-}" ]; then
   sourcefile=$(echo "${sources}/"*.dsc)
   if [ "$sourcefile" = 'sources/*.dsc' ] ; then
@@ -93,29 +96,47 @@ fi
 
 echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
 
+
 if [ -z "${distribution:-}" ]; then
-  echo "*** No distribution set, not setting base.cow for cowbuilder. ***"
-  cwb=''
+  echo "*** No distribution set, cowbuilder will use sid. ***"
+  DIST='sid'
 else
   echo "*** Using cowbuilder base for distribution ${distribution} ***"
-  cwb="-${distribution}"
+  DIST="${distribution}"
 fi
 
-echo "*** cowbuilder build phase for arch $architecture ***"
+if [ -z "${architecture:-}" ] || [ "${architecture}"=="all" ] ; then
+  echo "*** No architecture set, cowbuilder will use system arch ***"
+	ARCH=`dpkg-architecture -qDEB_HOST_ARCH`
+  BASE="/var/cache/pbuilder/base-${DIST}.cow"
+else
+  echo "*** Using cowbuilder base for architecture ${architecture} ***"
+	ARCH="${architecture}"
+  BASE="/var/cache/pbuilder/base-${DIST}-${architecture}.cow"
+fi
+
 mkdir -p "$WORKSPACE"/binaries/
+if [ ! -d "${BASE}" ]; then
+	sudo cowbuilder --create --basepath $BASE --distribution $DIST --debootstrapopts --arch --debootstrapopts $ARCH
+  [ $? -eq 0 ] || bailout 1 "Failed to create cowbuilder base $BASE."
+else 
+	sudo cowbuilder --update --basepath $BASE
+  [ $? -eq 0 ] || bailout 1 "Failed to update cowbuilder base $BASE."
+fi
+
 case "$architecture" in
   # -B -> binary-only build, limited to architecture dependent packages
   i386)
     linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
       --build $sourcefile \
-      --basepath /var/cache/pbuilder/base${cwb}32.cow --debbuildopts -B
+      --basepath $BASE --debbuildopts -B
     [ $? -eq 0 ] || bailout 1 "Failed to build with cowbuilder."
     ;;
   # -b -> binary-only build, no source files are to be built and/or distributed
   amd64|all)
     sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
       --build $sourcefile \
-      --basepath /var/cache/pbuilder/base${cwb}.cow --debbuildopts -b
+      --basepath $BASE --debbuildopts -b
     [ $? -eq 0 ] || bailout 1 "Failed to build with cowbuilder."
     ;;
   *)
@@ -125,6 +146,42 @@ case "$architecture" in
 esac
 
 reprepro_wrapper() {
+if [ ! -d $REPOSITORY ] ; then
+	mkdir -p $REPOSITORY
+fi
+if [ ! -d $REPOSITORY/conf ] ; then
+	mkdir $REPOSITORY/conf
+	# no conf directory ... probably missing incoming
+	mkdir $REPOSITORY/incoming
+	cat > $REPOSITORY/conf/distributions <<EOF
+Origin: Azae
+Label: Azae
+Suite: stable
+Codename: squeeze
+Version: 5.03
+Architectures: i386 amd64 source
+Components: main
+Description: Azaé repository
+
+Origin: Azae
+Label: Azae
+Suite: testing
+Codename: wheezy
+Architectures: i386 amd64 source
+Components: main
+Description: Azaé repository
+
+Origin: Azae
+Label: Azae
+Suite: unstable
+Codename: sid
+Architectures: i386 amd64 source
+Components: main
+Description: Azaé repository
+EOF
+	reprepro -b $REPOSITORY export
+fi
+
 echo "*** Removing previous versions from repository ***"
 for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${architecture}.changes") ; do
   file="$(basename $p)"
@@ -134,18 +191,18 @@ for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${architecture}.chan
   case "$file" in
      *_all.deb)
        echo "*** Architecture all package found, removing from all architectures. ***"
-       sudo reprepro -v -b /srv/repository --waitforlock 1000 remove "${REPOS}" "${binpackage}"
+       sudo reprepro -v -b ${REPOSITORY} --waitforlock 1000 remove "${REPOS}" "${binpackage}"
        ;;
       *)
-       sudo reprepro -v -b /srv/repository --waitforlock 1000 --architecture \
+       sudo reprepro -v -b ${REPOSITORY} --waitforlock 1000 --architecture \
          "$architecture" remove "${REPOS}" "${binpackage}" || true
-       sudo reprepro -v -b /srv/repository --waitforlock 1000 --architecture \
+       sudo reprepro -v -b ${REPOSITORY} --waitforlock 1000 --architecture \
          all remove "${REPOS}" "${binpackage}" || true
        ;;
   esac
 done
 
-for p in $(sudo reprepro -v -b /srv/repository --waitforlock 1000 listmatched $PACKAGE '*' | awk '{print $2}' | sort -u); do
+for p in $(sudo reprepro -v -b ${REPOSITORY} --waitforlock 1000 listmatched $PACKAGE '*' | awk '{print $2}' | sort -u); do
   echo "$binary_list" | grep -q "$p" || missing_packages="${missing_packages:-} $p"
 done
 
@@ -153,7 +210,7 @@ if echo "${missing_packages:-}" | grep -q '[a-z0-9]' ; then
   echo "*** Binary package(s) found, missing in build version: ${missing_packages:-} ***"
   for p in $missing_packages ; do
     echo "Removing $p from $REPOS to avoid out-of-date data ***"
-    sudo reprepro -v -b /srv/repository --waitforlock 1000 remove "${REPOS}" "${p}"
+    sudo reprepro -v -b ${REPOSITORY} --waitforlock 1000 remove "${REPOS}" "${p}"
   done
 fi
 
@@ -165,7 +222,7 @@ case $architecture in
 esac
 
 echo "*** Including binary packages in repository $REPOS ***"
-sudo reprepro -v -b /srv/repository --waitforlock 1000 --ignore=wrongdistribution \
+sudo reprepro -v -b ${REPOSITORY} --waitforlock 1000 --ignore=wrongdistribution \
   include "${REPOS}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
 [ $? -eq 0 ] || bailout 1 "Failed to include binary package in $REPOS repository."
 
@@ -173,14 +230,14 @@ sudo reprepro -v -b /srv/repository --waitforlock 1000 --ignore=wrongdistributio
 echo "*** Including source package in repository $REPOS ***"
 if [ "$architecture" = "amd64" ] || $archall ; then
   RC=0
-  if ! sudo reprepro -v -b /srv/repository --waitforlock 1000 --ignore=wrongdistribution \
+  if ! sudo reprepro -v -b ${REPOSITORY} --waitforlock 1000 --ignore=wrongdistribution \
        includedsc "${REPOS}" ${sourcefile} ; then
     RC=1
 
     # iff section/priority is empty then reprepro will complain
     # about "No section and no priority for" and error out in the
     # cmdline above, therefore we retry with -S and -P being set
-    sudo reprepro -v -S unstable -P extra -b /srv/repository --waitforlock 1000 \
+    sudo reprepro -v -S unstable -P extra -b ${REPOSITORY} --waitforlock 1000 \
       --ignore=wrongdistribution \
       includedsc "${REPOS}" ${sourcefile}
     RC=$?
