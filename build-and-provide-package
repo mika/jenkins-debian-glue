@@ -105,7 +105,7 @@ else
   DIST="${distribution}"
 fi
 
-if [ -z "${architecture:-}" ]; then
+if [ -z "${architecture:-}" ] || [ "${architecture}" == "all" ] ; then
   echo "*** No architecture set, cowbuilder will use system arch ***"
 	ARCH=`dpkg-architecture -qDEB_HOST_ARCH`
   BASE="/var/cache/pbuilder/base-${DIST}.cow"
