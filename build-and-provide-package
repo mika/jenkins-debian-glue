@@ -148,6 +148,38 @@ reprepro_wrapper() {
 if [ ! -d $REPOSITORY ] ; then
 	mkdir -p $REPOSITORY
 fi
+if [ ! -d $REPOSITORY/conf ] ; then
+	mkdir $REPOSITORY/conf
+	# no conf directory ... probably missing incoming
+	mkdir $REPOSITORY/incoming
+	cat > $REPOSITORY/conf/distributions <<EOF
+Origin: Azae
+Label: Azae
+Suite: stable
+Codename: lenny
+Version: 5.03
+Architectures: i386 amd64 source
+Components: main
+Description: Azaé repository
+
+Origin: Azae
+Label: Azae
+Suite: testing
+Codename: squeeze
+Architectures: i386 amd64 source
+Components: main
+Description: Azaé repository
+
+Origin: Azae
+Label: Azae
+Suite: unstable
+Codename: sid
+Architectures: i386 amd64 source
+Components: main
+Description: Azaé repository
+EOF
+	reprepro -b $REPOSITORY export
+fi
 
 echo "*** Removing previous versions from repository ***"
 for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${architecture}.changes") ; do
