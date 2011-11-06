@@ -18,8 +18,6 @@ if [ -z "${architecture:-}" ] ; then
   exit 1
 fi
 
-REPOSITORY=/var/www/repository/debian
-
 # make sure we don't leave files for next run
 bailout() {
   if [ -n "${sources:-}" ]; then
@@ -58,6 +56,9 @@ else
     echo "*** No repository supplied but distribution has been set, using repository name $REPOS ***"
   fi
 fi
+
+[ -n ${2:-} ] && REPOSITORY="$2" || REPOSITORY="/srv/repository"
+echo "*** Using directory repository : $REPOSITORY. ***"
 
 if [ -n "${sources:-}" ]; then
   sourcefile=$(echo "${sources}/"*.dsc)
@@ -156,7 +157,7 @@ if [ ! -d $REPOSITORY/conf ] ; then
 Origin: Azae
 Label: Azae
 Suite: stable
-Codename: lenny
+Codename: squeeze
 Version: 5.03
 Architectures: i386 amd64 source
 Components: main
@@ -165,7 +166,7 @@ Description: Azaé repository
 Origin: Azae
 Label: Azae
 Suite: testing
-Codename: squeeze
+Codename: wheezy
 Architectures: i386 amd64 source
 Components: main
 Description: Azaé repository
