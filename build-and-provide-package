@@ -190,7 +190,7 @@ fi
 }
 
 
-if "${REMOTE_REPOS:-}" ; then
+if [ "${REMOTE_REPOS:-}" = "true" ] ; then
   echo "REMOTE_REPOS is set, ignoring request to generate local repository."
 else
   reprepro_wrapper
