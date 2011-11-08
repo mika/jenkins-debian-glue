@@ -150,7 +150,7 @@ esac
 
 reprepro_wrapper() {
 echo "*** Removing previous versions from repository ***"
-for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${architecture}.changes") ; do
+for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${ARCH}.changes") ; do
   file="$(basename $p)"
   binpackage="${file%%_*}"
   binary_list="${binary_list:-} ${binpackage}"
