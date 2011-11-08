@@ -7,14 +7,9 @@ if [ -r /etc/jenkins/debian_glue ] ; then
   . /etc/jenkins/debian_glue
 fi
 
-if "${REMOTE_REPOS:-}" ; then
+if [ "${REMOTE_REPOS:-}" = "true" ] ; then
   echo "REMOTE_REPOS is set, ignoring request to generate local repository."
   exit 0
-fi
-
-if ! [ -r /srv/repository/conf/distributions ] ; then
-  echo "Error: could not read /srv/repository/conf/distributions." >&2
-  exit 1
 fi
 
 if [ "$#" -lt 1 ] ; then
@@ -24,6 +19,14 @@ fi
 
 # repository/codename that should be added
 REPOS="$1"
+
+if [ -z "${REPOSITORY:-}" ] ; then
+  REPOSITORY='/srv/repository'
+  echo "*** Repository variable REPOSITORY is unset, using default [$REPOSITORY] ***"
+fi
+
+mkdir -p "${REPOSITORY}"/conf
+sudo chown $(id -un) /srv/repository/conf/distributions || true
 
 if [ -r /etc/jenkins/debian_glue ] ; then
   echo "*** Sourcing /etc/jenkins/debian_glue ***"
@@ -37,12 +40,12 @@ if [ -z "${KEY_ID:-}" ] ; then
   echo "***          /usr/share/jenkins-debian-glue/examples/debian_glue"
 fi
 
-if grep -q "^Codename: ${REPOS}$" /srv/repository/conf/distributions ; then
+if grep -q "^Codename: ${REPOS}$" "${REPOSITORY}"/conf/distributions ; then
   echo "Codename/repository $REPOS exists already, ignoring request to add again."
   exit 0
 fi
 
-cat >> /srv/repository/conf/distributions << EOF
+cat >> "${REPOSITORY}"/conf/distributions << EOF
 
 Codename: ${REPOS}
 AlsoAcceptFor: unstable
@@ -55,7 +58,7 @@ EOF
 
 if [ -n "${KEY_ID:-}" ] ; then
   echo "*** Signing repository with Key ID $KEY_ID ***"
-  printf "SignWith: ${KEY_ID}\n\n" >> /srv/repository/conf/distributions
+  printf "SignWith: ${KEY_ID}\n\n" >> "${REPOSITORY}"/conf/distributions
 fi
 
 echo "Added $REPOS as new codename/repos to the reprepro configuration."
