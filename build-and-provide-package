@@ -25,10 +25,13 @@ fi
 
 # make sure we don't leave files for next run
 bailout() {
-  if [ -n "${sources:-}" ]; then
+  if [ -n "${sources:-}" ] && [ "${source:-}" != "unset" ] ; then
     echo "*** Removing sources file. ***"
     rm -f "${sources}/"*
   fi
+
+  echo "*** Getting rid of files in $WORKSPACE/binaries/ to avoid problems in next run. ***"
+  rm -f "$WORKSPACE"/binaries/*
 
   [ -n "${1:-}" ] && EXIT="${1}" || EXIT=0
   [ -n "${2:-}" ] && echo "$2" >&2
@@ -223,9 +226,37 @@ if [ "$architecture" = "amd64" ] || $archall ; then
 fi
 }
 
-
 if [ "${REMOTE_REPOS:-}" = "true" ] ; then
-  echo "REMOTE_REPOS is set, ignoring request to generate local repository."
+  echo "Config variable 'REMOTE_REPOS' is set, ignoring request to use local repository."
+elif [ -n "${release:-}" ] && [ "$release" != "none" ] && [ "$release" != "trunk" ] ; then
+  echo "Environment variable 'release' is set, running through release steps."
+
+  REPOSITORY="${REPOSITORY}/release/"
+
+  sudo mkdir -p "${REPOSITORY}/incoming/${release}"
+  sudo mkdir -p "${REPOSITORY}/conf"
+  sudo chown -R "$(id -un)" "${REPOSITORY}"
+
+  cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${release}/"
+  [ $? -eq 0 ] || bailout 1 "Failed to copy binary packages to release directory."
+
+  REPOSITORY=$REPOSITORY generate-reprepro-codename "${release}"
+
+  if ! grep -q "^Name: $release$" "${REPOSITORY}/conf/incoming" 2>/dev/null ; then
+    cat >> "${REPOSITORY}/conf/incoming" << EOF
+Name: $release
+IncomingDir: incoming/$release
+TempDir: tmp
+LogDir: log
+MorgueDir: ${REPOSITORY}/morgue
+Allow: unstable>$release
+Cleanup: unused_files on_deny on_error
+
+EOF
+  fi
+
+  sudo reprepro -v -b "${REPOSITORY}" processincoming "${release}"
+  [ $? -eq 0 ] || bailout 1 "Failed to execute processincoming for release ${release}."
 else
   reprepro_wrapper
 fi
