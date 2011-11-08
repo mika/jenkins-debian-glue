@@ -75,6 +75,7 @@ else
   echo "*** Identifying newest package version ***"
   newest_version="0"
   for file in "${HUDSON_HOME}/userContent/${PACKAGE}-source/"*.dsc ; do
+    SOURCE_PACKAGE="$(awk '/^Source: / {print $2}' $file)"
     p="$(basename $file .dsc)"
     if [ "$p" = '*' ] ; then
       echo "No source package found (forgot to deploy via source job?)" >&2
@@ -88,7 +89,7 @@ else
     fi
   done
   echo "*** Found package version $newest_version ***"
-  sourcefile="${HUDSON_HOME}/userContent/${PACKAGE}-source/${BINARY_PACKAGE}"_*"${newest_version}".dsc
+  sourcefile="${HUDSON_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}"_*"${newest_version}".dsc
 fi
 
 echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
