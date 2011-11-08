@@ -70,7 +70,7 @@ build_snapshot() {
 
   if [ "$DISTRIBUTION" = "UNRELEASED" ] ; then
     # we do NOT raise the version number, if we detect an unreleased version
-    SNAPSHOT_VERSION="${PREVIOUS_VERSION}~${BUILD_NUMBER}.svn${SINCE_REVISION}"
+    SNAPSHOT_VERSION="${PREVIOUS_VERSION}~${BUILD_NUMBER}.svn${SVN_REVISION}"
   else
     # calculate new snapshot version
     SNAPSHOT_VERSION="$(increase-version-number "$PREVIOUS_VERSION")~${BUILD_NUMBER}.svn${SVN_REVISION}"
