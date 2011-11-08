@@ -25,8 +25,9 @@ if [ -z "${REPOSITORY:-}" ] ; then
   echo "*** Repository variable REPOSITORY is unset, using default [$REPOSITORY] ***"
 fi
 
-mkdir -p "${REPOSITORY}"/conf
-sudo chown $(id -un) /srv/repository/conf/distributions || true
+sudo mkdir -p "${REPOSITORY}"/conf || true
+sudo chown $(id -un) "${REPOSITORY}"/conf || true
+touch /srv/repository/conf/distributions
 
 if [ -r /etc/jenkins/debian_glue ] ; then
   echo "*** Sourcing /etc/jenkins/debian_glue ***"
