@@ -36,7 +36,8 @@ fi
 # support setting key id
 if [ -z "${KEY_ID:-}" ] ; then
   echo "*** WARNING: No KEY_ID found, can not sign repository. ***"
-  echo "***          Please set up /etc/jenkins/debian_glue, see"
+  echo "***          Generate a key executing 'gpg --gen-key' as jenkins user."
+  echo "***          and then set up /etc/jenkins/debian_glue, see"
   echo "***          /usr/share/jenkins-debian-glue/examples/debian_glue"
 fi
 

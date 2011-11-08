@@ -2,6 +2,7 @@
 # Install this file as /etc/jenkins/debian_glue to enable it.
 
 # Set GnuPG ID that should be used for signing the reprepro repository.
+# Expected format: 0xDEADBEEF
 # KEY_ID=
 
 # Don't use local reprepro repository.
