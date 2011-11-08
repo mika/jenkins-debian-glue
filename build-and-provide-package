@@ -44,8 +44,7 @@ cd "${WORKSPACE}"
 rm -f *.deb *.changes *.dsc *.tar.gz
 
 echo "===== Building binary package $BINARY_PACKAGE ====="
-if [ -n "${1:-}" ] ; then
-  REPOS="$1"
+if [ -n "${REPOS:-}" ] ; then
   echo "*** Using supplied repository name $REPOS ***"
 else
   REPOS="${JOB_NAME%-binaries*}"
