@@ -2,21 +2,134 @@
 
 SCRIPT=./increase-version-number
 
-testEquality()
+# wrapper to check whether
+# old_version < snapshot < new_version
+dpkg_compare() {
+  [ $# -eq 3 ] || { echo "Usage: dpkg_compare <version> <op> <version>" >&2 ; exit 1 ; }
+  dpkg --compare-versions $1 $2 $3 ; echo $?
+}
+
+test_0dot23minus1()
 {
-  assertEquals "$($SCRIPT 0.23)"       0.24
-  assertEquals "$($SCRIPT 23)"         23.1
-  assertEquals "$($SCRIPT 0.23-1)"     0.24-1
-  assertEquals "$($SCRIPT 0.1.23-1)"   0.1.24-1
-  assertEquals "$($SCRIPT 0.1.23-3)"   0.1.24-1
-  assertEquals "$($SCRIPT 1:0.42-2)"   1:0.43-1
-  assertEquals "$($SCRIPT 2008.01.02)" 2008.01.03
-  assertEquals "$($SCRIPT 0.42~2)"     0.43
-  assertEquals "$($SCRIPT 0.9.0)"      0.9.1
-  assertEquals "$($SCRIPT 0.9.00)"     0.9.01
-  assertEquals "$($SCRIPT 0.8)"        0.9
-  assertEquals "$($SCRIPT 0.9)"        0.10
-  assertEquals "$($SCRIPT 3.1.4+1)"    3.1.5
+  assertEquals 0.23-1            "$($SCRIPT 0.23)"
+  assertEquals 0 "$(dpkg_compare 0.23-1 gt 0.23)"
+  assertEquals 0 "$(dpkg_compare 0.23-1 lt 0.23+1)"
+  assertEquals 0 "$(dpkg_compare 0.23-1 lt 0.24)"
+}
+
+test_23minus1()
+{
+  assertEquals 23-1              "$($SCRIPT 23)"
+  assertEquals 0 "$(dpkg_compare 23-1 gt 23)"
+  assertEquals 0 "$(dpkg_compare 23-1 lt 23+1)"
+  assertEquals 0 "$(dpkg_compare 23-1 lt 24)"
+}
+
+test_0dot23minus2() {
+  assertEquals 0.23-2            "$($SCRIPT 0.23-1)"
+  assertEquals 0 "$(dpkg_compare 0.23-2 gt 0.23-1)"
+  assertEquals 0 "$(dpkg_compare 0.23-2 lt 0.23+2)"
+  assertEquals 0 "$(dpkg_compare 0.23-2 lt 0.24)"
+}
+
+test_0dot1dot23minus2() {
+  assertEquals 0.1.23-2          "$($SCRIPT 0.1.23-1)"
+  assertEquals 0 "$(dpkg_compare 0.1.23-2 gt 0.1.23-1)"
+  assertEquals 0 "$(dpkg_compare 0.1.23-2 lt 0.1.23+2)"
+  assertEquals 0 "$(dpkg_compare 0.1.23-2 lt 0.1.24)"
+}
+
+test_0dot1dot23minus4() {
+  assertEquals 0.1.23-4          "$($SCRIPT 0.1.23-3)"
+  assertEquals 0 "$(dpkg_compare 0.1.23-4 gt 0.1.23-3)"
+  assertEquals 0 "$(dpkg_compare 0.1.23-4 lt 0.1.23+3)"
+  assertEquals 0 "$(dpkg_compare 0.1.23-4 lt 0.1.24)"
+}
+
+test_1colon0dot42minus3() {
+  assertEquals 1:0.42-3          "$($SCRIPT 1:0.42-2)"
+  assertEquals 0 "$(dpkg_compare 1:0.42-3 gt 1:0.42-2)"
+  assertEquals 0 "$(dpkg_compare 1:0.42-3 lt 1:0.42+2)"
+  assertEquals 0 "$(dpkg_compare 1:0.42-3 lt 1:0.43)"
+}
+
+test_2008dot01dot02minus1() {
+  assertEquals 2008.01.02-1      "$($SCRIPT 2008.01.02)"
+  assertEquals 0 "$(dpkg_compare 2008.01.02-1 gt 2008.01.02)"
+  assertEquals 0 "$(dpkg_compare 2008.01.02-1 lt 2008.01.02+1)"
+  assertEquals 0 "$(dpkg_compare 2008.01.02-1 lt 2008.01.03)"
+}
+
+test_0dot42tilde2minus1() {
+  assertEquals 0.42~2-1          "$($SCRIPT 0.42~2)"
+  assertEquals 0 "$(dpkg_compare 0.42~2-1 gt 0.42~2)"
+  assertEquals 0 "$(dpkg_compare 0.42~2-1 lt 0.42+2)"
+  assertEquals 0 "$(dpkg_compare 0.42~2-1 lt 0.42~2-2)"
+  assertEquals 0 "$(dpkg_compare 0.42~2-1 lt 0.43)"
+}
+
+test_0dot9dot0minus1() {
+  assertEquals 0.9.0-1           "$($SCRIPT 0.9.0)"
+  assertEquals 0 "$(dpkg_compare 0.9.0-1 gt 0.9.0)"
+  assertEquals 0 "$(dpkg_compare 0.9.0-1 lt 0.9.0+1)"
+  assertEquals 0 "$(dpkg_compare 0.9.0-1 lt 0.9.1)"
+}
+
+test_0dot9dot00minus() {
+  assertEquals 0.9.00-1          "$($SCRIPT 0.9.00)"
+  assertEquals 0 "$(dpkg_compare 0.9.00-1 gt 0.9.00)"
+  assertEquals 0 "$(dpkg_compare 0.9.00-1 lt 0.9.00+1)"
+  assertEquals 0 "$(dpkg_compare 0.9.00-1 lt 0.9.01)"
+  assertEquals 0 "$(dpkg_compare 0.9.00-1 lt 0.9.1)"
+}
+
+test_0dot8minus1() {
+  assertEquals 0.8-1             "$($SCRIPT 0.8)"
+  assertEquals 0 "$(dpkg_compare 0.8-1 gt 0.8)"
+  assertEquals 0 "$(dpkg_compare 0.8-1 lt 0.8.0)"
+  assertEquals 0 "$(dpkg_compare 0.8-1 lt 0.8+1)"
+  assertEquals 0 "$(dpkg_compare 0.8-1 lt 0.9.0)"
+  assertEquals 0 "$(dpkg_compare 0.8-1 lt 0.9)"
+}
+
+test_0dot9minus1() {
+  assertEquals 0.9-1             "$($SCRIPT 0.9)"
+  assertEquals 0 "$(dpkg_compare 0.9-1 gt 0.9)"
+  assertEquals 0 "$(dpkg_compare 0.9-1 lt 0.9.0)"
+  assertEquals 0 "$(dpkg_compare 0.9-1 lt 0.9+1)"
+  assertEquals 0 "$(dpkg_compare 0.9-1 lt 0.10.0)"
+  assertEquals 0 "$(dpkg_compare 0.9-1 lt 0.10)"
+}
+
+test_3dot1dot4plus1minus1() {
+  assertEquals 3.1.4+1-1         "$($SCRIPT 3.1.4+1)"
+  assertEquals 0 "$(dpkg_compare 3.1.4+1-1 gt 3.1.4+1)"
+  assertEquals 0 "$(dpkg_compare 3.1.4+1-1 lt 3.1.4+2)"
+  assertEquals 0 "$(dpkg_compare 3.1.4+1-1 lt 3.1.4+2-1)"
+  assertEquals 0 "$(dpkg_compare 3.1.4+1-1 lt 3.1.5)"
+}
+
+test_3dot1dot4plus9minus1() {
+  assertEquals 3.1.4+9-1         "$($SCRIPT 3.1.4+9)"
+  assertEquals 0 "$(dpkg_compare 3.1.4+9-1 gt 3.1.4+9)"
+  assertEquals 0 "$(dpkg_compare 3.1.4+9-1 lt 3.1.4+10)"
+  assertEquals 0 "$(dpkg_compare 3.1.4+9-1 lt 3.1.4+9-2)"
+  assertEquals 0 "$(dpkg_compare 3.1.4+9-1 lt 3.1.5)"
+}
+
+test_1dot4dot1plusfoobar15minus1() {
+  assertEquals 1.4.1+foobar15-1  "$($SCRIPT 1.4.1+foobar15)"
+  assertEquals 0 "$(dpkg_compare 1.4.1+foobar15-1 gt 1.4.1+foobar15)"
+  assertEquals 0 "$(dpkg_compare 1.4.1+foobar15-1 lt 1.4.1+foobar16)"
+  assertEquals 0 "$(dpkg_compare 1.4.1+foobar15-1 lt 1.4.1+foobar15-2)"
+  assertEquals 0 "$(dpkg_compare 1.4.1+foobar15-1 lt 1.4.2)"
+}
+
+test_1dot4dot1minus3plusfoobar15plus1() {
+  assertEquals 1.4.1-3+foobar15+1 "$($SCRIPT 1.4.1-3+foobar15)"
+  assertEquals 0 "$(dpkg_compare 1.4.1-3+foobar15-1 gt 1.4.1-3+foobar15)"
+  assertEquals 0 "$(dpkg_compare 1.4.1-3+foobar15-1 lt 1.4.1-3+foobar15-2)"
+  assertEquals 0 "$(dpkg_compare 1.4.1-3+foobar15-1 lt 1.4.2)"
 }
 
 . /usr/share/shunit2/shunit2
