@@ -14,8 +14,9 @@ if [ -z "${JOB_NAME:-}" ] ; then
 fi
 
 if [ -z "${architecture:-}" ] ; then
-  echo "No architecture defined, please run it with matrix configuration using architecture." >&2
-  exit 1
+  echo "*** No architecture defined, consider running it with matrix configuration. ***"
+  architecture="$(dpkg-architecture -qDEB_HOST_ARCH)"
+  echo "*** Assuming host architecture $architecture as default. ***"
 fi
 
 if [ -z "${REPOSITORY:-}" ] ; then
