@@ -81,15 +81,18 @@ build_snapshot() {
   # build GNU like changelog with svn2cl as helper tool
   # timeout after 15 seconds without progress, we might be running into e.g.
   # "xsltApplyXSLTTemplate: A potential infinite template recursion was detected."
-  if ! timeout -k 16 16 svn2cl --reparagraph --stdout --include-rev -r HEAD:$SINCE_REVISION > $SVN_CHANGELOG ; then
-    echo '  * Sorry, generating changelog using svn2cl failed. :(' > $SVN_CHANGELOG
+  if ! timeout -k 16 16 svn2cl --reparagraph --stdout --include-rev -r HEAD:$SINCE_REVISION > "$SVN_CHANGELOG" ; then
+    echo '  * Sorry, generating changelog using svn2cl failed. :(
+    Make sure the svn2cl command works on the jenkins host.
+    For example validating server certificates is a common error.
+' > "$SVN_CHANGELOG"
   fi
 
   # reduce changelog to just the first line of the commit message
   sed -in '/^\t*\s*\* \[r/,/^\t*\s*$/p' "$SVN_CHANGELOG"
 
   # shorten tabs at beginning of lines
-  sed -i 's/\t/  /' $SVN_CHANGELOG
+  sed -i 's/\t/  /' "$SVN_CHANGELOG"
 
   cat > debian/changelog.new << EOF
 $PACKAGE ($SNAPSHOT_VERSION) unstable; urgency=low
@@ -98,7 +101,7 @@ $PACKAGE ($SNAPSHOT_VERSION) unstable; urgency=low
 
 EOF
 
-  cat $SVN_CHANGELOG >> debian/changelog.new
+  cat "$SVN_CHANGELOG" >> debian/changelog.new
 
   cat >> debian/changelog.new << EOF
  -- $DEBEMAIL  $(date -u -R)
