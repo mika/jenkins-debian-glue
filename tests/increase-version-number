@@ -4,19 +4,19 @@ SCRIPT=./increase-version-number
 
 testEquality()
 {
-  assertEquals "$($SCRIPT 0.23)"       0.24
-  assertEquals "$($SCRIPT 23)"         23.1
-  assertEquals "$($SCRIPT 0.23-1)"     0.24-1
-  assertEquals "$($SCRIPT 0.1.23-1)"   0.1.24-1
-  assertEquals "$($SCRIPT 0.1.23-3)"   0.1.24-1
-  assertEquals "$($SCRIPT 1:0.42-2)"   1:0.43-1
-  assertEquals "$($SCRIPT 2008.01.02)" 2008.01.03
-  assertEquals "$($SCRIPT 0.42~2)"     0.43
-  assertEquals "$($SCRIPT 0.9.0)"      0.9.1
-  assertEquals "$($SCRIPT 0.9.00)"     0.9.01
-  assertEquals "$($SCRIPT 0.8)"        0.9
-  assertEquals "$($SCRIPT 0.9)"        0.10
-  assertEquals "$($SCRIPT 3.1.4+1)"    3.1.5
+  assertEquals "$($SCRIPT 0.23)"       0.23+0
+  assertEquals "$($SCRIPT 23)"         23+0
+  assertEquals "$($SCRIPT 0.23-1)"     0.23-1+0
+  assertEquals "$($SCRIPT 0.1.23-1)"   0.1.23-1+0
+  assertEquals "$($SCRIPT 0.1.23-3)"   0.1.23-3+0
+  assertEquals "$($SCRIPT 1:0.42-2)"   1:0.42-2+0
+  assertEquals "$($SCRIPT 2008.01.02)" 2008.01.02+0
+  assertEquals "$($SCRIPT 0.42~2)"     0.42~2+0
+  assertEquals "$($SCRIPT 0.9.0)"      0.9.0+0
+  assertEquals "$($SCRIPT 0.9.00)"     0.9.00+0
+  assertEquals "$($SCRIPT 0.8)"        0.8+0
+  assertEquals "$($SCRIPT 0.9)"        0.9+0
+  assertEquals "$($SCRIPT 3.1.4+1)"    3.1.4+1+0
 }
 
 . /usr/share/shunit2/shunit2
