@@ -54,8 +54,8 @@ else
   git checkout -- $(readlink -f debian/changelog)
   OLD_VERSION=$(dpkg-parsechangelog  | awk '/^Version: / {print $2}')
 
-  tag=$(git describe $(git rev-list --tags='[^ju]*' --max-count=1))
-  last_merge=$(git describe $(git rev-list --all --merges --max-count=1))
+  tag=$(git describe $(git rev-list --tags='[^ju]*' --max-count=1 HEAD))
+  last_merge=$(git describe $(git rev-list --all --merges --max-count=1 HEAD))
   since=${tag}
 
   if [ -n "$last_merge" ] ; then
