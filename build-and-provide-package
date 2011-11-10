@@ -140,7 +140,7 @@ case "$architecture" in
   i386)
     linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
       --build $sourcefile \
-      --basepath $BASE --debbuildopts -B
+      --basepath $BASE --debbuildopts -b
     [ $? -eq 0 ] || bailout 1 "Failed to build with cowbuilder."
     ;;
   # -b -> binary-only build, no source files are to be built and/or distributed
@@ -167,22 +167,13 @@ for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${ARCH}.changes") ; 
   file="$(basename $p)"
   binpackage="${file%%_*}"
   binary_list="${binary_list:-} ${binpackage}"
+
   # note: "removesrc" would remove foreign arch files (of different builds)
-  case "$file" in
-     *_all.deb)
-       echo "*** Architecture all package found, removing from all architectures. ***"
-       sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
-       ;;
-      *)
-       sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --architecture \
-         "$architecture" remove "${REPOS}" "${binpackage}" || true
-       sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --architecture \
-         all remove "${REPOS}" "${binpackage}" || true
-       ;;
-  esac
+  echo "*** Removing existing package ${binpackage} from repository ${REPOS} ***"
+  sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
 done
 
-for p in $(sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 listmatched $PACKAGE '*' | awk '{print $2}' | sort -u); do
+for p in $(sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 listmatched "${REPOS}" '*' | awk '{print $2}' | sort -u); do
   echo "$binary_list" | grep -q "$p" || missing_packages="${missing_packages:-} $p"
 done
 
