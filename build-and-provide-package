@@ -3,32 +3,33 @@
 set -x
 set -u
 
+checks_and_defaults() {
+  if [ -r /etc/jenkins/debian_glue ] ; then
+    . /etc/jenkins/debian_glue
+  fi
 
-if [ -r /etc/jenkins/debian_glue ] ; then
-  . /etc/jenkins/debian_glue
-fi
+  if [ -z "${JOB_NAME:-}" ] ; then
+    echo "No JOB_NAME defined, please run it in jenkins." >&2
+    exit 1
+  fi
 
-if [ -z "${JOB_NAME:-}" ] ; then
-  echo "No JOB_NAME defined, please run it in jenkins." >&2
-  exit 1
-fi
+  if [ -z "${architecture:-}" ] ; then
+    echo "*** No architecture defined. Consider running it with matrix configuration. ***"
+    architecture="$(dpkg-architecture -qDEB_HOST_ARCH)"
+    echo "*** Falling back to default, using host architecture ${architecture}. ***"
+  fi
 
-if [ -z "${architecture:-}" ] ; then
-  echo "*** No architecture defined, consider running it with matrix configuration. ***"
-  architecture="$(dpkg-architecture -qDEB_HOST_ARCH)"
-  echo "*** Assuming host architecture $architecture as default. ***"
-fi
-
-if [ -z "${REPOSITORY:-}" ] ; then
-  REPOSITORY='/srv/repository'
-fi
+  if [ -z "${REPOSITORY:-}" ] ; then
+    REPOSITORY='/srv/repository'
+  fi
+}
 
 # make sure we don't leave files for next run
 bailout() {
-  if [ -n "${sources:-}" ] && [ "${source:-}" != "unset" ] ; then
-    echo "*** Removing sources file. ***"
-    rm -f "${sources}/"*
-  fi
+#  if [ -n "${sources:-}" ] && [ "${sources:-}" != "unset" ] ; then
+#    echo "*** Removing sources file. ***"
+#    rm -f "${sources}/"*
+#  fi
 
   echo "*** Getting rid of files in $WORKSPACE/binaries/ to avoid problems in next run. ***"
   rm -f "$WORKSPACE"/binaries/*
@@ -38,203 +39,224 @@ bailout() {
   exit $EXIT
 }
 
-trap bailout 1 2 3 3 6 9 14 15
-
-PACKAGE=${JOB_NAME%-binaries*}
-BINARY_PACKAGE=${PACKAGE%-test*}
-if [ -z "${PACKAGE:-}" ] ; then
-  echo "Error: could not identify Debian package name based on job name ${JOB_NAME:-}." >&2
-  bailout 1
-fi
-
-# remove results from previous (possibly failed) runs
-cd "${WORKSPACE}"
-rm -f *.deb *.changes *.dsc *.tar.gz
-
-echo "===== Building binary package $BINARY_PACKAGE ====="
-if [ -n "${REPOS:-}" ] ; then
-  echo "*** Using supplied repository name $REPOS ***"
-else
-  REPOS="${JOB_NAME%-binaries*}"
-  if [ -z "${distribution:-}" ]; then
-    echo "*** No repository supplied, using repository name $REPOS ***"
+identify_package_name() {
+  PACKAGE=${JOB_NAME%-binaries*}
+  BINARY_PACKAGE=${PACKAGE%-test*}
+  if [ -z "${PACKAGE:-}" ] ; then
+    bailout 1 "Error: could not identify Debian package name based on job name ${JOB_NAME:-}."
   else
-    REPOS="${REPOS}-${distribution}"
-    echo "*** No repository supplied but distribution has been set, using repository name $REPOS ***"
+    echo "*** Building binary package $BINARY_PACKAGE ***"
   fi
-fi
+}
 
-if [ -n "${sources:-}" ]; then
-  sourcefile=$(echo "${sources}/"*.dsc)
-  if [ "$sourcefile" = 'sources/*.dsc' ] ; then
-    echo "Error: no sourcefile (*.dsc) found. Exiting." >&2
-    bailout 1
+
+build_info() {
+  if [ -n "${REPOS:-}" ] ; then
+    echo "*** Using supplied repository name $REPOS ***"
+  else
+    REPOS="${JOB_NAME%-binaries*}"
+    if [ -z "${distribution:-}" ]; then
+      echo "*** No repository supplied, using repository name $REPOS ***"
+    else
+      REPOS="${REPOS}-${distribution}"
+      echo "*** No repository supplied but distribution has been set, using repository name $REPOS ***"
+    fi
   fi
-  case "$sourcefile" in
-    *\ *) echo "Error: Found multiple source files (*.dsc)." >&2
-          bailout 1
+}
+
+identify_sourcefile() {
+  if [ -n "${sources:-}" ]; then
+    sourcefile=$(echo "${sources}/"*.dsc)
+    if [ "$sourcefile" = 'sources/*.dsc' ] ; then
+      bailout 1 "Error: no sourcefile (*.dsc) found. Exiting."
+    fi
+    case "$sourcefile" in
+      *\ *) bailout 1 "Error: Found multiple source files (*.dsc)."
+        ;;
+    esac
+    p="$(basename $sourcefile .dsc)"
+    newest_version="${p#*_}"
+  else
+    sources="unset"
+    echo "*** Identifying newest package version ***"
+    newest_version="0"
+    for file in "${HUDSON_HOME}/userContent/${PACKAGE}-source/"*.dsc ; do
+      SOURCE_PACKAGE="$(awk '/^Source: / {print $2}' $file)"
+      p="$(basename $file .dsc)"
+      if [ "$p" = '*' ] ; then
+        bailout 1 "Error: No source package found (forgot to deploy via source job?)"
+      fi
+      cur_version="${p#*_}"
+      if dpkg --compare-versions "${cur_version}" gt "${newest_version}" ; then
+        newest_version="${cur_version}"
+      else
+        base_version="${cur_version}"
+      fi
+    done
+    echo "*** Found package version $newest_version ***"
+    sourcefile="${HUDSON_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}"_*"${newest_version}".dsc
+    #archtype="$(awk '/^Architecture/ {print $2}' ${HUDSON_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}_*${newest_version}.dsc)"
+  fi
+
+  echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
+}
+
+dist_and_arch_settings() {
+  if [ -z "${distribution:-}" ]; then
+    echo "*** No distribution set, using sid for base.cow if it does not exist yet. ***"
+    COWBUILDER_DIST="sid"
+  else
+    echo "*** Using cowbuilder base for distribution ${distribution} ***"
+    DIST="-${distribution}"
+    COWBUILDER_DIST="${distribution}"
+  fi
+
+  if [ -z "${architecture:-}" ] || [ "${architecture:-}" = "all" ] ; then
+    echo "*** No architecture set or architecture set to 'all', using system arch for cowbuilder ***"
+    ARCH="$(dpkg-architecture -qDEB_HOST_ARCH)"
+    BASE="/var/cache/pbuilder/base${DIST:-}.cow"
+  else
+    echo "*** Using cowbuilder base for architecture ${architecture} ***"
+    ARCH="${architecture}"
+    BASE="/var/cache/pbuilder/base${DIST:-}-${architecture}.cow"
+  fi
+}
+
+cowbuilder_init() {
+  if [ ! -d "${BASE}" ]; then
+    echo "*** Creating cowbuilder base $BASE for arch $ARCH and distribution $COWBUILDER_DIST ***"
+    sudo cowbuilder --create --basepath "${BASE}" --distribution "${COWBUILDER_DIST}" \
+         --debootstrapopts --arch --debootstrapopts "$ARCH"
+    [ $? -eq 0 ] || bailout 1 "Error: Failed to create cowbuilder base ${BASE}."
+  else
+    echo "*** Updating cowbuilder cow base ***"
+    sudo cowbuilder --update --basepath "${BASE}"
+    [ $? -eq 0 ] || bailout 1 "Error: Failed to update cowbuilder base ${BASE}."
+  fi
+}
+
+
+cowbuilder_run() {
+  echo "*** cowbuilder build phase for arch $architecture ***"
+  mkdir -p "$WORKSPACE"/binaries/
+
+  case "$architecture" in
+    # -B -> binary-only build, limited to architecture dependent packages
+    i386)
+      linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
+        --build $sourcefile \
+        --basepath $BASE --debbuildopts -b
+      [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
+      ;;
+    # -b -> binary-only build, no source files are to be built and/or distributed
+    amd64|all)
+      sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
+        --build $sourcefile \
+        --basepath $BASE --debbuildopts -b
+      [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
+      ;;
+    *)
+      bailout 1 "Error: Unsupported architecture: $architecture"
       ;;
   esac
-  p="$(basename $sourcefile .dsc)"
-  newest_version="${p#*_}"
-else
-  sources="unset"
-  echo "*** Identifying newest package version ***"
-  newest_version="0"
-  for file in "${HUDSON_HOME}/userContent/${PACKAGE}-source/"*.dsc ; do
-    SOURCE_PACKAGE="$(awk '/^Source: / {print $2}' $file)"
-    p="$(basename $file .dsc)"
-    if [ "$p" = '*' ] ; then
-      echo "No source package found (forgot to deploy via source job?)" >&2
-      bailout 1
-    fi
-    cur_version="${p#*_}"
-    if dpkg --compare-versions "${cur_version}" gt "${newest_version}" ; then
-      newest_version="${cur_version}"
-    else
-      base_version="${cur_version}"
-    fi
+}
+
+remove_packages() {
+  echo "*** Removing previous versions from repository ***"
+  for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${ARCH}.changes") ; do
+    file="$(basename $p)"
+    binpackage="${file%%_*}"
+    binary_list="${binary_list:-} ${binpackage}"
+
+    # note: "removesrc" would remove foreign arch files (of different builds)
+    echo "*** Removing existing package ${binpackage} from repository ${REPOS} ***"
+    sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
   done
-  echo "*** Found package version $newest_version ***"
-  sourcefile="${HUDSON_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}"_*"${newest_version}".dsc
-fi
 
-echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
+}
 
-if [ -z "${distribution:-}" ]; then
-  echo "*** No distribution set, using sid for base.cow if it does not exist yet. ***"
-  COWBUILDER_DIST="sid"
-else
-  echo "*** Using cowbuilder base for distribution ${distribution} ***"
-  DIST="-${distribution}"
-  COWBUILDER_DIST="${distribution}"
-fi
+remove_missing_binary_packages() {
+  for p in $(sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 listmatched "${REPOS}" '*' | awk '{print $2}' | sort -u); do
+    echo "$binary_list" | grep -q "$p" || missing_packages="${missing_packages:-} $p"
+  done
 
-if [ -z "${architecture:-}" ] || [ "${architecture:-}" = "all" ] ; then
-  echo "*** No architecture set or architecture set to 'all', using system arch for cowbuilder ***"
-  ARCH="$(dpkg-architecture -qDEB_HOST_ARCH)"
-  BASE="/var/cache/pbuilder/base${DIST:-}.cow"
-else
-  echo "*** Using cowbuilder base for architecture ${architecture} ***"
-  ARCH="${architecture}"
-  BASE="/var/cache/pbuilder/base${DIST:-}-${architecture}.cow"
-fi
-
-if [ ! -d "${BASE}" ]; then
-  echo "*** Creating cowbuilder base $BASE for arch $ARCH and distribution $COWBUILDER_DIST ***"
-  sudo cowbuilder --create --basepath "${BASE}" --distribution "${COWBUILDER_DIST}" \
-       --debootstrapopts --arch --debootstrapopts "$ARCH"
-  [ $? -eq 0 ] || bailout 1 "Failed to create cowbuilder base ${BASE}."
-else
-  echo "*** Updating cowbuilder cow base ***"
-  sudo cowbuilder --update --basepath "${BASE}"
-  [ $? -eq 0 ] || bailout 1 "Failed to update cowbuilder base ${BASE}."
-fi
-
-
-echo "*** cowbuilder build phase for arch $architecture ***"
-mkdir -p "$WORKSPACE"/binaries/
-
-case "$architecture" in
-  # -B -> binary-only build, limited to architecture dependent packages
-  i386)
-    linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
-      --build $sourcefile \
-      --basepath $BASE --debbuildopts -b
-    [ $? -eq 0 ] || bailout 1 "Failed to build with cowbuilder."
-    ;;
-  # -b -> binary-only build, no source files are to be built and/or distributed
-  amd64|all)
-    sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
-      --build $sourcefile \
-      --basepath $BASE --debbuildopts -b
-    [ $? -eq 0 ] || bailout 1 "Failed to build with cowbuilder."
-    ;;
-  *)
-    echo "Unsupported architecture: $architecture" >&2
-    bailout 1
-    ;;
-esac
+  if echo "${missing_packages:-}" | grep -q '[a-z0-9]' ; then
+    echo "*** Binary package(s) found, missing in build version: ${missing_packages:-} ***"
+    for p in $missing_packages ; do
+      echo "*** Removing $p from $REPOS to avoid out-of-date data ***"
+      sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${p}"
+    done
+  fi
+}
 
 reprepro_wrapper() {
-if ! [ -d "$REPOSITORY" ] ; then
-  echo "Error: repository ${REPOSITORY} does not exist." >&2
-  exit 1
-fi
-
-echo "*** Removing previous versions from repository ***"
-for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${ARCH}.changes") ; do
-  file="$(basename $p)"
-  binpackage="${file%%_*}"
-  binary_list="${binary_list:-} ${binpackage}"
-
-  # note: "removesrc" would remove foreign arch files (of different builds)
-  echo "*** Removing existing package ${binpackage} from repository ${REPOS} ***"
-  sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
-done
-
-for p in $(sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 listmatched "${REPOS}" '*' | awk '{print $2}' | sort -u); do
-  echo "$binary_list" | grep -q "$p" || missing_packages="${missing_packages:-} $p"
-done
-
-if echo "${missing_packages:-}" | grep -q '[a-z0-9]' ; then
-  echo "*** Binary package(s) found, missing in build version: ${missing_packages:-} ***"
-  for p in $missing_packages ; do
-    echo "Removing $p from $REPOS to avoid out-of-date data ***"
-    sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${p}"
-  done
-fi
-
-archall=false
-case $architecture in
-  all) archall=true
-       architecture='*' # support as file expansion in reprepro cmdline
-       ;;
-esac
-
-echo "*** Including binary packages in repository $REPOS ***"
-sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
-  include "${REPOS}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
-[ $? -eq 0 ] || bailout 1 "Failed to include binary package in $REPOS repository."
-
-# include the source package only in *one* architecture, being amd64
-echo "*** Including source package in repository $REPOS ***"
-if [ "$architecture" = "amd64" ] || $archall ; then
-  RC=0
-  if ! sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
-       includedsc "${REPOS}" ${sourcefile} ; then
-    RC=1
-
-    # iff section/priority is empty then reprepro will complain
-    # about "No section and no priority for" and error out in the
-    # cmdline above, therefore we retry with -S and -P being set
-    sudo reprepro -v -S unstable -P extra -b "${REPOSITORY}" --waitforlock 1000 \
-      --ignore=wrongdistribution \
-      includedsc "${REPOS}" ${sourcefile}
-    RC=$?
+  if ! [ -d "$REPOSITORY" ] ; then
+    bailout 1 "Error: repository ${REPOSITORY} does not exist."
   fi
-  [ $RC -eq 0 ] || bailout 1 "Failed to include source package in $REPOS repository."
+
+  remove_packages
+  remove_missing_binary_packages
+
+  archall=false
+  case $architecture in
+    all) archall=true
+      architecture='*' # support as file expansion in reprepro cmdline
+      ;;
+  esac
+
+  echo "*** Including binary packages in repository $REPOS ***"
+  sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
+    include "${REPOS}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
+  [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
+
+  # include the source package only in *one* architecture, being amd64
+  if [ "$architecture" = "amd64" ] || $archall ; then
+    echo "*** Including source package in repository $REPOS ***"
+
+    RC=0
+    if ! sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
+      includedsc "${REPOS}" ${sourcefile} ; then
+      RC=1
+
+      # iff section/priority is empty then reprepro will complain
+      # about "No section and no priority for" and error out in the
+      # cmdline above, therefore we retry with -S and -P being set
+      sudo reprepro -v -S unstable -P extra -b "${REPOSITORY}" --waitforlock 1000 \
+        --ignore=wrongdistribution \
+        includedsc "${REPOS}" ${sourcefile}
+      RC=$?
+    fi
+    [ $RC -eq 0 ] || bailout 1 "Error: Failed to include source package in $REPOS repository."
+  fi
+}
+
+trunk_release() {
+# setting TRUNK_RELEASE=true enables release-trunk repository,
+# to always get a copy of the package(s) to a central place
+if [ -n "${TRUNK_RELEASE:-}" ] ; then
+  generate-reprepro-codename "$TRUNK_RELEASE"
+
+  sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
+  [ $? -eq 0 ] || bailout 1 "Error: Failed to copy packages from ${REPOS} to ${TRUNK_RELEASE}."
 fi
 }
 
-if [ "${REMOTE_REPOS:-}" = "true" ] ; then
-  echo "Config variable 'REMOTE_REPOS' is set, ignoring request to use local repository."
-elif [ -n "${release:-}" ] && [ "$release" != "none" ] && [ "$release" != "trunk" ] ; then
-  echo "Environment variable 'release' is set, running through release steps."
-
-  REPOSITORY="${REPOSITORY}/release/"
+release_repos() {
+  echo "*** Environment variable 'release' is set, running through release steps. ***"
 
   sudo mkdir -p "${REPOSITORY}/incoming/${release}"
   sudo mkdir -p "${REPOSITORY}/conf"
-  sudo chown -R "$(id -un)" "${REPOSITORY}"
+  sudo chown -R "$(id -un)" "${REPOSITORY}/conf"
+  sudo chown -R "$(id -un)" "${REPOSITORY}/incoming/${release}"
 
   cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${release}/"
-  [ $? -eq 0 ] || bailout 1 "Failed to copy binary packages to release directory."
+  [ $? -eq 0 ] || bailout 1 "Error: Failed to copy binary packages to release directory."
 
   REPOSITORY=$REPOSITORY generate-reprepro-codename "${release}"
 
   if ! grep -q "^Name: $release$" "${REPOSITORY}/conf/incoming" 2>/dev/null ; then
     cat >> "${REPOSITORY}/conf/incoming" << EOF
+
 Name: $release
 IncomingDir: incoming/$release
 TempDir: tmp
@@ -247,12 +269,45 @@ EOF
   fi
 
   sudo reprepro -v -b "${REPOSITORY}" processincoming "${release}"
-  [ $? -eq 0 ] || bailout 1 "Failed to execute processincoming for release ${release}."
-else
-  reprepro_wrapper
-fi
+  local RC=$?
 
-echo "*** Moving binaries files to workspace. ***"
-mv "${WORKSPACE}/binaries/"* "${WORKSPACE}/"
+  echo "*** Gettind rid of *.tar.* and *.dsc files in incoming directory to avoid data leakage. ***"
+  rm -f ${REPOSITORY}/incoming/$release/*.tar.*
+  rm -f ${REPOSITORY}/incoming/$release/*.dsc
+
+  if [ $RC -ne 0 ] ; then
+    bailout 1 "Error: Failed to execute processincoming for release ${release}."
+  fi
+}
+
+deploy_to_releases() {
+  if [ "${REMOTE_REPOS:-}" = "true" ] ; then
+    echo "*** Config variable 'REMOTE_REPOS' is set, ignoring request to use local repository. ***"
+  elif [ -n "${release:-}" ] && [ "$release" != "none" ] && [ "$release" != "trunk" ] ; then
+    release_repos
+  else
+    reprepro_wrapper
+    trunk_release
+  fi
+}
+
+# make them available for the Jenkin's 'Archiving artifacts'
+binaries_to_workspace() {
+  echo "*** Moving binaries files to workspace. ***"
+  mv "${WORKSPACE}/binaries/"* "${WORKSPACE}/"
+}
+
+# main execution
+trap bailout 1 2 3 3 6 9 14 15
+
+checks_and_defaults
+identify_package_name
+build_info
+identify_sourcefile
+dist_and_arch_settings
+cowbuilder_init
+cowbuilder_run
+deploy_to_releases
+binaries_to_workspace
 
 bailout 0

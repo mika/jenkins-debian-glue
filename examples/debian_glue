@@ -8,3 +8,9 @@
 # Don't use local reprepro repository.
 # Supported values: [true|false]
 # REMOTE_REPOS=true
+
+# If TRUNK_RELEASE is set then the package(s) of the repository
+# receiving the packages that are built will be copied to the
+# repository specified in TRUNK_RELEASE. This provides the option
+# to have all recent versions of packages in a central repository.
+# TRUNK_RELEASE='release-trunk'

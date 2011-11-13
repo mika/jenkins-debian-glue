@@ -27,7 +27,7 @@ fi
 
 sudo mkdir -p "${REPOSITORY}"/conf || true
 sudo chown $(id -un) "${REPOSITORY}"/conf || true
-touch /srv/repository/conf/distributions
+touch "${REPOSITORY}"/conf/distributions
 
 if [ -r /etc/jenkins/debian_glue ] ; then
   echo "*** Sourcing /etc/jenkins/debian_glue ***"
