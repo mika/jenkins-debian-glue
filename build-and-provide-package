@@ -136,23 +136,79 @@ cowbuilder_init() {
 }
 
 
+identify_build_type() {
+  # -b -> binary-only build, no source files are to be built and/or distributed
+  DEBBUILDOPTS="-b" # default
+  SKIP_ARCH_BUILD=false # default
+
+  if [ "${architecture:-}" = "all" ] ; then
+    echo "*** \$architecture is set to 'all', skipping further identify_build_type checks. ***"
+    echo "*** Consider setting \$architecture to amd64, i386,... instead. ***"
+    return 0
+  fi
+
+  if [ -z "${MAIN_ARCHITECTURE:-}" ] ; then
+    if [ "$(dpkg-architecture -qDEB_HOST_ARCH)" = "${architecture:-}" ] ; then
+      echo "*** MAIN_ARCHITECTURE is unset. ***"
+      echo "*** Host architecture matches \$architecture, using default ${DEBBUILDOPTS} buildoption ***"
+      return 0
+    fi
+  else
+    if [ "${MAIN_ARCHITECTURE:-}" = "${architecture:-}" ] ;then
+      echo "*** MAIN_ARCHITECTURE matches architecture [${architecture}], using default ${DEBBUILDOPTS} buildoption ***"
+      return 0
+    else
+      echo "*** MAIN_ARCHITECTURE does not match ${architecture:-}, continuing with identify_build_type ***"
+    fi
+  fi
+
+  local TMPDIR=$(mktemp -d)
+  cd "$TMPDIR"
+  for file in  ${HUDSON_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}_*.tar.* ; do
+    if tar atf "$file" 2>/dev/null | grep -q debian/control ; then
+      # might be source/debian/control - so let's identify the path to debian/control
+      local control_file=$(tar atf "$file" 2>/dev/null | grep 'debian/control$')
+      tar axf "$file" "$control_file" || bailout 1 "Error while looking at debian/control in source archive."
+    fi
+  done
+
+  if grep -q '^Architecture: all' "$control_file" ; then
+    if grep -q '^Architecture: any' "$control_file" ; then
+      echo "*** Package provides arch 'all' + 'any', enabling -B buildoption for this architecture. ***"
+      # -B -> binary-only build, limited to architecture dependent packages
+      DEBBUILDOPTS="-B"
+    else
+      # only "Architecture: all", so no arch specific packages since
+      # we aren't building for $MAIN_ARCHITECTURE
+      SKIP_ARCH_BUILD=true
+    fi
+  fi
+
+  rm -rf "${TMPDIR}"
+}
+
 cowbuilder_run() {
   echo "*** cowbuilder build phase for arch $architecture ***"
   mkdir -p "$WORKSPACE"/binaries/
 
+  # make sure we build arch specific packages only when necessary
+  identify_build_type
+
+  if $SKIP_ARCH_BUILD ; then
+    bailout 0 "Nothing to do, architecture all binary packages only for non-primary architecture."
+  fi
+
   case "$architecture" in
-    # -B -> binary-only build, limited to architecture dependent packages
     i386)
       linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
-        --basepath $BASE --debbuildopts -b
+        --basepath $BASE --debbuildopts "$DEBBUILDOPTS"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
-    # -b -> binary-only build, no source files are to be built and/or distributed
     amd64|all)
       sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
-        --basepath $BASE --debbuildopts -b
+        --basepath $BASE --debbuildopts "$DEBBUILDOPTS"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
     *)

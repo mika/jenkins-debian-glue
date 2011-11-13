@@ -14,3 +14,10 @@
 # repository specified in TRUNK_RELEASE. This provides the option
 # to have all recent versions of packages in a central repository.
 # TRUNK_RELEASE='release-trunk'
+
+# If packages are build for more than one architecture you can
+# decide which architecture should build the "Architecture: all"
+# packages. On all other architectures only the arch specific
+# packages will be build then.
+# If unset it will default to the architecture of the host system.
+# MAIN_ARCHITECTURE="amd64"
