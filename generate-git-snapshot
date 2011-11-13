@@ -44,8 +44,28 @@ else
   echo "Using extra git-dch options (${DCH_EXTRA_OPTS})"
 fi
 
+rm -rf .pc
+
+branch_checkout() {
+  [ -n "${1:-}" ] || return 1
+
+  local BRANCH="$1"
+  if git branch -a | egrep -q "\s+remotes/origin/${BRANCH}$" ; then
+    if ! git branch | egrep -q "\s+${BRANCH}$" ; then
+      echo "Branch $BRANCH found, checking out:"
+      git branch "${BRANCH}" "remotes/origin/${BRANCH}"
+    fi
+  fi
+}
+
+branch_checkout debian
+branch_checkout upstream
+
 if [ "${1:-}" = "auto" ] ; then
   echo "Using git-dch with auto mode."
+  git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
+elif [ -r debian/gbp.conf ] ; then
+  echo "Found debian/gbp.conf, using git-dch with auto mode."
   git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
 else
   echo "Trying to identify latest tag / merge..."
