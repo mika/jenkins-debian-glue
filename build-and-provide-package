@@ -24,18 +24,28 @@ checks_and_defaults() {
   fi
 }
 
+clean_workspace() {
+  echo "*** The following files have been noticed in the workspace [$(pwd)]: ***"
+  ls -la ./
+
+  echo "*** Cleaning workspace in $(pwd) to make sure we're building from scratch. ***"
+  rm -f ./* || true
+}
+
 # make sure we don't leave files for next run
 bailout() {
-#  if [ -n "${sources:-}" ] && [ "${sources:-}" != "unset" ] ; then
-#    echo "*** Removing sources file. ***"
-#    rm -f "${sources}/"*
-#  fi
+  [ -n "${1:-}" ] && EXIT="${1}" || EXIT=0
+  [ -n "${2:-}" ] && echo "$2" >&2
+
+  # only relevant when not using the "ArtifactDeployer Plugin"
+  if [ -n "${sources:-}" ] && [ "${sources:-}" != "unset" ] ; then
+    echo "*** Removing sources file. ***"
+    rm -f "${sources}/"*
+  fi
 
   echo "*** Getting rid of files in $WORKSPACE/binaries/ to avoid problems in next run. ***"
   rm -f "$WORKSPACE"/binaries/*
 
-  [ -n "${1:-}" ] && EXIT="${1}" || EXIT=0
-  [ -n "${2:-}" ] && echo "$2" >&2
   exit $EXIT
 }
 
@@ -71,7 +81,9 @@ identify_sourcefile() {
       bailout 1 "Error: no sourcefile (*.dsc) found. Exiting."
     fi
     case "$sourcefile" in
-      *\ *) bailout 1 "Error: Found multiple source files (*.dsc)."
+      *\ *) echo "*** Multiple source files (*.dsc) present in $(pwd): ***"
+	  ls -la "${sources}/"
+	  bailout 1 "Error: Please re-run source job to force clean rebuild."
         ;;
     esac
     p="$(basename $sourcefile .dsc)"
@@ -357,6 +369,7 @@ binaries_to_workspace() {
 trap bailout 1 2 3 3 6 9 14 15
 
 checks_and_defaults
+clean_workspace
 identify_package_name
 build_info
 identify_sourcefile
