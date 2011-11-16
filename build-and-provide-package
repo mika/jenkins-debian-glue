@@ -138,7 +138,8 @@ cowbuilder_init() {
   if [ ! -d "${BASE}" ]; then
     echo "*** Creating cowbuilder base $BASE for arch $ARCH and distribution $COWBUILDER_DIST ***"
     sudo cowbuilder --create --basepath "${BASE}" --distribution "${COWBUILDER_DIST}" \
-         --debootstrapopts --arch --debootstrapopts "$ARCH"
+         --debootstrapopts --arch --debootstrapopts "$ARCH" \
+         --debootstrapopts --variant=buildd
     [ $? -eq 0 ] || bailout 1 "Error: Failed to create cowbuilder base ${BASE}."
   else
     echo "*** Updating cowbuilder cow base ***"
