@@ -44,8 +44,6 @@ else
   echo "Using extra git-dch options (${DCH_EXTRA_OPTS})"
 fi
 
-rm -rf .pc
-
 branch_checkout() {
   [ -n "${1:-}" ] || return 1
 
@@ -58,17 +56,7 @@ branch_checkout() {
   fi
 }
 
-branch_checkout debian
-branch_checkout upstream
-
-if [ "${1:-}" = "auto" ] ; then
-  echo "Using git-dch with auto mode."
-  git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
-elif [ -r debian/gbp.conf ] ; then
-  echo "Found debian/gbp.conf, using git-dch with auto mode."
-  git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
-else
-  echo "Trying to identify latest tag / merge..."
+identify_latest_change() {
   # debian/changelog might be a symlink (e.g. because debian points to
   # pkg/debian), so make sure we don't access a non-existing file
   git checkout -- $(readlink -f debian/changelog)
@@ -98,7 +86,33 @@ else
     git checkout -- $(readlink -f debian/changelog)
     git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
   fi
+}
 
+git_dch_auto() {
+  git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
+}
+
+branch_checkout debian
+branch_checkout upstream
+git checkout master
+
+rm -rf .pc
+
+if [ "${1:-}" = "auto" ] ; then
+  echo "Using git-dch with auto mode."
+  git_dch_auto
+elif [ -r debian/gbp.conf ] ; then
+  echo "Found debian/gbp.conf, using git-dch with auto mode."
+  git_dch_auto
+else
+  echo "Trying to identify latest tag / merge..."
+
+  if ! git describe $(git rev-list --tags='[^ju]*' --max-count=1 HEAD) >/dev/null ; then
+    echo "Failed to identify latest change, falling back to auto mode."
+    git_dch_auto
+  else
+    identify_latest_change
+  fi
 fi
 
 debchange --release ""
