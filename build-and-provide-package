@@ -242,13 +242,13 @@ remove_packages() {
 
     # note: "removesrc" would remove foreign arch files (of different builds)
     echo "*** Removing existing package ${binpackage} from repository ${REPOS} ***"
-    sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
+    ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
   done
 
 }
 
 remove_missing_binary_packages() {
-  for p in $(sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 listmatched "${REPOS}" '*' | awk '{print $2}' | sort -u); do
+  for p in $(${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 listmatched "${REPOS}" '*' | awk '{print $2}' | sort -u); do
     echo "$binary_list" | grep -q "$p" || missing_packages="${missing_packages:-} $p"
   done
 
@@ -256,7 +256,7 @@ remove_missing_binary_packages() {
     echo "*** Binary package(s) found, missing in build version: ${missing_packages:-} ***"
     for p in $missing_packages ; do
       echo "*** Removing $p from $REPOS to avoid out-of-date data ***"
-      sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${p}"
+      ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${p}"
     done
   fi
 }
@@ -277,7 +277,7 @@ reprepro_wrapper() {
   esac
 
   echo "*** Including binary packages in repository $REPOS ***"
-  sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
+  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
     include "${REPOS}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
   [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
 
@@ -286,14 +286,14 @@ reprepro_wrapper() {
     echo "*** Including source package in repository $REPOS ***"
 
     RC=0
-    if ! sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
+    if ! ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
       includedsc "${REPOS}" ${sourcefile} ; then
       RC=1
 
       # iff section/priority is empty then reprepro will complain
       # about "No section and no priority for" and error out in the
       # cmdline above, therefore we retry with -S and -P being set
-      sudo reprepro -v -S unstable -P extra -b "${REPOSITORY}" --waitforlock 1000 \
+      ${SUDO_CMD:-} reprepro -v -S unstable -P extra -b "${REPOSITORY}" --waitforlock 1000 \
         --ignore=wrongdistribution \
         includedsc "${REPOS}" ${sourcefile}
       RC=$?
@@ -308,7 +308,7 @@ trunk_release() {
 if [ -n "${TRUNK_RELEASE:-}" ] ; then
   generate-reprepro-codename "$TRUNK_RELEASE"
 
-  sudo reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
+  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
   [ $? -eq 0 ] || bailout 1 "Error: Failed to copy packages from ${REPOS} to ${TRUNK_RELEASE}."
 fi
 }
@@ -316,10 +316,15 @@ fi
 release_repos() {
   echo "*** Environment variable 'release' is set, running through release steps. ***"
 
-  sudo mkdir -p "${REPOSITORY}/incoming/${release}"
-  sudo mkdir -p "${REPOSITORY}/conf"
-  sudo chown -R "$(id -un)" "${REPOSITORY}/conf"
-  sudo chown -R "$(id -un)" "${REPOSITORY}/incoming/${release}"
+  mkdir -p "${REPOSITORY}/incoming/${release}"
+  mkdir -p "${REPOSITORY}/conf"
+
+  if [ -n "${SUDO_CMD:-}" ] ; then
+    ${SUDO_CMD:-} mkdir -p "${REPOSITORY}/incoming/${release}"
+    ${SUDO_CMD:-} mkdir -p "${REPOSITORY}/conf"
+    ${SUDO_CMD:-} chown -R "$(id -un)" "${REPOSITORY}/conf"
+    ${SUDO_CMD:-} chown -R "$(id -un)" "${REPOSITORY}/incoming/${release}"
+  fi
 
   cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${release}/"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to copy binary packages to release directory."
@@ -340,7 +345,7 @@ Cleanup: unused_files on_deny on_error
 EOF
   fi
 
-  sudo reprepro -v -b "${REPOSITORY}" processincoming "${release}"
+  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" processincoming "${release}"
   local RC=$?
 
   echo "*** Gettind rid of *.tar.* and *.dsc files in incoming directory to avoid data leakage. ***"

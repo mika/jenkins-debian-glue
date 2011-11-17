@@ -25,8 +25,12 @@ if [ -z "${REPOSITORY:-}" ] ; then
   echo "*** Repository variable REPOSITORY is unset, using default [$REPOSITORY] ***"
 fi
 
-sudo mkdir -p "${REPOSITORY}"/conf || true
-sudo chown $(id -un) "${REPOSITORY}"/conf || true
+if ! ${SUDO_CMD:-} mkdir -p "${REPOSITORY}"/conf ; then
+  echo "Error creating ${REPOSITORY}/conf (forgot to create /srv/repository and chown jenkins?)" >&2
+  exit 1
+fi
+
+${SUDO_CMD:-} chown $(id -un) "${REPOSITORY}"/conf
 touch "${REPOSITORY}"/conf/distributions
 
 if [ -r /etc/jenkins/debian_glue ] ; then
