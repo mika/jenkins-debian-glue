@@ -1,6 +1,6 @@
 PREFIX := /usr
 
-PROGRAMS := build-and-provide-package generate-git-snapshot generate-local-repository generate-reprepro-codename generate-svn-snapshot increase-version-number
+PROGRAMS := scripts/*
 
 build:
 	tests/increase-version-number
