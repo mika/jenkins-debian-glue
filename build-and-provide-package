@@ -3,6 +3,9 @@
 set -x
 set -u
 
+# make sure cowbuilder/pbuilder/... are available
+PATH='/bin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin'
+
 checks_and_defaults() {
   if [ -r /etc/jenkins/debian_glue ] ; then
     . /etc/jenkins/debian_glue
