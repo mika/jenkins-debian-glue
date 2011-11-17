@@ -95,7 +95,7 @@ identify_sourcefile() {
     sources="unset"
     echo "*** Identifying newest package version ***"
     newest_version="0"
-    for file in "${HUDSON_HOME}/userContent/${PACKAGE}-source/"*.dsc ; do
+    for file in "${JENKINS_HOME}/userContent/${PACKAGE}-source/"*.dsc ; do
       SOURCE_PACKAGE="$(awk '/^Source: / {print $2}' $file)"
       p="$(basename $file .dsc)"
       if [ "$p" = '*' ] ; then
@@ -109,8 +109,8 @@ identify_sourcefile() {
       fi
     done
     echo "*** Found package version $newest_version ***"
-    sourcefile="${HUDSON_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}"_*"${newest_version}".dsc
-    #archtype="$(awk '/^Architecture/ {print $2}' ${HUDSON_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}_*${newest_version}.dsc)"
+    sourcefile="${JENKINS_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}"_*"${newest_version}".dsc
+    #archtype="$(awk '/^Architecture/ {print $2}' ${JENKINS_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}_*${newest_version}.dsc)"
   fi
 
   echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
@@ -180,7 +180,7 @@ identify_build_type() {
 
   local TMPDIR=$(mktemp -d)
   cd "$TMPDIR"
-  for file in  ${HUDSON_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}_*.tar.* ; do
+  for file in  ${JENKINS_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}_*.tar.* ; do
     if tar atf "$file" 2>/dev/null | grep -q debian/control ; then
       # might be source/debian/control - so let's identify the path to debian/control
       local control_file=$(tar atf "$file" 2>/dev/null | grep 'debian/control$')
