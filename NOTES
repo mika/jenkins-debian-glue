@@ -20,9 +20,3 @@ Recipe provided by Michael Gebetsroither:
   make
   checkinstall -D --pkgname=rubyrrdtool --maintainer=whatever@example.org --install=no --pkgversion=0.6.0 make install
 
-Install python-jenkins on Debian
---------------------------------
-
-Goal: Clean installation of https://launchpad.net/python-jenkins on Debian.
-
-TODO
