@@ -1,6 +1,10 @@
-* Install jenkins.rb on Debian
+* Misc Notes related to Jenkins
 
-Goal: Clean installation of https://github.com/cowboyd/jenkins.rb on Debian.
+This document provides some notes you might consider useful, but aren't necessarily releated to jenkins-debian-glue itself.
+
+** Install jenkins.rb on Debian
+
+Goal: Clean installation of https://github.com/cowboyd/jenkins.rb on Debian, using Debian packages.
 
 Recipe provided by Michael Prokop:
 
@@ -23,3 +27,17 @@ make
 checkinstall -D --pkgname=rubyrrdtool --maintainer=whatever@example.org --install=no --pkgversion=0.6.0 make install
 #+END_EXAMPLE
 
+
+** Install python-jenkins on Debian
+
+Goal: Clean installation of https://launchpad.net/python-jenkins on Debian, using Debian packages.
+
+Recipe provided by Michael Prokop:
+
+#+BEGIN_EXAMPLE
+bzr branch lp:python-jenkins
+cd python-jenkins
+apt-get install python-stdeb
+python setup.py --command-packages=stdeb.command bdist_deb
+sudo dpkg -i deb_dist/python-*deb
+#+END_EXAMPLE
