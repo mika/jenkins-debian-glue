@@ -79,6 +79,7 @@ build_info() {
 
 identify_sourcefile() {
   if [ -n "${sources:-}" ]; then
+    echo "*** Variable \$sources set. Consider switching to ArtifactDeployer plugin setup. ***"
     sourcefile=$(echo "${sources}/"*.dsc)
     if [ "$sourcefile" = 'sources/*.dsc' ] ; then
       bailout 1 "Error: no sourcefile (*.dsc) found. Exiting."
@@ -99,7 +100,7 @@ identify_sourcefile() {
       SOURCE_PACKAGE="$(awk '/^Source: / {print $2}' $file)"
       p="$(basename $file .dsc)"
       if [ "$p" = '*' ] ; then
-        bailout 1 "Error: No source package found (forgot to deploy via source job?)"
+        bailout 1 "Error: No source package found (forgot to configure source files deployment?)"
       fi
       cur_version="${p#*_}"
       if dpkg --compare-versions "${cur_version}" gt "${newest_version}" ; then
