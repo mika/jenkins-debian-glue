@@ -31,7 +31,7 @@ jenkins-debian-glue provides scripts to handle Debian packages managed in Git (v
 
 *** Debian packages managed in Git
 
-Make sure the "Git Plugin" is installed in Jenkins. On the build system you need git-buildpackage and a basic Git configuration for the user under which Jenkins is running (usually being 'jenkins'):
+Make sure the "Git Plugin" is installed in Jenkins. On the build system you need git-buildpackage installed. If you forget to provide username and email configuration inside a Jenkins job using Git the job will fail. So consider setting up a default Git configuration for the user under which Jenkins is running (usually being 'jenkins'):
 
 #+BEGIN_EXAMPLE
 # apt-get install git-buildpackage
