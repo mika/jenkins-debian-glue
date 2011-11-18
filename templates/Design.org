@@ -1,0 +1,20 @@
+* System settings
+
+** Jenkins URL
+** Username
+** Passwort
+
+
+* User decisions
+
+** Project description (for Jenkins' Description header)
+** VCS settings
+*** Select Git vs. Svn
+*** VCS URL
+*** Default branch to build
+** Notification E-Mail address
+** Remote Trigger Authentication
+
+* Optional
+
+** Additional Plugins (e.g. Disk Usage)
