@@ -68,12 +68,14 @@ build_snapshot() {
 
   DISTRIBUTION=$(dpkg-parsechangelog --count 1 | awk '/^Distribution/ {print $2}')
 
+  TIMESTAMP=$(date +%s) # seconds since 1970-01-01 00:00:00 UTC, ensuring version gets always newer...
+
   if [ "$DISTRIBUTION" = "UNRELEASED" ] ; then
     # we do NOT raise the version number, if we detect an unreleased version
-    SNAPSHOT_VERSION="${PREVIOUS_VERSION}~${BUILD_NUMBER}.svn${SVN_REVISION}"
+    SNAPSHOT_VERSION="${PREVIOUS_VERSION}~${TIMESTAMP}.svn${SVN_REVISION}.${BUILD_NUMBER}"
   else
     # calculate new snapshot version
-    SNAPSHOT_VERSION="$(increase-version-number "$PREVIOUS_VERSION")~${BUILD_NUMBER}.svn${SVN_REVISION}"
+    SNAPSHOT_VERSION="$(increase-version-number "$PREVIOUS_VERSION")~${TIMESTAMP}.svn${SVN_REVISION}.${BUILD_NUMBER}"
   fi
 
   # generate changelog
