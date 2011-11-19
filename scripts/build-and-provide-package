@@ -389,6 +389,7 @@ deploy_to_releases() {
 binaries_to_workspace() {
   echo "*** Moving binaries files to workspace. ***"
   mv "${WORKSPACE}/binaries/"* "${WORKSPACE}/"
+  rmdir "${WORKSPACE}/binaries/"
 }
 
 # main execution
