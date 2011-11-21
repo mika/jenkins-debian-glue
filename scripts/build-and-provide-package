@@ -186,20 +186,22 @@ identify_build_type() {
       # might be source/debian/control - so let's identify the path to debian/control
       local control_file=$(tar atf "$file" 2>/dev/null | grep 'debian/control$')
       tar axf "$file" "$control_file" || bailout 1 "Error while looking at debian/control in source archive."
+
+      if grep -q '^Architecture: all' "$control_file" ; then
+	if grep -q '^Architecture: any' "$control_file" ; then
+	  echo "*** Package provides arch 'all' + 'any', enabling -B buildoption for this architecture. ***"
+	  # -B -> binary-only build, limited to architecture dependent packages
+	  DEBBUILDOPTS="-B"
+	  break
+	else
+	  # only "Architecture: all", so no arch specific packages since
+	  # we aren't building for $MAIN_ARCHITECTURE
+	  SKIP_ARCH_BUILD=true
+	  break
+	fi
+      fi
     fi
   done
-
-  if grep -q '^Architecture: all' "$control_file" ; then
-    if grep -q '^Architecture: any' "$control_file" ; then
-      echo "*** Package provides arch 'all' + 'any', enabling -B buildoption for this architecture. ***"
-      # -B -> binary-only build, limited to architecture dependent packages
-      DEBBUILDOPTS="-B"
-    else
-      # only "Architecture: all", so no arch specific packages since
-      # we aren't building for $MAIN_ARCHITECTURE
-      SKIP_ARCH_BUILD=true
-    fi
-  fi
 
   rm -rf "${TMPDIR}"
 }
