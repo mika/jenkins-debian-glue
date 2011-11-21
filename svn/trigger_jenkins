@@ -42,7 +42,7 @@ for dir in $(/usr/bin/svnlook dirs-changed "$REPOS" $REV_OPTS) ; do
           trigger_branch=ignore
           ;;
         tags/*)
-	  # disclaimer: yes, brrrr - don't ask...
+          # disclaimer: yes, brrrr - don't ask...
           # sort: try to move the shortest line to the beginning
           # grep: make sure we only get _U/U (updates) and _A/A (additions)
           # head: limit the result to just one project
@@ -91,3 +91,4 @@ if [ -n "$trigger_project" ] ; then
 fi
 
 # EOF
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2

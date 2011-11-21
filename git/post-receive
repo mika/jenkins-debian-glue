@@ -59,3 +59,5 @@ else
     trigger_jenkins $oldrev $newrev $refname
   done
 fi
+
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2

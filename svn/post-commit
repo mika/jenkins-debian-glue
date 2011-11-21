@@ -23,3 +23,4 @@ bash -x /usr/bin/trigger_jenkins "$1" "$2" >> /tmp/trigger_jenkins 2>>/tmp/trigg
 echo >> /tmp/trigger_jenkins /tmp/trigger_jenkins_stderr
 
 # EOF
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2

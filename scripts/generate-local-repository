@@ -11,3 +11,5 @@ Label: Grml Autobuild
 NotAutomatic: yes
 EOF
 apt-ftparchive release . >> Release
+
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2

@@ -134,3 +134,5 @@ mkdir -p "${JENKINS_HOME}/userContent/${JOB_NAME}/"
 
 echo "*** Cleaning up ${JENKINS_HOME}/userContent/${JOB_NAME} to get rid of possibly outdated data ***"
 rm -f "${JENKINS_HOME}/userContent/${JOB_NAME}/"*
+
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2

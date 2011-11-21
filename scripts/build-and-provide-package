@@ -202,17 +202,17 @@ identify_build_type() {
       tar axf "$file" "$control_file" || bailout 1 "Error while looking at debian/control in source archive."
 
       if grep -q '^Architecture: all' "$control_file" ; then
-	if grep -q '^Architecture: any' "$control_file" ; then
-	  echo "*** Package provides arch 'all' + 'any', enabling -B buildoption for this architecture. ***"
-	  # -B -> binary-only build, limited to architecture dependent packages
-	  DEBBUILDOPTS="-B"
-	  break
-	else
-	  # only "Architecture: all", so no arch specific packages since
-	  # we aren't building for $MAIN_ARCHITECTURE
-	  SKIP_ARCH_BUILD=true
-	  break
-	fi
+        if grep -q '^Architecture: any' "$control_file" ; then
+          echo "*** Package provides arch 'all' + 'any', enabling -B buildoption for this architecture. ***"
+          # -B -> binary-only build, limited to architecture dependent packages
+          DEBBUILDOPTS="-B"
+          break
+        else
+          # only "Architecture: all", so no arch specific packages since
+          # we aren't building for $MAIN_ARCHITECTURE
+          SKIP_ARCH_BUILD=true
+          break
+        fi
       fi
     fi
   done
@@ -406,3 +406,5 @@ deploy_to_releases
 binaries_to_workspace
 
 bailout 0
+
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2

@@ -20,3 +20,5 @@ testEquality()
 }
 
 . /usr/share/shunit2/shunit2
+
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2

@@ -68,3 +68,5 @@ if [ -n "${KEY_ID:-}" ] ; then
 fi
 
 echo "Added $REPOS as new codename/repos to the reprepro configuration."
+
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
