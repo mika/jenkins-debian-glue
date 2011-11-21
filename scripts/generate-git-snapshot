@@ -119,12 +119,11 @@ debchange --release ""
 
 if ! git-buildpackage -tc --git-ignore-new -S -us -uc ; then
   echo "git-buildpackage did not work, trying dpkg-source"
-  cd ..
-  dpkg-source -b source
+  ( cd .. ; dpkg-source -b source )
 fi
 
 # revert to original debian/changelog to avoid merge conflicts
-( cd source/ ; git checkout -- debian/changelog )
+( git checkout -- debian/changelog )
 
 # needed for deploying artifacts
 mkdir -p ${JENKINS_HOME}/userContent/${JOB_NAME}/
