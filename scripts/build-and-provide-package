@@ -80,7 +80,12 @@ build_info() {
 identify_sourcefile() {
   if [ -n "${sources:-}" ]; then
     echo "*** Variable \$sources set. Consider switching to ArtifactDeployer plugin setup. ***"
-    sourcefile=$(echo "${sources}/"*.dsc)
+    if [ -z "${distribution:-}" ]; then
+    	sourcefile=$(echo "${sources}/"*.dsc)
+    else
+	sourcefile=$(echo "${sources}/distribution=${distribution}/"*.dsc)
+    fi
+bailout 1 "$sourcefile"
     if [ "$sourcefile" = 'sources/*.dsc' ] ; then
       bailout 1 "Error: no sourcefile (*.dsc) found. Exiting."
     fi
@@ -96,7 +101,12 @@ identify_sourcefile() {
     sources="unset"
     echo "*** Identifying newest package version ***"
     newest_version="0"
-    for file in "${JENKINS_HOME}/userContent/${PACKAGE}-source/"*.dsc ; do
+    if [ -z "$distribution:-}" ]; then
+	bpath="${JENKINS_HOME}/userContent/${PACKAGE}-source/"
+    else 
+        bpath="${JENKINS_HOME}/userContent/${PACKAGE}-source/distribution=${distribution}/"
+    fi
+    for file in "$bpath"*.dsc; do
       SOURCE_PACKAGE="$(awk '/^Source: / {print $2}' $file)"
       p="$(basename $file .dsc)"
       if [ "$p" = '*' ] ; then
@@ -110,7 +120,7 @@ identify_sourcefile() {
       fi
     done
     echo "*** Found package version $newest_version ***"
-    sourcefile="${JENKINS_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}"_*"${newest_version}".dsc
+    sourcefile="$bpath/${SOURCE_PACKAGE}"_*"${newest_version}".dsc
     #archtype="$(awk '/^Architecture/ {print $2}' ${JENKINS_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}_*${newest_version}.dsc)"
   fi
 
