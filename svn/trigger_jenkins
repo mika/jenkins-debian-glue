@@ -1,0 +1,93 @@
+#!/bin/bash
+# Purpose: Trigger Jenkins autobuild
+
+# to be invoked via $SVN/hooks/post-commit via
+# bash /usr/bin/trigger_jenkins "$1"
+
+if [ "$#" -lt 1 ] ; then
+  echo "Usage: $0 <REPOS> [SVN_REVISION]" >&2
+  exit 1
+fi
+
+REPOS="$1"
+
+if [ -n "$2" ] && [ "$2" -gt 0 ] ; then
+  REV_OPTS="--revision $2"
+fi
+
+if ! [ -r "${REPOS}"/format ] ; then
+  echo "Specified repository ${REPOS} does not look like a repository." >&2
+  exit 1
+fi
+
+# defaults
+trigger_cause="svn_commit_triggered"
+trigger_url="https://jenkins.example.org" # ADJUST!
+trigger_token="secret" # ADJUST!
+
+for dir in $(/usr/bin/svnlook dirs-changed "$REPOS" $REV_OPTS) ; do
+  case "$dir" in
+    # only the "main" directory contains projects we care about
+    # you *DEFINITELY* need to adjust that according to your needs
+    main/*)
+      # dynamically calculate trigger information
+      SVN_PROJECT="${dir##main/}"
+      project="${SVN_PROJECT%%/*}"
+      branch="${SVN_PROJECT#*/}"
+      trigger_branch="${branch%%/*}"
+
+      # correctly handle tags and branchs
+      case "$branch" in
+        branches/*)
+          trigger_branch=ignore
+          ;;
+        tags/*)
+	  # disclaimer: yes, brrrr - don't ask...
+          # sort: try to move the shortest line to the beginning
+          # grep: make sure we only get _U/U (updates) and _A/A (additions)
+          # head: limit the result to just one project
+          # awk: print directory name only
+          trigger_branch=$(/usr/bin/svnlook changed "$REPOS" $REV_OPTS | sort -u | grep '^[_]*U\|^[_]*A.*/tags/' | head -1 | awk '{print $2}')
+          trigger_branch="${trigger_branch%/}"
+          trigger_branch="tags/${trigger_branch##*/}"
+          ;;
+      esac
+
+      if [ "$trigger_branch" = "ignore" ] ; then
+        echo "Change(s) in a branch identified, not triggering build therefore."
+        exit 0
+      fi
+
+      if [ -z "$trigger_branch" ] || [ "$trigger_branch" = "tags/" ] ; then
+        echo "No valid branch for triggering found [${trigger_branch}], skipping request." >&2
+        exit 1
+      fi
+
+      case "$project" in
+        # projects without according *-source job
+        documentation)
+          trigger_project="documentation"
+          ;;
+        *)
+          trigger_project="${project}-source"
+          ;;
+      esac
+      ;;
+  esac
+
+done
+
+# trigger build
+if [ -n "$trigger_project" ] ; then
+  if curl --insecure --max-time 5 --connect-timeout 5 \
+          --data-urlencode "token=${trigger_token}" \
+          --data-urlencode "cause=${trigger_cause}" \
+          --data-urlencode "branch=${trigger_branch}" \
+          "${trigger_url}/job/${trigger_project}/buildWithParameters" ; then
+    echo "Trigger autobuild at ${trigger_url}/job/${trigger_project}/lastBuild/"
+  else
+    echo "Could not trigger autobuild of trunk documentation at jenkins."
+  fi
+fi
+
+# EOF

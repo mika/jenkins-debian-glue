@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# POST-COMMIT HOOK
+#
+# The post-commit hook is invoked after a commit.  Subversion runs
+# this hook by invoking a program (script, executable, binary, etc.)
+# named 'post-commit' (for which this file is a template) with the
+# following ordered arguments:
+#
+#   [1] REPOS-PATH   (the path to this repository)
+#   [2] REV          (the number of the revision just committed)
+#
+# The default working directory for the invocation is undefined, so
+# the program should set one explicitly if it cares.
+
+# You don't necessarily need /tmp/trigger_jenkins and /tmp/trigger_jenkins_stderr
+# but it turned out to be useful if you've to debug any issues...
+
+echo >> /tmp/trigger_jenkins /tmp/trigger_jenkins_stderr
+echo "Executing /usr/bin/trigger_jenkins $1 $2 [$(date) ]" >> /tmp/trigger_jenkins
+echo "Executing /usr/bin/trigger_jenkins $1 $2 [$(date) ]" >> /tmp/trigger_jenkins_stderr
+bash -x /usr/bin/trigger_jenkins "$1" "$2" >> /tmp/trigger_jenkins 2>>/tmp/trigger_jenkins_stderr
+echo >> /tmp/trigger_jenkins /tmp/trigger_jenkins_stderr
+
+# EOF
