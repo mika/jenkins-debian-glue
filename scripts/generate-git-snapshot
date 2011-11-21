@@ -123,6 +123,9 @@ if ! git-buildpackage -tc --git-ignore-new -S -us -uc ; then
   dpkg-source -b source
 fi
 
+# revert to original debian/changelog to avoid merge conflicts
+( cd source/ ; git checkout -- debian/changelog )
+
 # needed for deploying artifacts
 mkdir -p ${JENKINS_HOME}/userContent/${JOB_NAME}/
 
