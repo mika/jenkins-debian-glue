@@ -31,8 +31,8 @@ clean_workspace() {
   echo "*** The following files have been noticed in the workspace [$(pwd)]: ***"
   ls -la ./
 
-  echo "*** Cleaning workspace in $(pwd) to make sure we're building from scratch. ***"
-  rm -f ./* || true
+#  echo "*** Cleaning workspace in $(pwd) to make sure we're building from scratch. ***"
+#  rm -f ./* || true
 }
 
 # make sure we don't leave files for next run
@@ -62,6 +62,25 @@ identify_package_name() {
   fi
 }
 
+set_base_path() {
+  # when BASE_PATH is set in the build step then don't assume a default,
+  # this is useful when building on slave nodes, being used like:
+  # export BASE_PATH="$WORKSPACE/${JOB_NAME%-binaries/*}-source/"
+
+  if [ -n "${BASE_PATH:-}" ] ; then
+    echo "*** Using provided ${BASE_PATH} as BASE_PATH ***"
+  else
+    echo "*** No BASE_PATH set. ***"
+    if [ -z "$distribution:-}" ]; then
+      BASE_PATH="${JENKINS_HOME}/userContent/${PACKAGE}-source/"
+      echo "*** No BASE_PATH set but \$distribution is set, using $BASE_PATH as BASE_PATH ***"
+    else
+      BASE_PATH="${JENKINS_HOME}/userContent/${PACKAGE}-source/distribution=${distribution}/"
+      echo "*** Neither BASE_PATH nor \$distribution set, using $BASE_PATH as BASE_PATH ***"
+    fi
+  fi
+
+}
 
 build_info() {
   if [ -n "${REPOS:-}" ] ; then
@@ -103,13 +122,7 @@ identify_sourcefile() {
     echo "*** Identifying newest package version ***"
     newest_version="0"
 
-    if [ -z "$distribution:-}" ]; then
-      local bpath="${JENKINS_HOME}/userContent/${PACKAGE}-source/"
-    else
-      local bpath="${JENKINS_HOME}/userContent/${PACKAGE}-source/distribution=${distribution}/"
-    fi
-
-    for file in "${bpath}"/*.dsc; do
+    for file in "${BASE_PATH}/"*.dsc ; do
       SOURCE_PACKAGE="$(awk '/^Source: / {print $2}' $file)"
       p="$(basename $file .dsc)"
       if [ "$p" = '*' ] ; then
@@ -124,8 +137,8 @@ identify_sourcefile() {
     done
 
     echo "*** Found package version $newest_version ***"
-    sourcefile="${bpath}/${SOURCE_PACKAGE}"_*"${newest_version}".dsc
-    #archtype="$(awk '/^Architecture/ {print $2}' ${JENKINS_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}_*${newest_version}.dsc)"
+
+    sourcefile="${BASE_PATH}/${SOURCE_PACKAGE}"_*"${newest_version}".dsc
   fi
 
   echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
@@ -195,7 +208,7 @@ identify_build_type() {
 
   local TMPDIR=$(mktemp -d)
   cd "$TMPDIR"
-  for file in  ${JENKINS_HOME}/userContent/${PACKAGE}-source/${SOURCE_PACKAGE}_*.tar.* ; do
+  for file in  ${BASE_PATH}/${SOURCE_PACKAGE}_*.tar.* ; do
     if tar atf "$file" 2>/dev/null | grep -q debian/control ; then
       # might be source/debian/control - so let's identify the path to debian/control
       local control_file=$(tar atf "$file" 2>/dev/null | grep 'debian/control$')
@@ -398,6 +411,7 @@ trap bailout 1 2 3 3 6 9 14 15
 checks_and_defaults
 clean_workspace
 identify_package_name
+set_base_path
 build_info
 identify_sourcefile
 dist_and_arch_settings
