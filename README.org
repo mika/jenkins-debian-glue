@@ -290,6 +290,14 @@ That's it. Now you can replace the "none" with your specific release build name 
 + Alexander Wirt <formorer@debian.org>
 
 
+* Known installations driven by jenkins-debian-glue
+
++ [[http://icingabuild.dus.dg-i.net/][http://icingabuild.dus.dg-i.net/]]
++ [[http://jenkins.azae.net/][http://jenkins.azae.net/]]
++ [[http://jenkins.grml.org/][http://jenkins.grml.org/]]
++ Internal system at [[http://www.sipwise.com/][Sipwise]]
+
+
 * License
 
 Copyright (c) 2011 Michael Prokop <mika@debian.org>
