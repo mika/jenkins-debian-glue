@@ -71,7 +71,7 @@ set_base_path() {
     echo "*** Using provided ${BASE_PATH} as BASE_PATH ***"
   else
     echo "*** No BASE_PATH set. ***"
-    if [ -z "$distribution:-}" ]; then
+    if [ -z "${distribution:-}" ]; then
       BASE_PATH="${JENKINS_HOME}/userContent/${PACKAGE}-source/"
       echo "*** No BASE_PATH set but \$distribution is set, using $BASE_PATH as BASE_PATH ***"
     else
