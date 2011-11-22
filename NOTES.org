@@ -41,3 +41,36 @@ apt-get install python-stdeb
 python setup.py --command-packages=stdeb.command bdist_deb
 sudo dpkg -i deb_dist/python-*deb
 #+END_EXAMPLE
+
+
+** Use chroot for building non-Debian stuff
+
+Goal: Do not build stuff on Jenkins Master/Slaves but use a dedicated chroot instead.
+
+Background: Whereas jenkins-debian-glue uses cowbuilder/pbuilder and its separate chroots for building you might want to also build
+e.g. documentation without abusing your main build host(s). Using dedicated chroots as slave nodes inside Jenkins provides that.
+
+Set up a basic chroot (e.g. Debian/squeeze):
+
+#+BEGIN_EXAMPLE
+debootstrap squeeze /srv/chroot_documentation_builder http://debian.inode.at/debian
+wget -O ./make_chroot_jail https://github.com/grml/grml-scripts/raw/master/usr_sbin/make_chroot_jail
+bash ./make_chroot_jail chroot-docs /bin/chroot-shell /srv/chroot_documentation_builder
+#+END_EXAMPLE
+
+Test the login via SSH running:
+
+  : ssh chroot-docs@localhost
+
+Finally install Java (required for Jenkins) and build-essential (and optionally whatever you might also need):
+
+#+BEGIN_EXAMPLE
+chroot /srv/chroot_documentation_builder
+mount -t proc none /proc
+apt-get install openjdk-6-jre
+mkdir /var/lib/jenkins
+chown chroot-docs /var/lib/jenkins/
+apt-get install build-essential
+#+END_EXAMPLE
+
+Then configure a new Slave node in Jenkins using /var/lib/jenkins as $HOME directory and user chroot-docs as login.
