@@ -60,24 +60,24 @@ identify_latest_change() {
   # debian/changelog might be a symlink (e.g. because debian points to
   # pkg/debian), so make sure we don't access a non-existing file
   git checkout -- $(readlink -f debian/changelog)
-  OLD_VERSION=$(dpkg-parsechangelog  | awk '/^Version: / {print $2}')
+  local OLD_VERSION=$(dpkg-parsechangelog | awk '/^Version: / {print $2}')
 
-  tag=$(git describe $(git rev-list --tags='[^ju]*' --max-count=1 HEAD))
-  last_merge=$(git describe $(git rev-list --all --merges --max-count=1 HEAD))
-  since=${tag}
+  local tag=$(git describe $(git rev-list --tags='[^ju]*' --max-count=1 HEAD))
+  local last_merge=$(git describe $(git rev-list --all --merges --max-count=1 HEAD))
+  local since=${tag}
 
   if [ -n "$last_merge" ] ; then
-    m_date=$(git log ${last_merge} --pretty="format:%at" -1)
-    t_date=$(git log ${tag} --pretty="format:%at" -1)
+    local m_date=$(git log ${last_merge} --pretty="format:%at" -1)
+    local t_date=$(git log ${tag} --pretty="format:%at" -1)
     if [ ${m_date} -gt ${t_date} ] ; then
-      since=${last_merge}
+      local since=${last_merge}
     fi
   fi
 
   echo "Last tag / merge seems to be $since"
   git-dch -s "${since}" $DCH_OPTS $DCH_EXTRA_OPTS
 
-  NEW_VERSION=$(dpkg-parsechangelog  | awk '/^Version: / {print $2}')
+  local NEW_VERSION=$(dpkg-parsechangelog | awk '/^Version: / {print $2}')
 
   if dpkg --compare-versions "$NEW_VERSION" lt "$OLD_VERSION" ; then
     echo "Calculated version is older than last release, falling back to auto mode."
@@ -92,30 +92,36 @@ git_dch_auto() {
   git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
 }
 
+git_tag_build() {
+  git checkout "${tag}"
+
+  local VERSION="$(dpkg-parsechangelog | awk '/^Version: / {print $2}')"
+
+  if [ -n "${distribution:-}" ] ; then
+    echo "Distribution found. Adding distribution specific version."
+    dch -b -v "${VERSION}~${distribution}+${BUILD_NUMBER}" \
+      "Autobuild for ${distribution} via jenkins-debian-glue."
+  else
+    dch -v "${VERSION}+${BUILD_NUMBER}" \
+      "Autobuild via jenkins-debian-glue."
+  fi
+}
+
 branch_checkout debian
 branch_checkout upstream
 git checkout master
 
 rm -rf .pc
 
-if [ "${1:-}" = "auto" ] ; then
+if [ -n "${tag:-}" ] ; then
+  echo "Tag parameter found, using dch for changelog generation."
+  git_tag_build
+elif [ "${1:-}" = "auto" ] ; then
   echo "Using git-dch with auto mode."
   git_dch_auto
 elif [ -r debian/gbp.conf ] ; then
   echo "Found debian/gbp.conf, using git-dch with auto mode."
   git_dch_auto
-elif [ -n "${tag:-}" ] ; then
-  echo "Tag parameter found, don't generate changelog"
-  git checkout ${tag}
-  VERSION="$(parsechangelog -c 1 | awk '/Version/ {print $2}')"             
-  if [ -n "${distribution}" ] ; then
-    echo "Distribution found. Add distribution specific version"
-    dch -b -v "${VERSION}~${distribution}+${BUILD_NUMBER}" \
-      "Auto Build for ${distribution}"
-  else
-    dch -v "${VERSION}+${BUILD_NUMBER}" \
-      "Auto build from jenkins"
-  fi
 else
   echo "Trying to identify latest tag / merge..."
 
