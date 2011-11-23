@@ -111,6 +111,9 @@ branch_checkout debian
 branch_checkout upstream
 git checkout master
 
+# make sure all files are up2date
+git pull
+
 rm -rf .pc
 
 if [ -n "${tag:-}" ] ; then
