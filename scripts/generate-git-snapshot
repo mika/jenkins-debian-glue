@@ -104,6 +104,18 @@ if [ "${1:-}" = "auto" ] ; then
 elif [ -r debian/gbp.conf ] ; then
   echo "Found debian/gbp.conf, using git-dch with auto mode."
   git_dch_auto
+elif [ -n "${tag:-}" ] ; then
+  echo "Tag parameter found, don't generate changelog"
+  git checkout ${tag}
+  VERSION="$(parsechangelog -c 1 | awk '/Version/ {print $2}')"             
+  if [ -n "${distribution}" ] ; then
+    echo "Distribution found. Add distribution specific version"
+    dch -b -v "${VERSION}~${distribution}+${BUILD_NUMBER}" \
+      "Auto Build for ${distribution}"
+  else
+    dch -v "${VERSION}+${BUILD_NUMBER}" \
+      "Auto build from jenkins"
+  fi
 else
   echo "Trying to identify latest tag / merge..."
 
