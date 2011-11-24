@@ -125,11 +125,11 @@ esac
 
 cd $ORIG_DIR
 
-debian_only="$(svn propget mergeWithUpstream source/debian)"
+debian_only="$(svn propget mergeWithUpstream source/${branch:-}/debian)"
 
-if [ ${debian_only} = "1" ] ; then
-  cd source/
-  echo "mergeWithUpstream detected, use svn-buildpackage to create source package"
+if [ "${debian_only:-}" = "1" ] ; then
+  cd "source/${branch:-}"
+  echo "mergeWithUpstream detected, using svn-buildpackage to create source package"
   svn-buildpackage --svn-download-orig -S \
    --svn-builder 'dpkg-buildpackage' -d \
    --svn-move --svn-dont-purge -uc -us \
