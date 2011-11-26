@@ -50,9 +50,14 @@ branch_checkout() {
   local BRANCH="$1"
   if git branch -a | egrep -q "\s+remotes/origin/${BRANCH}$" ; then
     if ! git branch | egrep -q "\s+${BRANCH}$" ; then
-      echo "Branch $BRANCH found, checking out:"
+      echo "Remote branch remotes/origin/${BRANCH} found, creating branch ${BRANCH}:"
       git branch "${BRANCH}" "remotes/origin/${BRANCH}"
     fi
+  fi
+
+  if git branch | egrep -q "\s+${BRANCH}$" ; then
+    echo "Checking out branch ${BRANCH}:"
+    git checkout "${BRANCH}"
   fi
 }
 
@@ -109,7 +114,14 @@ git_tag_build() {
 
 branch_checkout debian
 branch_checkout upstream
-git checkout master
+
+if [ -n "${branch:-}" ] ; then
+  echo "Branch variable set, considering ${branch}:"
+  branch_checkout "$branch"
+else
+  echo "No branch variable set, considering master branch:"
+  branch_checkout master
+fi
 
 # make sure all files are up2date
 git pull
