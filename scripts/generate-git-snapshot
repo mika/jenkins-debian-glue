@@ -59,6 +59,11 @@ branch_checkout() {
     echo "Checking out branch ${BRANCH}:"
     git checkout "${BRANCH}"
   fi
+
+  if git branch | egrep -q "\s+${BRANCH##origin/}" ; then
+    echo "Checking out branch ${BRANCH##origin/} (dropped origin/):"
+    git checkout "${BRANCH##origin/}"
+  fi
 }
 
 identify_latest_change() {
