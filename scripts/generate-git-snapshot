@@ -48,25 +48,12 @@ branch_checkout() {
   [ -n "${1:-}" ] || return 1
 
   local BRANCH="$1"
-  if git branch -a | egrep -q "\s+remotes/origin/${BRANCH}$" ; then
-    if ! git branch | egrep -q "\s+${BRANCH}$" ; then
-      echo "Remote branch remotes/origin/${BRANCH} found, creating branch ${BRANCH}:"
-      git branch "${BRANCH}" "remotes/origin/${BRANCH}"
-    fi
-  fi
 
-  if git branch | egrep -q "\s+${BRANCH}$" ; then
-    echo "Checking out branch ${BRANCH}:"
-    git checkout "${BRANCH}"
-    echo "Pulling changes"
-    git pull
-  fi
-
-  if git branch | egrep -q "\s+${BRANCH##origin/}" ; then
-    echo "Checking out branch ${BRANCH##origin/} (dropped origin/):"
-    git checkout "${BRANCH##origin/}"
-    echo "Pulling changes"
-    git pull
+  if git branch -a | grep -q "remotes/origin/${BRANCH}" ; then
+    git branch -D "${BRANCH}" || true
+    git checkout -b "${BRANCH}" "remotes/origin/${BRANCH}"
+  else
+    echo "NOTE: branch $BRANCH does not exist, ignoring request to checkout therefore."
   fi
 }
 
@@ -121,21 +108,19 @@ git_tag_build() {
   fi
 }
 
-branch_checkout debian
-branch_checkout upstream
+# Clean up any unexpected local changes
+#git reset --hard HEAD
 
-if [ -n "${branch:-}" ] ; then
-  echo "Branch variable set, considering ${branch}:"
-  branch_checkout "$branch"
-else
-  echo "No branch variable set, considering master branch:"
-  branch_checkout master
+# git-buildpackage's --git-upstream-branch defaults to "upstream",
+# so try to make sure it's available if it exists
+if [ -n "${branch:-}" ] && [ "${branch:-}" != "upstream" ] ; then
+  branch_checkout upstream
 fi
 
-# make sure all files are up2date
-git pull
+# Drop residual files
+#git clean -xfd
 
-rm -rf .pc
+git checkout "$GIT_COMMIT"
 
 if [ -n "${tag:-}" ] ; then
   echo "Tag parameter found, using dch for changelog generation."
@@ -165,7 +150,7 @@ if ! git-buildpackage -tc --git-ignore-new -S -us -uc ; then
 fi
 
 # revert to original debian/changelog to avoid merge conflicts
-( git checkout -- debian/changelog )
+git checkout -- debian/changelog
 
 # needed for deploying artifacts
 mkdir -p ${JENKINS_HOME}/userContent/${JOB_NAME}/
