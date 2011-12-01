@@ -357,12 +357,11 @@ Cleanup: unused_files on_deny on_error
 EOF
   fi
 
-  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" processincoming "${release}"
+  local old_dir=$(pwd)
+  cd "${REPOSITORY}/incoming/${release}"
+  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" processincoming "${release}" "$(basename ${WORKSPACE}/binaries/*.changes)"
   local RC=$?
-
-  echo "*** Gettind rid of *.tar.* and *.dsc files in incoming directory to avoid data leakage. ***"
-  rm -f ${REPOSITORY}/incoming/$release/*.tar.*
-  rm -f ${REPOSITORY}/incoming/$release/*.dsc
+  cd "$old_dir"
 
   if [ $RC -ne 0 ] ; then
     bailout 1 "Error: Failed to execute processincoming for release ${release}."
