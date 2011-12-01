@@ -58,11 +58,15 @@ branch_checkout() {
   if git branch | egrep -q "\s+${BRANCH}$" ; then
     echo "Checking out branch ${BRANCH}:"
     git checkout "${BRANCH}"
+    echo "Pulling changes"
+    git pull
   fi
 
   if git branch | egrep -q "\s+${BRANCH##origin/}" ; then
     echo "Checking out branch ${BRANCH##origin/} (dropped origin/):"
     git checkout "${BRANCH##origin/}"
+    echo "Pulling changes"
+    git pull
   fi
 }
 
