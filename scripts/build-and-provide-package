@@ -181,9 +181,9 @@ cowbuilder_init() {
 
 
 identify_build_type() {
-  # -b -> binary-only build, no source files are to be built and/or distributed
-  DEBBUILDOPTS="-b" # default
-  SKIP_ARCH_BUILD=false # default
+  # defaults
+  DEBBUILDOPTS=""
+  SKIP_ARCH_BUILD=false
 
   if [ "${architecture:-}" = "all" ] ; then
     echo "*** \$architecture is set to 'all', skipping further identify_build_type checks. ***"
@@ -306,30 +306,10 @@ reprepro_wrapper() {
       ;;
   esac
 
-  echo "*** Including binary packages in repository $REPOS ***"
+  echo "*** Including packages in repository $REPOS ***"
   ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
     include "${REPOS}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
   [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
-
-  # include the source package only in *one* architecture, being amd64
-  if [ "$architecture" = "amd64" ] || $archall ; then
-    echo "*** Including source package in repository $REPOS ***"
-
-    RC=0
-    if ! ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
-      includedsc "${REPOS}" ${sourcefile} ; then
-      RC=1
-
-      # iff section/priority is empty then reprepro will complain
-      # about "No section and no priority for" and error out in the
-      # cmdline above, therefore we retry with -S and -P being set
-      ${SUDO_CMD:-} reprepro -v -S unstable -P extra -b "${REPOSITORY}" --waitforlock 1000 \
-        --ignore=wrongdistribution \
-        includedsc "${REPOS}" ${sourcefile}
-      RC=$?
-    fi
-    [ $RC -eq 0 ] || bailout 1 "Error: Failed to include source package in $REPOS repository."
-  fi
 }
 
 trunk_release() {
