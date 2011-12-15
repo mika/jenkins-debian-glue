@@ -271,8 +271,14 @@ remove_packages() {
     binary_list="${binary_list:-} ${binpackage}"
 
     # note: "removesrc" would remove foreign arch files (of different builds)
-    echo "*** Removing existing package ${binpackage} from repository ${REPOS} ***"
-    ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
+    if echo "$file" | egrep -q '_all.deb$'; then
+      echo "*** Removing existing package ${binpackage} from repository ${REPOS} ***"
+      ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
+    else
+      echo "*** Removing existing package ${binpackage} from repository ${REPOS} for arch ${ARCH} ***"
+      ${SUDO_CMD:-} reprepro -v -A "${ARCH}" -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
+    fi
+
   done
 
 }
