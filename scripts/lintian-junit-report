@@ -62,7 +62,7 @@ def usage
 end
 
 file = ARGV[0]
-usage if file == nil
+usage if file.nil?
 ### }}}
 
 ### make sure lintian is available {{{
