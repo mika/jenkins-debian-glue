@@ -10,14 +10,6 @@
 #   git://github.com/jenkinsci/violations-plugin.git
 ################################################################################
 
-# TODO:
-# 1) fix ':' regex
-#    E: ngcp-hylafaxplus source: build-depends-on-obsolete-package build-depends: dpatch
-#    E: ngcp-hylafaxplus: init.d-script-missing-dependency-on-remote_fs etc/init.d/ngcp-hylafaxplus: required-start
-#    W: ngcp-hylafaxplus: binary-without-manpage usr/sbin/faxsetup.linux
-# 2) always collect lintian output, even if it's not errors
-# 3) run with --info
-
 # make sure we're rewrite ", ', <, > and & accordingly
 require "rexml/document"
 
@@ -157,7 +149,7 @@ end
 error_header
 
 $output.each_line do |line|
-  if /^E:\s(.*):\s(.*)/.match(line) then
+  if /^E:\s([^:]*):\s(.*)/.match(line) then
     package = Regexp.last_match(1)
     note = Regexp.last_match(2)
     error_message(package, note)
@@ -165,7 +157,7 @@ $output.each_line do |line|
 
   # enable warnings only if requested:
   if options[:warnings] then
-    if /^W:\s(.*):\s(.*)/.match(line) then
+    if /^W:\s([^:]*):\s(.*)/.match(line) then
       package = Regexp.last_match(1)
       note = Regexp.last_match(2)
       error_message(package, note)
