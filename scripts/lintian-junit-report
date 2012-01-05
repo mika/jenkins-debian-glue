@@ -80,12 +80,14 @@ else
   cmd = "lintian --info #{file}"
 end
 $output = `#{cmd}`
-$output = REXML::Text.new($output, false, nil, false, ['s']).to_s
 $duration = Time.now.to_f - start
 
 if ! options[:disablenotes] then
   File.open(lintian_file, 'w') {|f| f.write($output) }
 end
+
+# adjust encoding *after* storing output to plaintext file
+$output = REXML::Text.new($output, false, nil, false, ['s']).to_s
 ### }}}
 
 ### helper functions {{{
