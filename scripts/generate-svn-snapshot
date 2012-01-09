@@ -79,22 +79,37 @@ build_snapshot() {
   fi
 
   # generate changelog
-  SVN_CHANGELOG=$(mktemp)
+  SVN_CHANGELOG_ORIG=$(mktemp)
+  SVN_CHANGELOG_EDIT=$(mktemp)
   # build GNU like changelog with svn2cl as helper tool
   # timeout after 15 seconds without progress, we might be running into e.g.
   # "xsltApplyXSLTTemplate: A potential infinite template recursion was detected."
-  if ! timeout -k 16 16 svn2cl --reparagraph --stdout --include-rev -r HEAD:$SINCE_REVISION > "$SVN_CHANGELOG" ; then
+  if ! timeout -k 16 16 svn2cl --reparagraph --stdout --include-rev -r HEAD:$SINCE_REVISION > "$SVN_CHANGELOG_ORIG" ; then
     echo '  * Sorry, generating changelog using svn2cl failed. :(
     Make sure the svn2cl command works on the jenkins host.
     For example validating server certificates is a common error.
-' > "$SVN_CHANGELOG"
+' > "$SVN_CHANGELOG_ORIG"
   fi
 
+  ## disclaimer: use separate sed calls to make it easier to adjust if necessary
   # reduce changelog to just the first line of the commit message
-  sed -in '/^\t*\s*\* \[r/,/^\t*\s*$/p' "$SVN_CHANGELOG"
+  sed -n '/^\t*\s*\* \[r/,/^\t*\s*$/p' "$SVN_CHANGELOG_ORIG" > "$SVN_CHANGELOG_EDIT"
 
-  # shorten tabs at beginning of lines
-  sed -i 's/\t/  /' "$SVN_CHANGELOG"
+  # get rid of author information that might be present from git-svn users
+  sed -i '/^\t\s\sFrom: /d' "$SVN_CHANGELOG_EDIT"
+
+  # replace tabs at beginning of lines with two spaces
+  sed -i 's/^\t/  /' "$SVN_CHANGELOG_EDIT"
+
+  # get rid of lines with just 4 space chars only
+  sed -i '/^    $/d' "$SVN_CHANGELOG_EDIT"
+
+  # get rid of empty lines
+  sed -i '/^$/d' "$SVN_CHANGELOG_EDIT"
+
+  # get rid of of the timestamp lines, looking like:
+  # 2011-12-02 21:25  mprokop
+  sed -ri '/^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}/d' "$SVN_CHANGELOG_EDIT"
 
   cat > debian/changelog.new << EOF
 $PACKAGE ($SNAPSHOT_VERSION) unstable; urgency=low
@@ -103,9 +118,10 @@ $PACKAGE ($SNAPSHOT_VERSION) unstable; urgency=low
 
 EOF
 
-  cat "$SVN_CHANGELOG" >> debian/changelog.new
+  cat "$SVN_CHANGELOG_EDIT" >> debian/changelog.new
 
   cat >> debian/changelog.new << EOF
+
  -- $DEBEMAIL  $(date -u -R)
 
 EOF
@@ -115,7 +131,7 @@ EOF
 
   # finally install new changelog
   mv debian/changelog.new debian/changelog
-  rm -f "$SVN_CHANGELOG"
+  rm -f "$SVN_CHANGELOG_ORIG" "$SVN_CHANGELOG_EDIT"
 }
 
 case "${branch:-}" in
