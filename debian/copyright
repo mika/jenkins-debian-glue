@@ -3,15 +3,15 @@ Upstream-Name: Michael Prokop <mika@debian.org>
 Source: https://github.com/mika/jenkins-debian-glue
 
 Files: *
-Copyright: 2011 Michael Prokop <mika@debian.org>
+Copyright: 2011,2012 Michael Prokop <mika@debian.org>
 License: MIT
 
 Files: debian/*
-Copyright: 2011 Michael Prokop <mika@debian.org>
+Copyright: 2011,2012 Michael Prokop <mika@debian.org>
 License: MIT
 
 License: MIT
- Copyright (c) 2011- by Michael Prokop <mika@debian.org>
+ Copyright (c) 2011,2102 by Michael Prokop <mika@debian.org>
  .
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
