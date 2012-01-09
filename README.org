@@ -141,9 +141,7 @@ and point //etc/apt/sources.list/foobar.list/ to it:
 
 ** System wide via /etc/jenkins/debian_glue
 
-+ /KEY_ID/: setting this variable automatically signs repository with the specified GnuPG key ID. Please notice that already existing repositories won't be touched. If you set
-up a GnuPG key and the /KEY_ID/ configuration after a repository was created (will be done on first execution of /build-and-provide-package/ for a given binary job) make sure
-to manually add /SignWith: ${KEY_ID}/ to your repository configuration ("//srv/repository/conf/distributions//" by default).
++ /KEY_ID/: setting this variable automatically signs repository with the specified GnuPG key ID. Please notice that already existing repositories won't be touched. If you set up a GnuPG key and the /KEY_ID/ configuration after a repository was created (will be done on first execution of /build-and-provide-package/ for a given binary job) make sure to manually add /SignWith: ${KEY_ID}/ to your repository configuration ("//srv/repository/conf/distributions//" by default).
 
 + /MAIN_ARCHITECTURE/: if you are building Debian packages for more than one architecture you can control which architecture should be used as main one. The main architecture setting controls which architecture should be used as the one providing the architecture independent Debian packages (like /foobar_0.42-1_all.deb/). If unset it defaults to the architecture your build system is running.
 
@@ -216,6 +214,7 @@ for checking every 5 minutes for updates. Use /@daily/ instead if checking once 
 
 + *increase-version-number*: takes a version number as command line argument and raises the version number for usage inside as a new snapshot version.  Nowadays the script just adds "+0" to the version number, so when running the script with "0.42" the output will be "0.42+0". (Disclaimer: This script used to be more sophisticated but turned out to fail in some situations, the +0 approach usually just works and the script is there to provide a central place to handle version number management.)
 
++ *lintian-junit-report*: run Debian package checks using lintian and report in JUnit format.
 
 * FAQ
 
