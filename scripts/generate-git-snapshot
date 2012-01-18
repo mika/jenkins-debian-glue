@@ -146,7 +146,7 @@ debchange --release ""
 
 if ! git-buildpackage -tc --git-ignore-new -S -us -uc --git-verbose ; then
   echo "git-buildpackage did not work, trying dpkg-source"
-  ( cd .. ; dpkg-source -b source )
+  ( cd .. ; dpkg-source -i\.git -b source )
 fi
 
 # revert to original debian/changelog to avoid merge conflicts
