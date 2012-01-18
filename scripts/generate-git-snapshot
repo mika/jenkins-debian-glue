@@ -37,7 +37,7 @@ else
   # support customizing the version number from outside
   if [ -n "${distribution:-}" ] ; then
     echo "Found environment variable distribution, set to $distribution"
-    DCH_EXTRA_OPTS="-N $(increase-version-number $(parsechangelog -c 1 | awk '/Version/ {print $2}'))~${BUILD_NUMBER}+${distribution}"
+    DCH_EXTRA_OPTS="-N $(increase-version-number $(dpkg-parsechangelog --count 1 | awk '/Version/ {print $2}'))~${BUILD_NUMBER}+${distribution}"
   else
     DCH_EXTRA_OPTS="--snapshot-number=${BUILD_NUMBER}"
   fi
