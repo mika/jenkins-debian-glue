@@ -144,7 +144,7 @@ fi
 
 debchange --release ""
 
-if ! git-buildpackage -tc --git-ignore-new -S -us -uc ; then
+if ! git-buildpackage -tc --git-ignore-new -S -us -uc --git-verbose ; then
   echo "git-buildpackage did not work, trying dpkg-source"
   ( cd .. ; dpkg-source -b source )
 fi
