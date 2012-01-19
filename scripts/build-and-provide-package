@@ -6,6 +6,9 @@ set -u
 # make sure cowbuilder/pbuilder/... are available
 PATH='/bin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin'
 
+echo "*** Starting $0 at $(date) ***"
+start_seconds=$(cut -d . -f 1 /proc/uptime)
+
 checks_and_defaults() {
   if [ -r /etc/jenkins/debian_glue ] ; then
     . /etc/jenkins/debian_glue
@@ -48,6 +51,9 @@ bailout() {
 
   echo "*** Getting rid of files in $WORKSPACE/binaries/ to avoid problems in next run. ***"
   rm -f "$WORKSPACE"/binaries/*
+
+  [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
+  echo "*** Finished execution of $0 at $(date) [running ${SECONDS} seconds] ***"
 
   exit $EXIT
 }
