@@ -15,7 +15,7 @@ checks_and_defaults() {
   fi
 
   if [ -z "${JOB_NAME:-}" ] ; then
-    echo "No JOB_NAME defined, please run it in jenkins." >&2
+    echo "Error: No JOB_NAME defined, please run it in jenkins." >&2
     exit 1
   fi
 
