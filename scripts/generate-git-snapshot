@@ -142,12 +142,14 @@ else
   fi
 fi
 
+# get rid of "UNRELEASED" distribution header
 debchange --release ""
 
-if ! git-buildpackage -tc --git-ignore-new -S -us -uc --git-verbose ; then
-  echo "git-buildpackage did not work, trying dpkg-source"
-  ( cd .. ; dpkg-source -i\.git -b source )
-fi
+# prepare orig.tar.gz using pristine-tar, but without actually building the source package
+git-buildpackage -nc --git-force-create --git-ignore-new -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true
+
+# build source package
+( cd .. ; dpkg-source -i\.git -b source )
 
 # revert to original debian/changelog to avoid merge conflicts
 git checkout -- debian/changelog
