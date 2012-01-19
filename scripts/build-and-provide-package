@@ -188,7 +188,7 @@ cowbuilder_init() {
 
 identify_build_type() {
   # defaults
-  DEBBUILDOPTS=""
+  DEBBUILDOPTS="-sa"
   SKIP_ARCH_BUILD=false
 
   if [ "${architecture:-}" = "all" ] ; then
