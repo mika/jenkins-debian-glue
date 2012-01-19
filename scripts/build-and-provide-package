@@ -278,7 +278,7 @@ remove_packages() {
 
     # note: "removesrc" would remove foreign arch files (of different builds)
     if echo "$file" | egrep -q '_all.deb$'; then
-      echo "*** Removing existing package ${binpackage} from repository ${REPOS} ***"
+      echo "*** Removing existing package ${binpackage} from repository ${REPOS} (arch all) ***"
       ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
     else
       echo "*** Removing existing package ${binpackage} from repository ${REPOS} for arch ${ARCH} ***"
@@ -290,12 +290,27 @@ remove_packages() {
 }
 
 remove_missing_binary_packages() {
-  for p in $(${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 listmatched "${REPOS}" '*' | awk '{print $2}' | sort -u); do
+  echo "*** Checking for missing binary packages to be considered for removal ***"
+
+  # In a binary-only build we don't get any arch-all (*_all.deb) packages and
+  # therefore they won't be listed in the changes file.  As a result they would
+  # be reported as missing from the build and to be considered for removal.
+  # As we don't want to remove the arch-all package e.g. from the amd64 repos
+  # in the i386 run we've to skip the removal procedure then.
+  case "$DEBBUILDOPTS" in
+    *-B*)
+      echo "*** Skipping removal of missing binaries as being a binary-only build ***"
+      return 0
+      ;;
+  esac
+
+  for p in $(${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --list-format '${package}\n' listmatched "${REPOS}" '*' | sort -u); do
     echo "$binary_list" | grep -q "$p" || missing_packages="${missing_packages:-} $p"
   done
 
-  if echo "${missing_packages:-}" | grep -q '[a-z0-9]' ; then
+  if echo "${missing_packages:-}" | grep -q '.' ; then
     echo "*** Binary package(s) found, missing in build version: ${missing_packages:-} ***"
+
     for p in $missing_packages ; do
       echo "*** Removing $p from $REPOS to avoid out-of-date data ***"
       ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${p}"
