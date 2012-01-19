@@ -1,0 +1,2 @@
+debian/tmp/usr/bin/* usr/bin/
+debian/tmp/usr/share/jenkins-debian-glue/examples usr/share/jenkins-debian-glue/
