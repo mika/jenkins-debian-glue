@@ -5,10 +5,6 @@
 # Expected format: DEADBEEF
 # KEY_ID=
 
-# Don't use local reprepro repository.
-# Supported values: [true|false]
-# REMOTE_REPOS=true
-
 # If TRUNK_RELEASE is set then the package(s) of the repository
 # receiving the packages that are built will be copied to the
 # repository specified in TRUNK_RELEASE. This provides the option

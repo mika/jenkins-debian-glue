@@ -7,8 +7,8 @@ if [ -r /etc/jenkins/debian_glue ] ; then
   . /etc/jenkins/debian_glue
 fi
 
-if [ "${REMOTE_REPOS:-}" = "true" ] ; then
-  echo "REMOTE_REPOS is set, ignoring request to generate local repository."
+if [ "${BUILD_ONLY:-}" = "true" ] ; then
+  echo "BUILD_ONLY is set to true, ignoring request to generate local repository."
   exit 0
 fi
 

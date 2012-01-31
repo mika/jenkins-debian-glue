@@ -200,12 +200,12 @@ identify_build_type() {
   if [ -z "${MAIN_ARCHITECTURE:-}" ] ; then
     if [ "$(dpkg-architecture -qDEB_HOST_ARCH)" = "${architecture:-}" ] ; then
       echo "*** MAIN_ARCHITECTURE is unset. ***"
-      echo "*** Host architecture matches \$architecture, using default ${DEBBUILDOPTS} buildoption ***"
+      echo "*** Host architecture matches \$architecture, using default ${DEBBUILDOPTS:-} buildoption ***"
       return 0
     fi
   else
     if [ "${MAIN_ARCHITECTURE:-}" = "${architecture:-}" ] ;then
-      echo "*** MAIN_ARCHITECTURE matches architecture [${architecture}], using default ${DEBBUILDOPTS} buildoption ***"
+      echo "*** MAIN_ARCHITECTURE matches architecture [${architecture:-}], using default ${DEBBUILDOPTS:-} buildoption ***"
       return 0
     else
       echo "*** MAIN_ARCHITECTURE does not match ${architecture:-}, continuing with identify_build_type ***"
@@ -254,13 +254,13 @@ cowbuilder_run() {
     i386)
       linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
-        --basepath $BASE --debbuildopts "$DEBBUILDOPTS"
+        --basepath $BASE --debbuildopts "${DEBBUILDOPTS:-}"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
     amd64|all)
       sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
-        --basepath $BASE --debbuildopts "$DEBBUILDOPTS"
+        --basepath $BASE --debbuildopts "${DEBBUILDOPTS:-}"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
     *)
@@ -297,7 +297,7 @@ remove_missing_binary_packages() {
   # be reported as missing from the build and to be considered for removal.
   # As we don't want to remove the arch-all package e.g. from the amd64 repos
   # in the i386 run we've to skip the removal procedure then.
-  case "$DEBBUILDOPTS" in
+  case "${DEBBUILDOPTS:-}" in
     *-B*)
       echo "*** Skipping removal of missing binaries as being a binary-only build ***"
       return 0
@@ -396,9 +396,7 @@ EOF
 }
 
 deploy_to_releases() {
-  if [ "${REMOTE_REPOS:-}" = "true" ] ; then
-    echo "*** Config variable 'REMOTE_REPOS' is set, ignoring request to use local repository. ***"
-  elif [ -n "${release:-}" ] && [ "$release" != "none" ] && [ "$release" != "trunk" ] ; then
+  if [ -n "${release:-}" ] && [ "$release" != "none" ] && [ "$release" != "trunk" ] ; then
     release_repos
   else
     reprepro_wrapper
@@ -423,9 +421,22 @@ set_base_path
 build_info
 identify_sourcefile
 dist_and_arch_settings
-cowbuilder_init
-cowbuilder_run
-deploy_to_releases
+
+# do not run in repos job?
+if [ -n "${PROVIDE_ONLY:-}" ] ; then
+  echo "*** Config variable 'PROVIDE_ONLY' is set, ignoring request to run cowbuilder. ***"
+else
+  cowbuilder_init
+  cowbuilder_run
+fi
+
+# do not run in binaries job?
+if [ -n "${BUILD_ONLY:-}" ] ; then
+  echo "*** Config variable 'BUILD_ONLY' is set, ignoring request to use local repository. ***"
+else
+  deploy_to_releases
+fi
+
 binaries_to_workspace
 
 bailout 0
