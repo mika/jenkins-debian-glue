@@ -154,14 +154,20 @@ reprepro_wrapper() {
 }
 
 trunk_release() {
-# setting TRUNK_RELEASE=true enables release-trunk repository,
-# to always get a copy of the package(s) to a central place
-if [ -n "${TRUNK_RELEASE:-}" ] ; then
-  generate-reprepro-codename "$TRUNK_RELEASE"
+  # setting TRUNK_RELEASE=true enables release-trunk repository,
+  # to always get a copy of the package(s) to a central place
+  if [ -z "${TRUNK_RELEASE:-}" ] ; then
+    echo "*** TRUNK_RELEASE is not enabled ***"
+  elif [ "${IGNORE_RELEASE_TRUNK:-}" = "true" ] ; then
+    echo "*** IGNORE_RELEASE_TRUNK is set, ignoring request to add package(s) to $TRUNK_RELEASE repos ***"
+  else
+    echo "*** TRUNK_RELEASE is enabled ($TRUNK_RELEASE) ***"
 
-  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
-  [ $? -eq 0 ] || bailout 1 "Error: Failed to copy packages from ${REPOS} to ${TRUNK_RELEASE}."
-fi
+    generate-reprepro-codename "$TRUNK_RELEASE"
+
+    ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
+    [ $? -eq 0 ] || bailout 1 "Error: Failed to copy packages from ${REPOS} to ${TRUNK_RELEASE}."
+  fi
 }
 
 release_repos() {
