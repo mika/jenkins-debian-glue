@@ -14,7 +14,7 @@ def set_hosts():
     if not env.hosts:
         env.hosts = []
 
-        for host in 'jenkins', 'jenkins-slave1', 'jenkins-slave2', 'jenkins-slave3':
+        for host in 'jenkins', 'jenkins-slave1', 'jenkins-slave2', 'jenkins-slave3', 'jenkins-slave4':
             config = paramiko.SSHConfig()
             config.parse(open(os.path.expandvars("$HOME") + '/.ssh/config'))
             h = config.lookup(host)
@@ -27,6 +27,7 @@ def build():
     local('rm -f ../jenkins-debian-glue_*all.deb')
     local('fakeroot debian/rules clean')
     local('fakeroot debian/rules binary')
+    local('fakeroot debian/rules clean')
 
 @hosts(set_hosts())
 def deploy():
