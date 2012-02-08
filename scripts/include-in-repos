@@ -54,12 +54,14 @@ get_base_directory() {
 }
 
 identify_package_name() {
-  PACKAGE=${JOB_NAME%-binaries*}
-  BINARY_PACKAGE=${PACKAGE%-test*}
-  if [ -z "${PACKAGE:-}" ] ; then
-    bailout 1 "Error: could not identify Debian package name based on job name ${JOB_NAME:-}."
+  # make sure we get rid of 'repos' and 'binaries' from Jenkins job name
+  PACKAGE=${JOB_NAME%-repos*}
+  PACKAGE=${PACKAGE%-binaries*}
+
+  if [ -n "${PACKAGE:-}" ] ; then
+    echo "*** Identified Debian package name $PACKAGE ***"
   else
-    echo "*** Building binary package $BINARY_PACKAGE ***"
+    bailout 1 "Error: could not identify Debian package name based on job name ${JOB_NAME:-}."
   fi
 }
 
@@ -69,6 +71,8 @@ build_info() {
     echo "*** Using supplied repository name $REPOS ***"
   else
     REPOS="${JOB_NAME%-binaries*}"
+    REPOS="${REPOS%-repos*}"
+
     if [ -z "${distribution:-}" ]; then
       echo "*** No repository supplied, using repository name $REPOS ***"
     else
