@@ -406,7 +406,13 @@ EOF
 }
 
 deploy_to_releases() {
-  if [ -n "${release:-}" ] && [ "$release" != "none" ] && [ "$release" != "trunk" ] ; then
+  if [ -n "${release:-}" ] && [ "$release" != "none" ] && [ "$release" != "trunk" ] && \
+    # '${release}' is a hidden bomb: when provided through predefined parameters
+    # from an upstream jenkins job (like foo-binaries receiving the parameters
+    # from foo-source) but the job (foo-binaries) gets triggered manually (without
+    # setting the predefined parameters therefore) then ${release} is set to
+    # '${release}' instead of being empty
+    [ "${release}" != '${release}' ] ; then
     release_repos
   else
     reprepro_wrapper
