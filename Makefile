@@ -14,6 +14,13 @@ install: $(scripts)
 	mkdir -p $(DESTDIR)/usr/share/jenkins-debian-glue/examples/
 	install -m 0664 examples/* $(DESTDIR)/usr/share/jenkins-debian-glue/examples/
 
+uninstall: $(scripts)
+	for prog in $(PROGRAMS); do \
+		rm $(DESTDIR)/$(PREFIX)/bin/$${prog#scripts} ; \
+	done
+	rm -rf $(DESTDIR)/usr/share/jenkins-debian-glue/examples
+	rmdir --ignore-fail-on-non-empty $(DESTDIR)/usr/share/jenkins-debian-glue
+
 deploy:
 	fab all
 
