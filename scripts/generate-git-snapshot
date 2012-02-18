@@ -146,7 +146,11 @@ fi
 debchange --release ""
 
 # prepare orig.tar.gz using pristine-tar, but without actually building the source package
-git-buildpackage -nc --git-force-create --git-ignore-new -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true
+if [ "${IGNORE_GIT_BUILDPACKAGE:-}" = "true" ] ; then
+  echo "Skipping git-buildpackage execution as requested via IGNORE_GIT_BUILDPACKAGE ***"
+else
+  git-buildpackage -nc --git-force-create --git-ignore-new -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true
+fi
 
 # build source package
 ( cd .. ; dpkg-source -i\.git -b source )
