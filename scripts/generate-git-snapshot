@@ -17,10 +17,31 @@ if [ -z "${BUILD_NUMBER:-}" ] ; then
   exit 1
 fi
 
+if [ -z "${GIT_COMMIT:-}" ] ; then
+  echo "No GIT_COMMIT defined, please run it with git-plugin in jenkins. ">&2
+  exit 1
+fi
+
+# we want to get a version string like
+# $ORIG_VERSION+0~$TIMESTAMP.$BUILD_NUMBER~1.$GIT_ID
+# so the version is always increasing over time, no matter what
+TIMESTAMP="$(date +%s)" # seconds since 1970-01-01 00:00:00 UTC, reversible via `date -d @$TIMESTAMP`
+BUILD_VERSION="${TIMESTAMP}.${BUILD_NUMBER}" # git-dch appends something like ~1.gbp5f433e then
+
 echo "***  source package build phase ***"
 rm -f ./* || true
 
 cd source
+
+# version number
+ORIG_VERSION=$(dpkg-parsechangelog --count 1 | awk '/Version/ {print $2}')
+INCREASED_VERSION=$(increase-version-number $ORIG_VERSION)
+VERSION_STRING="${INCREASED_VERSION}~${BUILD_VERSION}"
+
+if [ -n "${distribution:-}" ] ; then
+  echo "Distribution variable found. Adding distribution specific version."
+  VERSION_STRING="${VERSION_STRING}+${distribution}"
+fi
 
 # support overriding git-dch options
 if [ -n "${DCH_OPTS:-}" ] ; then
@@ -34,13 +55,7 @@ fi
 if [ -n "${DCH_EXTRA_OPTS:-}" ] ; then
   echo "Found environment variable DCH_EXTRA_OPTS, set to ${DCH_EXTRA_OPTS}"
 else
-  # support customizing the version number from outside
-  if [ -n "${distribution:-}" ] ; then
-    echo "Found environment variable distribution, set to $distribution"
-    DCH_EXTRA_OPTS="-N $(increase-version-number $(dpkg-parsechangelog --count 1 | awk '/Version/ {print $2}'))~${BUILD_NUMBER}+${distribution}"
-  else
-    DCH_EXTRA_OPTS="--snapshot-number=${BUILD_NUMBER}"
-  fi
+  DCH_EXTRA_OPTS="--new-version=${VERSION_STRING}"
   echo "Using extra git-dch options (${DCH_EXTRA_OPTS})"
 fi
 
@@ -96,15 +111,13 @@ git_dch_auto() {
 git_tag_build() {
   git checkout "${tag}"
 
-  local VERSION="$(dpkg-parsechangelog | awk '/^Version: / {print $2}')"
-
   if [ -n "${distribution:-}" ] ; then
-    echo "Distribution found. Adding distribution specific version."
-    dch -b -v "${VERSION}~${distribution}+${BUILD_NUMBER}" \
-      "Autobuild for ${distribution} via jenkins-debian-glue."
+    echo "Distribution found. Adding distribution specific version (${distribution})."
+    dch -b -v "${VERSION_STRING}+${distribution:-}" \
+      "Tagged autobuild for ${distribution} via jenkins-debian-glue."
   else
-    dch -v "${VERSION}+${BUILD_NUMBER}" \
-      "Autobuild via jenkins-debian-glue."
+    dch -v "${VERSION_STRING}" \
+      "Tagged autobuild via jenkins-debian-glue."
   fi
 }
 
