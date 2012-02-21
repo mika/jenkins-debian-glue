@@ -274,6 +274,11 @@ cowbuilder_run() {
 }
 
 remove_packages() {
+  if [ -n "${SKIP_REMOVAL:-}" ] ; then
+    echo "*** Skipping removal of existing packages as requested via SKIP_REMOVAL ***"
+    return 0
+  fi
+
   echo "*** Removing previous versions from repository ***"
   for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${ARCH}.changes") ; do
     file="$(basename $p)"
