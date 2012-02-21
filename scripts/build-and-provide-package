@@ -299,6 +299,11 @@ remove_packages() {
 }
 
 remove_missing_binary_packages() {
+  if [ -n "${SKIP_REMOVAL:-}" ] ; then
+    echo "*** Skipping removal of existing packages as requested via SKIP_REMOVAL ***"
+    return 0
+  fi
+
   echo "*** Checking for missing binary packages to be considered for removal ***"
 
   # In a binary-only build we don't get any arch-all (*_all.deb) packages and
