@@ -10,7 +10,7 @@ Vcs-Browser: https://github.com/mika/jenkins-debian-glue
 
 Package: jenkins-debian-glue
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, cowbuilder, devscripts, dpkg-dev, sudo
+Depends: ${shlibs:Depends}, ${misc:Depends}, cowbuilder, devscripts, dpkg-dev, reprepro, sudo
 Description: glue scripts for building Debian packages inside Jenkins
  This package provides scripts which should make building Debian
  package inside Jenkins (a Continuous Integration suite) easier.
