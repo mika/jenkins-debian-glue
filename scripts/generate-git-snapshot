@@ -86,25 +86,31 @@ create_local_branch() {
   fi
 }
 
+git_dch_auto() {
+  git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
+}
+
 identify_latest_change() {
   # debian/changelog might be a symlink (e.g. because debian points to
   # pkg/debian), so make sure we don't access a non-existing file
+  # by calling readlink
   git checkout -- $(readlink -f debian/changelog)
+
   local OLD_VERSION=$(dpkg-parsechangelog | awk '/^Version: / {print $2}')
 
-  local tag=$(git describe $(git rev-list --tags='[^ju]*' --max-count=1 HEAD))
+  local last_tag=$(git describe $(git rev-list --tags='[^u]*' --max-count=1 HEAD))
   local last_merge=$(git describe $(git rev-list --all --merges --max-count=1 HEAD))
-  local since=${tag}
+  local since=${last_tag}
 
   if [ -n "$last_merge" ] ; then
-    local m_date=$(git log ${last_merge} --pretty="format:%at" -1)
-    local t_date=$(git log ${tag} --pretty="format:%at" -1)
-    if [ ${m_date} -gt ${t_date} ] ; then
+    local merge_date=$(git log ${last_merge} --pretty="format:%at" -1)
+    local tag_date=$(git log ${last_tag} --pretty="format:%at" -1)
+    if [ ${merge_date} -gt ${tag_date} ] ; then
       local since=${last_merge}
     fi
   fi
 
-  echo "Last tag / merge seems to be $since"
+  echo "Latest tag [${last_tag:-}] / merge [${last_merge:-}] seems to be $since"
   git-dch -s "${since}" $DCH_OPTS $DCH_EXTRA_OPTS
 
   local NEW_VERSION=$(dpkg-parsechangelog | awk '/^Version: / {print $2}')
@@ -113,13 +119,11 @@ identify_latest_change() {
     echo "Calculated version is older than last release, falling back to auto mode."
     # debian/changelog might be a symlink (e.g. because debian points to
     # pkg/debian), so make sure we don't access a non-existing file
+    # by calling readlink
     git checkout -- $(readlink -f debian/changelog)
-    git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
-  fi
-}
 
-git_dch_auto() {
-  git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
+    git_dch_auto
+  fi
 }
 
 git_tag_build() {
@@ -157,21 +161,21 @@ fi
 if [ -n "${tag:-}" ] ; then
   echo "Tag parameter found, using dch for changelog generation."
   git_tag_build
-elif [ "${1:-}" = "auto" ] ; then
-  echo "Using git-dch with auto mode."
-  git_dch_auto
-elif [ -r debian/gbp.conf ] ; then
-  echo "Found debian/gbp.conf, using git-dch with auto mode."
-  git_dch_auto
-else
+elif [ "${1:-}" = "identify" ] ; then
   echo "Trying to identify latest tag / merge..."
 
-  if ! git describe $(git rev-list --tags='[^ju]*' --max-count=1 HEAD) >/dev/null ; then
+  if ! git describe $(git rev-list --tags='[^u]*' --max-count=1 HEAD) >/dev/null ; then
     echo "Failed to identify latest change, falling back to auto mode."
     git_dch_auto
   else
     identify_latest_change
   fi
+elif [ -r debian/gbp.conf ] ; then
+  echo "Found debian/gbp.conf, using git-dch with auto mode."
+  git_dch_auto
+else
+  echo "Using git-dch with auto mode."
+  git_dch_auto
 fi
 
 # get rid of "UNRELEASED" distribution header
