@@ -40,6 +40,11 @@ if ! [ -x "$(which dpkg-parsechangelog)" ] ; then
   exit 1
 fi
 
+JENKINS_DEBIAN_GLUE_VERSION=$(dpkg --list jenkins-debian-glue 2>/dev/null | awk '/^ii/ {print $3}')
+if [ -n "${JENKINS_DEBIAN_GLUE_VERSION:-}" ] ; then
+  echo "*** Running jenkins-debian-glue version $JENKINS_DEBIAN_GLUE_VERSION ***"
+fi
+
 echo "***  source package build phase ***"
 rm -f ./* || true
 

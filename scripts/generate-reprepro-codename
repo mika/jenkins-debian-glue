@@ -20,6 +20,11 @@ fi
 # repository/codename that should be added
 REPOS="$1"
 
+JENKINS_DEBIAN_GLUE_VERSION=$(dpkg --list jenkins-debian-glue 2>/dev/null | awk '/^ii/ {print $3}')
+if [ -n "${JENKINS_DEBIAN_GLUE_VERSION:-}" ] ; then
+  echo "*** Running jenkins-debian-glue version $JENKINS_DEBIAN_GLUE_VERSION ***"
+fi
+
 if [ -z "${REPOSITORY:-}" ] ; then
   REPOSITORY='/srv/repository'
   echo "*** Repository variable REPOSITORY is unset, using default [$REPOSITORY] ***"
