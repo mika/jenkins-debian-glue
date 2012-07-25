@@ -155,13 +155,24 @@ identify_sourcefile() {
 }
 
 dist_and_arch_settings() {
-  if [ -z "${distribution:-}" ]; then
-    echo "*** No distribution set, using sid for base.cow if it does not exist yet. ***"
-    COWBUILDER_DIST="sid"
+  if [ -n "${COWBUILDER_DIST:-}" ]; then
+    echo "*** COWBUILDER_DIST is set to $COWBUILDER_DIST - using it for base.cow if it does not exist yet. ***"
   else
-    echo "*** Using cowbuilder base for distribution ${distribution} ***"
+    if [ -n "${distribution:-}" ]; then
+      echo "*** Using cowbuilder base for distribution ${distribution} ***"
+      COWBUILDER_DIST="${distribution}"
+    else
+      # default to the currently running distribution to avoid hardcoding
+      # a distribution which might not be supported by the running system
+      local distri_codename=$(lsb_release --short --codename 2>/dev/null)
+      [ -n "${distri_codename:-}" ] || distri_codename="sid" # fallback to "sid" iff lsb_release fails
+      echo "*** Neither COWBUILDER_DIST nor distribution set - using ${distri_codename} for base.cow if it does not exist yet. ***"
+      COWBUILDER_DIST="${distri_codename}"
+    fi
+  fi
+
+  if [ -n "${distribution:-}" ] ; then
     DIST="-${distribution}"
-    COWBUILDER_DIST="${distribution}"
   fi
 
   if [ -z "${architecture:-}" ] || [ "${architecture:-}" = "all" ] ; then
