@@ -24,7 +24,7 @@ def set_hosts():
 
 @runs_once
 def build():
-    local('rm -f ../jenkins-debian-glue_*all.deb')
+    local('rm -f ../jenkins-debian-glue*all.deb')
     local('fakeroot debian/rules clean')
     local('fakeroot debian/rules binary')
     local('fakeroot debian/rules clean')
