@@ -14,7 +14,7 @@ def set_hosts():
     if not env.hosts:
         env.hosts = []
 
-        for host in 'jenkins', 'jenkins-slave1', 'jenkins-slave2', 'jenkins-slave3', 'jenkins-slave4':
+        for host in 'jenkins', 'jenkins-slave1', 'jenkins-slave2', 'jenkins-slave3', 'jenkins-slave4', 'jenkins-slave5', 'jenkins-slave6':
             config = paramiko.SSHConfig()
             config.parse(open(os.path.expandvars("$HOME") + '/.ssh/config'))
             h = config.lookup(host)
