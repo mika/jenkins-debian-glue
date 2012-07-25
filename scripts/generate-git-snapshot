@@ -68,14 +68,14 @@ else
   echo "Using extra git-dch options (${DCH_EXTRA_OPTS})"
 fi
 
-branch_checkout() {
+create_local_branch() {
   [ -n "${1:-}" ] || return 1
 
   local BRANCH="$1"
 
   if git branch -a | grep -q "remotes/origin/${BRANCH}" ; then
     git branch -D "${BRANCH}" || true
-    git checkout -b "${BRANCH}" "remotes/origin/${BRANCH}"
+    git branch "${BRANCH}" "remotes/origin/${BRANCH}"
   else
     echo "NOTE: branch $BRANCH does not exist, ignoring request to checkout therefore."
   fi
@@ -133,16 +133,21 @@ git_tag_build() {
 # Clean up any unexpected local changes
 #git reset --hard HEAD
 
-# git-buildpackage's --git-upstream-branch defaults to "upstream",
-# so try to make sure it's available if it exists
-if [ -n "${branch:-}" ] && [ "${branch:-}" != "upstream" ] ; then
-  branch_checkout upstream
-fi
+# make sure common branches are available for git-buildpackage
+create_local_branch upstream
+create_local_branch debian
+create_local_branch pristine-tar
 
 # Drop residual files
 #git clean -xfd
 
-git checkout "$GIT_COMMIT"
+if [ -n "${branch:-}" ] ; then
+  echo "Branch parameter set, checking out $branch"
+  git checkout "${branch}"
+else
+  echo "No branch parameter set, checking out $GIT_COMMIT"
+  git checkout "$GIT_COMMIT"
+fi
 
 if [ -n "${tag:-}" ] ; then
   echo "Tag parameter found, using dch for changelog generation."
