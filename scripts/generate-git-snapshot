@@ -150,13 +150,8 @@ create_local_branch pristine-tar
 # Drop residual files
 #git clean -xfd
 
-if [ -n "${branch:-}" ] ; then
-  echo "Branch parameter set, checking out $branch"
-  git checkout "${branch}"
-else
-  echo "No branch parameter set, checking out $GIT_COMMIT"
-  git checkout "$GIT_COMMIT"
-fi
+echo "Checking out $GIT_COMMIT"
+git checkout "$GIT_COMMIT"
 
 if [ -n "${tag:-}" ] ; then
   echo "Tag parameter found, using dch for changelog generation."
