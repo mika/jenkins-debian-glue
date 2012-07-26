@@ -27,27 +27,29 @@ if [ -n "${JENKINS_DEBIAN_GLUE_VERSION:-}" ] ; then
   echo "*** Running jenkins-debian-glue version $JENKINS_DEBIAN_GLUE_VERSION ***"
 fi
 
+echo "***  source package build phase ***"
+rm -f ./* || true
+
+cd source
+
+# retrieve and adjust information
+ORIG_VERSION=$(dpkg-parsechangelog --count 1 | awk '/Version/ {print $2}')
+INCREASED_VERSION=$(increase-version-number $ORIG_VERSION)
+DISTRIBUTION=$(dpkg-parsechangelog --count 1 | awk '/^Distribution/ {print $2}')
+
 # we want to get a version string like
 # $ORIG_VERSION+0~$TIMESTAMP.$BUILD_NUMBER~1.$GIT_ID
 # so the version is always increasing over time, no matter what
 TIMESTAMP="$(date +%s)" # seconds since 1970-01-01 00:00:00 UTC, reversible via `date -d @$TIMESTAMP`
 BUILD_VERSION="${TIMESTAMP}.${BUILD_NUMBER}" # git-dch appends something like ~1.gbp5f433e then
 
-echo "***  source package build phase ***"
-rm -f ./* || true
-
-cd source
-
-# version number
-ORIG_VERSION=$(dpkg-parsechangelog --count 1 | awk '/Version/ {print $2}')
-
-# we do NOT raise the version number, if we detect an unreleased version
-DISTRIBUTION=$(dpkg-parsechangelog --count 1 | awk '/^Distribution/ {print $2}')
-if [ "$DISTRIBUTION" = "UNRELEASED" ] ; then
+# we do NOT raise the version number, if we detect an unreleased version,
+# otherwise the released version would be older than our snapshot builds
+APPLY_VERSION_WORKAROUND=false
+if [ "$DISTRIBUTION" = "UNRELEASED" ] && dpkg --compare-versions "$ORIG_VERSION" lt "$INCREASED_VERSION" ; then
   echo "*** Not increasing version number as distribution is set to UNRELEASED ***"
   INCREASED_VERSION="$ORIG_VERSION"
-else
-  INCREASED_VERSION=$(increase-version-number $ORIG_VERSION)
+  APPLY_VERSION_WORKAROUND=true
 fi
 
 VERSION_STRING="${INCREASED_VERSION}~${BUILD_VERSION}"
@@ -56,6 +58,8 @@ if [ -n "${distribution:-}" ] ; then
   echo "Distribution variable found. Adding distribution specific version."
   VERSION_STRING="${VERSION_STRING}+${distribution}"
 fi
+
+echo "*** Version string set to $VERSION_STRING ***"
 
 # support overriding git-dch options
 if [ -n "${DCH_OPTS:-}" ] ; then
@@ -87,7 +91,13 @@ create_local_branch() {
 }
 
 git_dch_auto() {
-  git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
+  if $APPLY_VERSION_WORKAROUND ; then
+    echo "Applying version workaround workaround"
+    dch -b --distribution=UNRELEASED --newversion=$VERSION_STRING -- \
+      "SNAPSHOT autobuild for unreleased $ORIG_VERSION via jenkins-debian-glue."
+  else
+    git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
+  fi
 }
 
 identify_latest_change() {
