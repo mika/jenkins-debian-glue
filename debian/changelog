@@ -1,3 +1,13 @@
+jenkins-debian-glue (0.1.1) unstable; urgency=low
+
+  * [8092cc5] generate-git-snapshot: use git-dch's auto mode as default
+  * [e35e50e] generate-git-snapshot: do not checkout branch but always
+    $GIT_COMMIT
+  * [644aef6] generate-git-snapshot: use plain dch if handling UNRELEASED
+    version
+
+ -- Michael Prokop <mika@grml.org>  Thu, 26 Jul 2012 14:09:51 +0200
+
 jenkins-debian-glue (0.1.0) unstable; urgency=low
 
   * Initial release.
