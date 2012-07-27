@@ -21,9 +21,42 @@ if ! [ -r "${REPOS}"/format ] ; then
 fi
 
 # defaults
-trigger_cause="svn_commit_triggered"
-trigger_url="https://jenkins.example.org" # ADJUST!
 trigger_token="secret" # ADJUST!
+trigger_cause="svn_commit_triggered"
+trigger_url="https://jenkins.example.org"   # ADJUST!
+tags_url="https://jenkins.example.org:5000" # ADJUST!
+enable_tag_trigger=false
+
+trigger_build() {
+  if [ -n "$1" ] ; then
+    trigger_project="$1"
+  else
+    echo "Error: no trigger_project specified, can not trigger project." >&2
+    return 1
+  fi
+
+  if curl --insecure --max-time 5 --connect-timeout 5 \
+          --data-urlencode "token=${trigger_token}" \
+          --data-urlencode "cause=${trigger_cause}" \
+          --data-urlencode "branch=${trigger_branch}" \
+          "${trigger_url}/job/${trigger_project}/buildWithParameters" ; then
+    echo "Trigger autobuild at ${trigger_url}/job/${trigger_project}/lastBuild/"
+  else
+    echo "Could not trigger autobuild of trunk documentation at jenkins."
+  fi
+
+  # add new tag versions to release dashboard
+  if $enable_tag_trigger ; then
+     project="${trigger_project%%-source}"
+     tag="${trigger_branch##tags/}"
+     if curl --insecure --max-time 5 --connect-timeout 5 \
+       "${tags_url}/tags/register/${project}/${tag}" ; then
+       echo "Registered new tag ${tag} of project ${project} to release dashboard."
+     else
+       echo "Could not register tag ${tag} of project ${project} to release dashboard."
+     fi
+  fi
+}
 
 for dir in $(/usr/bin/svnlook dirs-changed "$REPOS" $REV_OPTS) ; do
   case "$dir" in
@@ -42,14 +75,15 @@ for dir in $(/usr/bin/svnlook dirs-changed "$REPOS" $REV_OPTS) ; do
           trigger_branch=ignore
           ;;
         tags/*)
-          # disclaimer: yes, brrrr - don't ask...
           # sort: try to move the shortest line to the beginning
           # grep: make sure we only get _U/U (updates) and _A/A (additions)
           # head: limit the result to just one project
           # awk: print directory name only
           trigger_branch=$(/usr/bin/svnlook changed "$REPOS" $REV_OPTS | sort -u | grep '^[_]*U\|^[_]*A.*/tags/' | head -1 | awk '{print $2}')
-          trigger_branch="${trigger_branch%/}"
-          trigger_branch="tags/${trigger_branch##*/}"
+          trigger_branch="${trigger_branch##*tags/}"
+          trigger_branch="${trigger_branch%%/*}"
+          trigger_branch="tags/${trigger_branch}"
+          enable_tag_trigger=true
           ;;
       esac
 
@@ -75,20 +109,9 @@ for dir in $(/usr/bin/svnlook dirs-changed "$REPOS" $REV_OPTS) ; do
       ;;
   esac
 
-done
+  trigger_build "$trigger_project"
 
-# trigger build
-if [ -n "$trigger_project" ] ; then
-  if curl --insecure --max-time 5 --connect-timeout 5 \
-          --data-urlencode "token=${trigger_token}" \
-          --data-urlencode "cause=${trigger_cause}" \
-          --data-urlencode "branch=${trigger_branch}" \
-          "${trigger_url}/job/${trigger_project}/buildWithParameters" ; then
-    echo "Trigger autobuild at ${trigger_url}/job/${trigger_project}/lastBuild/"
-  else
-    echo "Could not trigger autobuild of trunk documentation at jenkins."
-  fi
-fi
+done
 
 # EOF
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
