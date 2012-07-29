@@ -241,6 +241,7 @@ identify_build_type() {
   fi
 
   local TMPDIR=$(mktemp -d)
+  local old_dir=$(pwd)
   cd "$TMPDIR"
   for file in  ${BASE_PATH}/${SOURCE_PACKAGE}_*.tar.* ; do
     if tar atf "$file" 2>/dev/null | grep -q debian/control ; then
@@ -263,6 +264,7 @@ identify_build_type() {
       fi
     fi
   done
+  cd "$old_dir"
 
   rm -rf "${TMPDIR}"
 }
