@@ -132,6 +132,7 @@ identify_sourcefile() {
     esac
     p="$(basename $sourcefile .dsc)"
     newest_version="${p#*_}"
+    SOURCE_PACKAGE="*" # FIXME: SOURCE_PACKAGE is used by identify_build_type
   else
     sources="unset"
     echo "*** Identifying newest package version ***"
