@@ -52,7 +52,7 @@ The "Subversion Plugin" is shipped by Jenkins out of the box nowadays, but to us
 
 Create a new job using the 'Build a free-style software project' option in Jenkins. If your software is named /foobar/ then use /foobar-source/ for the job name. Then enable and configure 'URL of repository' of the according version control system under 'Source Code Management' to automatically check out sources.
 
-*Important*: set the "/Local subdirectory for repo (optional)/" option under /Advanced/ settings to "/source/".
+*Important*: For git, set the "/Local subdirectory for repo (optional)/" option under /Advanced/ settings to "/source/". For svn, set "/Local module directory (optional)/" to "/source/".
 
 In the "/Build/" section add a build step "/Execute shell/" as follows:
 

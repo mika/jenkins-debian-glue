@@ -132,6 +132,7 @@ identify_sourcefile() {
     esac
     p="$(basename $sourcefile .dsc)"
     newest_version="${p#*_}"
+    SOURCE_PACKAGE="*" # FIXME: SOURCE_PACKAGE is used by identify_build_type
   else
     sources="unset"
     echo "*** Identifying newest package version ***"
@@ -240,6 +241,7 @@ identify_build_type() {
   fi
 
   local TMPDIR=$(mktemp -d)
+  local old_dir=$(pwd)
   cd "$TMPDIR"
   for file in  ${BASE_PATH}/${SOURCE_PACKAGE}_*.tar.* ; do
     if tar atf "$file" 2>/dev/null | grep -q debian/control ; then
@@ -262,6 +264,7 @@ identify_build_type() {
       fi
     fi
   done
+  cd "$old_dir"
 
   rm -rf "${TMPDIR}"
 }
@@ -461,7 +464,7 @@ binaries_to_workspace() {
 }
 
 # main execution
-trap bailout 1 2 3 3 6 9 14 15
+trap bailout 1 2 3 6 9 14 15
 
 checks_and_defaults
 clean_workspace
