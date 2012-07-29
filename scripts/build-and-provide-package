@@ -461,7 +461,7 @@ binaries_to_workspace() {
 }
 
 # main execution
-trap bailout 1 2 3 3 6 9 14 15
+trap bailout 1 2 3 6 9 14 15
 
 checks_and_defaults
 clean_workspace
