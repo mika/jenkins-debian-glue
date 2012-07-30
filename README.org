@@ -187,8 +187,7 @@ and point //etc/apt/sources.list/foobar.list/ to it:
 
 This allows you to choose the branch name that should be used for building the Debian source package.
 
-+ Install and use the [[https://wiki.jenkins-ci.org/display/JENKINS/Configuration+Slicing+Plugin][Configuration Slicing Plugin]] to perform mass configuration of your source
-and binaries jobs.
++ Install and use the [[https://wiki.jenkins-ci.org/display/JENKINS/Configuration+Slicing+Plugin][Configuration Slicing Plugin]] to perform mass configuration of your source and binaries jobs.
 
 + Enable "/Trigger builds remotely (e.g., from scripts)/" under Build Triggers and set an user-defined authentication token.
 
