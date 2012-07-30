@@ -278,8 +278,6 @@ That's it. Now you can replace the "none" with your specific release build name 
 
 * Known TODOs
 
-+ Make sure scaling using slave node works
-+ Support shared build environments e.g. via NFS chroots
 + Support further distributions, e.g. via https://www.mirbsd.org/cvs.cgi/~checkout~/contrib/hosted/tg/deb/pbuilderrc
 
 
