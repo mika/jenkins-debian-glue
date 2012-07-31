@@ -160,8 +160,12 @@ create_local_branch pristine-tar
 # Drop residual files
 #git clean -xfd
 
-echo "Checking out $GIT_COMMIT"
-git checkout "$GIT_COMMIT"
+# git-dch refuses to operate on a single git commit,
+# so instead create a temporary branch to work on
+random_branch="jenkins-debian-glue-buildbranch$RANDOM"
+echo "Checking out branch $random_branch based on $GIT_COMMIT"
+git branch -D "$random_branch" || true
+git checkout -b "$random_branch" "$GIT_COMMIT"
 
 if [ -n "${tag:-}" ] ; then
   echo "Tag parameter found, using dch for changelog generation."
@@ -182,6 +186,9 @@ else
   echo "Using git-dch with auto mode."
   git_dch_auto
 fi
+
+git checkout - # switch back to previous "branch" before removing the tmp branch
+git branch -D "$random_branch"
 
 # get rid of "UNRELEASED" distribution header
 debchange --release ""
