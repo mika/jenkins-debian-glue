@@ -11,6 +11,7 @@ it up and running and keep it as manageable and homogeneous as possible.
 + Debian
 + cowbuilder, reprepro and sudo (all available via apt-get/aptitude)
 
+Debian packages of jenkins-debian-glue are available at http://jenkins.grml.org/job/jenkins-debian-glue-binaries/ for your service.
 
 * Setup instructions
 
