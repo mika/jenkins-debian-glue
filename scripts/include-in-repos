@@ -36,21 +36,9 @@ bailout() {
 }
 
 get_base_directory() {
-  # FIXME
-  if [ -d "$WORKSPACE"/repos-data ] ; then
-    cd "$WORKSPACE"/repos-data/architecture=*,label=*/
+  if [ -z "${BASE_DIR:-}" ] ; then
     BASE_DIR=$(pwd)
   fi
-
-#  if [ -n "${workspace_binaries:-}" ] ; then
-#    cd $workspace_binaries
-#    cd ..
-#    archive=$(find configurations -name lastStable -type l | grep axis-label | head -1)/archive
-#    if [ -n "${archive:-}" ] ; then
-#      cd "$archive"
-#      BASE_DIR=$(pwd)
-#    fi
-#  fi
 }
 
 identify_package_name() {
