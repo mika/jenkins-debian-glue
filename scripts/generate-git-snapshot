@@ -82,7 +82,7 @@ create_local_branch() {
 
   local BRANCH="$1"
 
-  if git branch -a | grep -q "remotes/origin/${BRANCH}" ; then
+  if git branch -a | grep -q "remotes/origin/${BRANCH}"'$' ; then
     git branch -D "${BRANCH}" || true
     git branch "${BRANCH}" "remotes/origin/${BRANCH}"
   else
