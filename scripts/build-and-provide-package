@@ -161,6 +161,11 @@ identify_sourcefile() {
 }
 
 dist_and_arch_settings() {
+  if [ -n "${PROVIDE_ONLY:-}" ] ; then
+    echo "*** Config variable 'PROVIDE_ONLY' is set, ignoring request to run dist_and_arch_settings() ***"
+    return 0
+  fi
+
   if [ -n "${COWBUILDER_DIST:-}" ]; then
     echo "*** COWBUILDER_DIST is set to $COWBUILDER_DIST - using it for base.cow if it does not exist yet. ***"
   else
