@@ -166,9 +166,9 @@ and point //etc/apt/sources.list/foobar.list/ to it:
 
 ** Supported in generate-git-snapshot
 
-+ /DCH_OPTS/: use custom git-buildpackage options instead of the defaults.
++ /DCH_OPTS/: use custom git-dch options instead of the defaults.
 
-+ /DCH_EXTRA_OPTS/: use additional custom git-buildpackage options.
++ /DCH_EXTRA_OPTS/: use additional custom git-dch options.
 
 
 ** Supported in generate-reprepro-codename

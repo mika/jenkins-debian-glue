@@ -160,8 +160,8 @@ create_local_branch pristine-tar
 # Drop residual files
 #git clean -xfd
 
-# git-dch refuses to operate on a single git commit,
-# so instead create a temporary branch to work on
+# git-dch and git-buildpackage refuse to operate on a single git
+# commit, so instead create a temporary branch to work on
 random_branch="jenkins-debian-glue-buildbranch$RANDOM"
 echo "Checking out branch $random_branch based on $GIT_COMMIT"
 git branch -D "$random_branch" || true
@@ -187,9 +187,6 @@ else
   git_dch_auto
 fi
 
-git checkout - # switch back to previous "branch" before removing the tmp branch
-git branch -D "$random_branch"
-
 # get rid of "UNRELEASED" distribution header
 debchange --release ""
 
@@ -199,6 +196,9 @@ if [ "${IGNORE_GIT_BUILDPACKAGE:-}" = "true" ] ; then
 else
   git-buildpackage -nc --git-force-create --git-ignore-new -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true
 fi
+
+git checkout - # switch back to previous "branch" before removing the tmp branch
+git branch -D "$random_branch"
 
 # build source package
 ( cd .. ; dpkg-source -i\.git -b source )
