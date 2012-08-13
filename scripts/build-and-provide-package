@@ -352,7 +352,7 @@ remove_missing_binary_packages() {
   esac
 
   for p in $(${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --list-format '${package}\n' listmatched "${REPOS}" '*' | sort -u); do
-    echo "$binary_list" | grep -q "$p" || missing_packages="${missing_packages:-} $p"
+    echo " $binary_list " | grep -q " $p " || missing_packages="${missing_packages:-} $p"
   done
 
   if echo "${missing_packages:-}" | grep -q '.' ; then
