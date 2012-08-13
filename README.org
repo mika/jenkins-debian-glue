@@ -24,12 +24,12 @@ Setting up those jobs is really quite simple. Just follow the following steps an
 
 ** Install "Copy Artifact Plugin"
 
-The [[https://wiki.jenkins-ci.org/display/JENKINS/Copy+Artifact+Plugin][Copy Artifact Plugin] (install it via http://$JENKINS_SERVER/pluginManager/available or through the [[https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+CLI][jenkins-cli.jar]]'s install-plugin option on the command line) provides the option to deploy artifacts from the source job to the binaries job. Make sure it's installed so you get the "Copy artifacts from another project" option as "Build" step, used in the following steps.
+The [[https://wiki.jenkins-ci.org/display/JENKINS/Copy+Artifact+Plugin][Copy Artifact Plugin]] (install it via http://$JENKINS_SERVER/pluginManager/available or through the [[https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+CLI][jenkins-cli.jar]]'s install-plugin option on the command line) provides the option to deploy artifacts from the source job to the binaries job. Make sure it's installed so you get the "Copy artifacts from another project" option as "Build" step, used in the following steps.
 
 
 ** Install "Jenkins Workspace Cleanup Plugin"
 
-The [[https://wiki.jenkins-ci.org/display/JENKINS/Workspace+Cleanup+Plugin][Jenkins Workspace Cleanup Plugin] provides the "Delete
+The [[https://wiki.jenkins-ci.org/display/JENKINS/Workspace+Cleanup+Plugin][Jenkins Workspace Cleanup Plugin]] provides the "Delete
 workspace before build starts" option which is useful for getting rid of files from previous runs.
 
 
@@ -74,7 +74,7 @@ In the "/Build/" section add a build step "/Execute shell/" as follows to get ri
 rm -f ./* || true
 #+END_EXAMPLE
 
-NOTE: the "Delete workspace before build starts" option provided by the [[https://wiki.jenkins-ci.org/display/JENKINS/Workspace+Cleanup+Plugin][Jenkins Workspace Cleanup Plugin] works as well, though it also removes the repository checkout so build time might increase.
+NOTE: the "Delete workspace before build starts" option provided by the [[https://wiki.jenkins-ci.org/display/JENKINS/Workspace+Cleanup+Plugin][Jenkins Workspace Cleanup Plugin]] works as well, though it also removes the repository checkout so build time might increase.
 
 Then add another build step of "/Execute shell/" as follows:
 
@@ -113,7 +113,7 @@ In the "/Build/" section add a build step "/Copy artifacts from another project/
    : Artifacts to copy: *
    : Target directory:
 
-Screenshot for this configuration:
+Screenshot for this /Copy artifacts/ configuration:
 
 [[https://raw.github.com/mika/jenkins-debian-glue/master/img/copy_artifacts.png]]
 
@@ -275,22 +275,22 @@ To locate this URL from the Jenkins web interface choose "Last build":
 
 [[https://raw.github.com/mika/jenkins-debian-glue/master/img/permalinks.png]]
 
-On the left side on the bottom you'll find a link named "Console Output" then:
+On the left side on the bottom you'll find a link named "Console Output" then, choose this one:
 
 [[https://raw.github.com/mika/jenkins-debian-glue/master/img/console_output_url.png]]
 
 
 ** Where do I find the console output of my *-binaries Job / Matrix build?
 
-Locating the console output of Matrix builds sadly is not obvious. You have to visit the according Matrix axe configuration which are listed under the "Configurations" section of your Jenkins job. If you have just one axis inside your Jenkins job configuration it wil be named "default":
+Locating the console output of Matrix builds sadly is not obvious. You have to visit the according Matrix axe configurations which are listed under the "Configurations" section of your Jenkins job. If you have just one axis inside your Jenkins job configuration it wil be named "default":
 
 [[https://raw.github.com/mika/jenkins-debian-glue/master/img/configuration_default.png]]
 
-Or if you have multiple axes assigned then you'll find them listed below "Configurations", like:
+Or if you have multiple axes assigned then you'll find them listed below "Configurations" as well, like:
 
 [[https://raw.github.com/mika/jenkins-debian-glue/master/img/configuration_multiarch.png]]
 
-Inside the Matrix configurations you'll find the usual "Permalinks" as documented in the previous section in this FAQ.
+Inside the Matrix configurations you'll find the usual "Permalinks" as documented in the previous section of this FAQ.
 
 
 ** How can I build binary packages on some slave nodes and use the repository on a different system?
@@ -344,7 +344,6 @@ If you need further Jenkins jobs for the same package you can achieve that by se
 #+BEGIN_EXAMPLE
 export REPOS="${JOB_NAME%-testing-binaries*}"
 sudo /usr/bin/generate-reprepro-codename "${REPOS}"
-
 ....
 #+END_EXAMPLE
 
