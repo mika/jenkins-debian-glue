@@ -1,28 +1,36 @@
 * Project Idea
 
-jenkins-debian-glue provides scripts for building Debian packages via Jenkins (a
-Continuous integration system).  It tries to minimize the required steps to get
-it up and running and keep it as manageable and homogeneous as possible.
+jenkins-debian-glue provides scripts for building Debian packages via Jenkins
+(a Continuous integration / delivery system).  It tries to minimize the
+required steps to get it up and running and keep it as manageable and
+homogeneous as possible.
 
 
 * System requirements
 
-+ Jenkins
-+ Debian
-+ cowbuilder, reprepro and sudo (all available via apt-get/aptitude)
++ [[http://jenkins-ci.org/][Jenkins]]
++ [[http://www.debian.org/][Debian]]
++ [[http://packages.debian.org/sid/cowbuilder][cowbuilder]], [[http://packages.debian.org/sid/reprepro][reprepro]] and [[http://packages.debian.org/sid/sudo][sudo]] (all available via apt-get/aptitude)
 
 Debian packages of jenkins-debian-glue are available at http://jenkins.grml.org/job/jenkins-debian-glue-binaries/ for your service.
 
+
 * Setup instructions
 
-jenkins-debian-glue assumes two Jenkins jobs for each software package.  One job builds the Debian source package, this is the source job. Assuming the software package is named /foobar/ then its source job is assumed to be /foobar-source/.  The other job builds the Debian binary package(s), this is the binaries job.  Once again assuming we're talking about the /foobar/ software package then the binaries job is assumed to be /foobar-binaries/.
+jenkins-debian-glue assumes two (or optionally more) Jenkins jobs for each software package.  One job builds the Debian source package, this is the source job. Assuming the software package is named /foobar/ then its source job is assumed to be /foobar-source/.  The other job builds the Debian binary package(s), this is the binaries job.  Once again assuming we're talking about the /foobar/ software package then the binaries job is assumed to be /foobar-binaries/.
 
-Setting up those jobs is really simple. Just follow the following steps and you should have a working system in less than 10 minutes.
+Setting up those jobs is really quite simple. Just follow the following steps and you should have a working system in less than 10 minutes.
 
 
-** Install "ArtifactDeployer Plugin"
+** Install "Copy Artifact Plugin"
 
-The [[https://wiki.jenkins-ci.org/display/JENKINS/ArtifactDeployer+Plugin][ArtifactDeployer Jenkins Plugin]] (install it via http://$JENKINS_SERVER/pluginManager/available) provides the option to deploy artifacts from the source job to the binaries job. Make sure it's installed so you get the "Deploy artifacts from workspace to remote directories" option, used in the following steps.
+The [[https://wiki.jenkins-ci.org/display/JENKINS/Copy+Artifact+Plugin][Copy Artifact Plugin] (install it via http://$JENKINS_SERVER/pluginManager/available or through the [[https://wiki.jenkins-ci.org/display/JENKINS/Jenkins+CLI][jenkins-cli.jar]]'s install-plugin option on the command line) provides the option to deploy artifacts from the source job to the binaries job. Make sure it's installed so you get the "Copy artifacts from another project" option as "Build" step, used in the following steps.
+
+
+** Install "Jenkins Workspace Cleanup Plugin"
+
+The [[https://wiki.jenkins-ci.org/display/JENKINS/Workspace+Cleanup+Plugin][Jenkins Workspace Cleanup Plugin] provides the "Delete
+workspace before build starts" option which is useful for getting rid of files from previous runs.
 
 
 ** Source job configuration (foobar-source)
@@ -36,6 +44,11 @@ Make sure the "Git Plugin" is installed in Jenkins. On the build system you need
 
 #+BEGIN_EXAMPLE
 # apt-get install git-buildpackage
+#+END_EXAMPLE
+
+Then either adjust the "Git plugin" settings at http://$JENKINS_SERVER/configure or manually execute:
+
+#+BEGIN_EXAMPLE
 # su - jenkins
 % git config --global user.email "jenkins@example.org"
 % git config --global user.name "Jenkins User"
@@ -55,7 +68,15 @@ Create a new job using the 'Build a free-style software project' option in Jenki
 
 *Important*: For git, set the "/Local subdirectory for repo (optional)/" option under /Advanced/ settings to "/source/". For svn, set "/Local module directory (optional)/" to "/source/".
 
-In the "/Build/" section add a build step "/Execute shell/" as follows:
+In the "/Build/" section add a build step "/Execute shell/" as follows to get rid of files from previous runs without removing the VCS checkout:
+
+#+BEGIN_EXAMPLE
+rm -f ./* || true
+#+END_EXAMPLE
+
+NOTE: the "Delete workspace before build starts" option provided by the [[https://wiki.jenkins-ci.org/display/JENKINS/Workspace+Cleanup+Plugin][Jenkins Workspace Cleanup Plugin] works as well, though it also removes the repository checkout so build time might increase.
+
+Then add another build step of "/Execute shell/" as follows:
 
 #+BEGIN_EXAMPLE
 # JENKINS_DEBIAN_GLUE_SOURCE_HEADER
@@ -73,14 +94,6 @@ Under "/Post-build Actions/" select "/Archive the artifacts/" using:
 
 Enable "/Record fingerprints of files to track usage/" and its "/Fingerprint all archived artifacts/" setting.
 
-Now configure the ArtifactDeployer plugin. Enable "/Deploy artifacts from workspace to remote directories/" using the following settings for "/Files to deploy/":
-
-   : *.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes
-
-and for the "/Remote directory/" use:
-
-   : ${JENKINS_HOME}/userContent/${JOB_NAME}/
-
 
 ** Binaries job configuration (foobar-binaries)
 
@@ -92,6 +105,18 @@ Under /Configuration Matrix/ create a user-defined Axis titled "/architecture/" 
 
 Choose "/Run each configuration sequentially/".
 
+In the "/Build/" section add a build step "/Copy artifacts from another project/" using:
+
+   : Project name: $JOBNAME-source
+   : Which build: "/Upstream build that triggered this job/"
+   : [x] "Last successful build"
+   : Artifacts to copy: *
+   : Target directory:
+
+Screenshot for this configuration:
+
+[[https://raw.github.com/mika/jenkins-debian-glue/master/img/copy_artifacts.png]]
+
 In the "/Build/" section add a build step "/Execute shell/" using:
 
 #+BEGIN_EXAMPLE
@@ -100,6 +125,7 @@ In the "/Build/" section add a build step "/Execute shell/" using:
 REPOS="${JOB_NAME%-binaries*}"
 /usr/bin/generate-reprepro-codename "${REPOS}"
 
+export BASE_PATH="${WORKSPACE}"
 /usr/bin/build-and-provide-package
 #+END_EXAMPLE
 
@@ -121,6 +147,7 @@ Create //srv/repository/ and provide write permissions to jenkins user:
 
 *Alright - you're done!* Now Jenkins can build Debian packages for you.
 
+
 ** Build Debian packages
 
 Visit the source Job and choose "/Build Now/". This will start building the Debian source package and if that works as expected it will automatically trigger building the Debian binary package(s). The first run might take some time because you're checking out the source from your VCS for the first time and setting up the cowbuilder environment also takes some time. Once you're past this stage rebuilding should be damn fast, just depending on your network and system speed.
@@ -135,7 +162,24 @@ To use the Debian repository from remote systems you can install a web server, s
 
 and point //etc/apt/sources.list/foobar.list/ to it:
 
-   : deb http://$JENKINS_SERVER/debian/ jenkins-debian-glue main
+   : deb http://$JENKINS_SERVER/debian/ foobar main
+
+
+** Enable Lintian reports
+
+[[http://lintian.debian.org/][Lintian]] dissects Debian packages and tries to find bugs and policy violations. It contains automated checks for many aspects of Debian policy as well as some checks for common errors which turns out to be very useful for inclusion in Continuous Integration/Delivery infrastructures.
+
+To enable Lintian reports for your jenkins-debian-glue jobs add the following "/Execute shell/" build step at the end of the build steps in your *-source and *-binaries Jenkins jobs:
+
+#+BEGIN_EXAMPLE
+mkdir -p report
+/usr/bin/lintian-junit-report *.dsc > report/lintian.xml
+#+END_EXAMPLE
+
+and add "**/lintian.txt" to the list of artifacts to archive.
+
+Enable the "/Publish JUnit test result report/" Post-build action and select "**/lintian.xml" for the files to report.
+Then you should get test reports for your Debian packages based on lintian's output.
 
 
 * Configuration options
@@ -153,18 +197,28 @@ and point //etc/apt/sources.list/foobar.list/ to it:
 
 ** Supported in build-and-provide-package
 
-+ /architecture/: controls for which architectures Debian packages should be built. (Note: tested only with amd64 and i386 so far.)
++ /architecture/: controls for which architectures Debian packages should be built.
 
-+ /distribution/: controls Debian version that should be used for the cowbuilder environment (defaults to /sid/ AKA /unstable/ if unset).
++ /distribution/: controls Debian version that should be used for the cowbuilder environment (defaults to the host's distribution if unset).
 
 + /release/: install Debian package in repository name as specified via "$release" instead of the default (being $REPOS), see "/Can I collect multiple Debian packages in one single repository?/" in the FAQ section for further details.
 
-+ /REPOS/: controls the repository name used for the binary job. Defaults to the Jenkins job name without the trailing "/-binaries/".
++ /sources/: use specified directory as base directory for locating Debian source files. Useful if you use a customized "Target directory" in the "Copy artifacts from another project" configuration and do not want to/can't use /BASE_PATH/. (Note: this variable might get removed soon. It's NOT identical to /BASE_PATH/, this is a known issue.)
+
++ /BASE_PATH/: use specified directory as base directory for further actions. Just set it to "${WORKSPACE}" if you don't have a customized "Target directory" in the "Copy artifacts from another project" configuration, otherwise adopt as necessary. (Note: not identical to /sources/, this is a known issue.)
+
++ /BUILD_ONLY/: execute the steps building Debian binary package(s) but skip the repository setup/inclusion steps (useful for building the package(s) on slave nodes and including the result on a different node later then)
+
++ /PROVIDE_ONLY/: skip the steps building Debian binary package(s) and just run the repository setup/inclusion steps (useful if building the package(s) takes place on slave nodes and the result should by included in repository/repositories on a specific node then)
+
++ /REPOS/: controls the repository name used for the binary job. Defaults to the Jenkins job name without trailing "/-binaries/" and without trailing "/-repos/".
 
 + /SUDO_CMD/: if this variable is set then reprepro and related actions will be executed under $SUDO_CMD. If the jenkins user doesn't have write permissions to the repository and related settings then you might consider setting "export SUDO_CMD=sudo" in your Build step.
 
 
 ** Supported in generate-git-snapshot
+
++ /DEBEMAIL/: user configuration to be used for generating new entries in debian/changelog (defaults to "jenkins-debian-glue Autobuilder <jenkins@example.org>")
 
 + /DCH_OPTS/: use custom git-dch options instead of the defaults.
 
@@ -176,7 +230,7 @@ and point //etc/apt/sources.list/foobar.list/ to it:
 + /SUDO_CMD/: if this variable is set then reprepro and related actions will be executed under $SUDO_CMD. If the jenkins user doesn't have write permissions to the repository and related settings then you might consider setting "export SUDO_CMD=sudo" in your Build step.
 
 
-* Tipps and Tricks / Advanced configuration
+* Tips and Tricks / Advanced configuration
 
 + Reduce disk usage: enable "/Discard Old Builds/" and set "/Max # of builds to keep/" to something like 15 to keep disk usage at a sane level.
 
@@ -190,23 +244,16 @@ This allows you to choose the branch name that should be used for building the D
 
 + Install and use the [[https://wiki.jenkins-ci.org/display/JENKINS/Configuration+Slicing+Plugin][Configuration Slicing Plugin]] to perform mass configuration of your source and binaries jobs.
 
-+ Enable "/Trigger builds remotely (e.g., from scripts)/" under Build Triggers and set an user-defined authentication token.
++ Enable "/Trigger builds remotely (e.g., from scripts)/" under Build Triggers and set an user-defined authentication token. The /svn/ and /git/ directory of the jenkins-debian-glue source provide examples for VCS hooks to trigger remote builds on each commit.
 
-+ To automatically check for updates in VCS without triggering it from outside enable the "/Poll SCM/" setting with something like:
-
-   : */5 * * * *
-
-for checking every 5 minutes for updates. Use /@daily/ instead if checking once a day is enough.
-
++ To avoid polling for updates in VCS either trigger the builds remotely (see previous bullet) or if you're using Github for your Git repository use the [[https://wiki.jenkins-ci.org/display/JENKINS/Github+Plugin][Github Plugin]] with its "/Build when a change is pushed to GitHub/" option.
 
 
 * Scripts description
 
-+ *build-and-provide-package*: searches for newest package version in /${JENKINS_HOME}/userContent/${PACKAGE}-source// and uses the dsc file for building a binary package for the specific /$architecture/ of the matrix build using cowbuilder. The resulting binary package will be installed in reprepro to provide it for usage via APT.
++ *build-and-provide-package*: uses the dsc file for building a binary package for the specified /$architecture/ of the matrix build using cowbuilder. The resulting binary package will be installed in reprepro to provide it for usage via APT.
 
 + *generate-git-snapshot*: generates a snapshot version of a Debian package using git-dch. Use 'auto' as command line option to use git-dch's magic to build changelog, without the 'auto' option the version string will be build based on last tag/merge.
-
-+ *generate-local-repository*: scans the current working directory for Debian packages and generates Packages.gz, Contents and Release files. Meant for usage if reprepro would be overkill (e.g. no signed repository is needed).
 
 + *generate-reprepro-codename*: takes a repository/codename as command line option and adds an according repository/codename definition to //srv/repository/conf/distributions/ (iff the codename is not present yet).
 
@@ -214,7 +261,8 @@ for checking every 5 minutes for updates. Use /@daily/ instead if checking once 
 
 + *increase-version-number*: takes a version number as command line argument and raises the version number for usage inside as a new snapshot version.  Nowadays the script just adds "+0" to the version number, so when running the script with "0.42" the output will be "0.42+0". (Disclaimer: This script used to be more sophisticated but turned out to fail in some situations, the +0 approach usually just works and the script is there to provide a central place to handle version number management.)
 
-+ *lintian-junit-report*: run Debian package checks using lintian and report in JUnit format.
++ *lintian-junit-report*: run Debian package checks using lintian and report in JUnit format (and provide a plaintext copy of the output inside file /lintian.txt/).
+
 
 * FAQ
 
@@ -231,6 +279,7 @@ On the left side on the bottom you'll find a link named "Console Output" then:
 
 [[https://raw.github.com/mika/jenkins-debian-glue/master/img/console_output_url.png]]
 
+
 ** Where do I find the console output of my *-binaries Job / Matrix build?
 
 Locating the console output of Matrix builds sadly is not obvious. You have to visit the according Matrix axe configuration which are listed under the "Configurations" section of your Jenkins job. If you have just one axis inside your Jenkins job configuration it wil be named "default":
@@ -243,13 +292,60 @@ Or if you have multiple axes assigned then you'll find them listed below "Config
 
 Inside the Matrix configurations you'll find the usual "Permalinks" as documented in the previous section in this FAQ.
 
+
+** How can I build binary packages on some slave nodes and use the repository on a different system?
+
+Once you start up scaling with Debian package builds with several nodes you don't want to include the Debian package(s) on the same
+node as you're building (for obvious reasons).
+
+The build-and-provide-package script does support such distributed builds by using the BUILD_ONLY and PROVIDE_ONLY variables.
+Usage example for the *-binaries job:
+
+#+BEGIN_EXAMPLE
+# JENKINS_DEBIAN_GLUE_BINARIES_HEADER
+REPOS="${JOB_NAME%-binaries*}"
+sudo /usr/bin/generate-reprepro-codename "${REPOS}"
+
+export BUILD_ONLY=true
+export SUDO_CMD=sudo
+export BASE_PATH="${WORKSPACE}"
+/usr/bin/build-and-provide-package
+#+END_EXAMPLE
+
+Create a *-repos job which gets triggered from the *-binaries job. Don't forget to use "Copy artifacts from another project" (copying the files from the *-binaries job) there. Assign the *-repos job to the node which provides the Debian repository so it gets executed only on the system it should be executed on.
+
+Inside the *-repos job you can use something like:
+
+#+BEGIN_EXAMPLE
+# JENKINS_DEBIAN_GLUE_REPOS_HEADER
+mkdir -p binaries
+
+for suffix in gz bz2 xz deb dsc changes ; do
+  mv */*.${suffix} binaries/ || true
+done
+
+# if building a tagged version then do not include that one in the release-trunk repository
+case "$branch" in tags/*|branches/*) export IGNORE_RELEASE_TRUNK=true;; esac
+
+REPOS="${JOB_NAME%-repos*}"
+sudo /usr/bin/generate-reprepro-codename "${REPOS}"
+
+export SUDO_CMD=sudo
+export BASE_PATH="binaries/"
+export PROVIDE_ONLY=true
+/usr/bin/build-and-provide-package
+#+END_EXAMPLE
+
+
 ** How can I add multiple Jenkins jobs for the same software package?
 
 If you need further Jenkins jobs for the same package you can achieve that by setting the /REPOS/ environment variable. Let's assume you already have the Jenkins jobs /foobar-source/ and /foobar-binaries/ for a software package called /foobar/. To use /foobar/ with different settings as project /foobar-testing/ all you've to do is setting the /REPOS/ environment variable inside the build steps of the Jenkins job. Usage example for /foobar-testing-binaries/:
 
 #+BEGIN_EXAMPLE
-REPOS="${JOB_NAME%-testing-binaries*}"
-/usr/bin/generate-reprepro-codename "${REPOS}"
+export REPOS="${JOB_NAME%-testing-binaries*}"
+sudo /usr/bin/generate-reprepro-codename "${REPOS}"
+
+....
 #+END_EXAMPLE
 
 
@@ -263,24 +359,9 @@ Make sure you're using recent versions of cowbuilder and its underlying pbuilder
 If you notice 'pbuilder create failed' in the build log then you might be building a Debian unstable cowbuilder environment at a time where some dependencies cause bootstrap errors. To avoid this manually install the cowbuilder base.cow using the command line present in your build log but replace /sid/ with /squeeze/ and manually upgrade the cowbuilder environment to Debian unstable/sid then.
 
 
-** The ArtifactDeployer plugin doesn't work for me, is there an alternative?
-
-If the ArtifactDeployer plugin doesn't work for whatever reason (though it's strongly recommended and is known to work fine!) you can use the [[https://wiki.jenkins-ci.org/display/JENKINS/Copy+Artifact+Plugin][Copy Artifact Plugin]] instead.
-
-Use the "/$sources/" support of the /build-and-provide-package/ script in the binaries job then. Under "/Build/" add "/Copy artifacts from another project/" using (replace $JOBNAME-source accordingly):
-
-   : Project name: $JOBNAME-source
-   : Which build: Latest successful build
-   : [ ] Stable build only
-   : Artifacts to copy: *.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes
-   : Target directory: sources
-
-Finally add 'export sources=sources' to the shell execution commands, before running /build-and-provide-package/.
-
-
 ** Can I collect multiple Debian packages in one single repository?
 
-Yes. This feature is provided through so called release builds. In release builds you add a release repository name through the "/$release/" variable to the source job which is then handed over to the binaries job. The binaries job then takes care of installing the Debian packages to the repository as specified by the "/$release/" variable instead of installing it into its own repository. This feature is especially handy if you trigger several Jenkins jobs from a central place (like your own dashboard) to trigger a full release build.
+Yes. This feature is provided through so called release builds. In release builds you add a release repository name through the "/$release/" variable to the source job which is then handed over to the binaries job. The binaries job then takes care of installing the Debian packages to the repository as specified by the "/$release/" variable instead of installing them into their own repository. This feature is especially handy if you trigger several Jenkins jobs from a central place (like your own dashboard) to get a full release build.
 
 First of all make sure you have the [[https://wiki.jenkins-ci.org/display/JENKINS/Parameterized+Trigger+Plugin][Parameterized Trigger plugin]] installed. Then add "This build is parameterized" in the source job with String parameters as follows:
 
@@ -294,16 +375,28 @@ Enable "/Trigger parameterized build on other projects/" with settings as follow
    : Trigger when build is: Stable or unstable but not failed
    : Trigger build without parameters [ ]
 
-and "/Predefined parameters/" with:
+and set "/Predefined parameters/" to:
 
    : release=${release}
 
 That's it. Now you can replace the "none" with your specific release build name when triggering a new source job.
 
 
-* Known TODOs
+** How do I build Debian packages for specific architectures/distributions which require specific features on a build host?
 
-+ Support further distributions, e.g. via https://www.mirbsd.org/cvs.cgi/~checkout~/contrib/hosted/tg/deb/pbuilderrc
+While building amd64 and i386 can be done on one single 64bit build system you can't build e.g. packages for the sparc architecture on the same host any longer. To get such a setup up and running you need to extend the Matrix job configuration of your binaries Jenkins job to include all the architectures that should be supported. Then make sure your Jenkins slave nodes have according label names, like "amd64", "i386" and "sparc" so you can assign specific builds to specific slaves.
+
+Then enable the "/Combination Filter/" to execute the according architecture builds only on the according hosts, like:
+
+   : (label=="sparc").implies(architecture=="sparc") && (label=="amd64").implies(architecture=="amd64") && (label=="i386").implies(architecture=="i386")
+
+Screenshot of such a configuration:
+
+[[https://raw.github.com/mika/jenkins-debian-glue/master/img/multiarch_matrix_build.png]]
+
+This should give you a Matrix job execution like:
+
+[[https://raw.github.com/mika/jenkins-debian-glue/master/img/multiarch_matrix_build_result.png]]
 
 
 * Contributors
@@ -312,6 +405,7 @@ That's it. Now you can replace the "none" with your specific release build name 
 + Alexander Wirt <formorer@debian.org>
 + Christoph Berg <myon@debian.org>
 + Christian Hofstaedtler <ch@zeha.at>
++ Axel Beckert <abe@deuxchevaux.org>
 
 
 * Known installations driven by jenkins-debian-glue
@@ -319,6 +413,7 @@ That's it. Now you can replace the "none" with your specific release build name 
 + [[http://icingabuild.dus.dg-i.net/][http://icingabuild.dus.dg-i.net/]]
 + [[http://jenkins.azae.net/][http://jenkins.azae.net/]]
 + [[http://jenkins.grml.org/][http://jenkins.grml.org/]]
++ [[http://jenkins.noone.org/][http://jenkins.noone.org/]]
 + Internal system at [[http://www.sipwise.com/][Sipwise]]
 
 
