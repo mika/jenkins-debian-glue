@@ -160,8 +160,22 @@ identify_sourcefile() {
 }
 
 dist_and_arch_settings() {
+  if [ -n "${distribution:-}" ] ; then
+    DIST="-${distribution}"
+  fi
+
+  if [ -z "${architecture:-}" ] || [ "${architecture:-}" = "all" ] ; then
+    echo "*** No architecture set or architecture set to 'all', using system arch for cowbuilder ***"
+    ARCH="$(dpkg-architecture -qDEB_HOST_ARCH)"
+    BASE="/var/cache/pbuilder/base${DIST:-}.cow"
+  else
+    echo "*** Using cowbuilder base for architecture ${architecture} ***"
+    ARCH="${architecture}"
+    BASE="/var/cache/pbuilder/base${DIST:-}-${architecture}.cow"
+  fi
+
   if [ -n "${PROVIDE_ONLY:-}" ] ; then
-    echo "*** Config variable 'PROVIDE_ONLY' is set, ignoring request to run dist_and_arch_settings() ***"
+    echo "*** Config variable 'PROVIDE_ONLY' is set, not considering COWBUILDER_DIST ***"
     return 0
   fi
 
@@ -179,20 +193,6 @@ dist_and_arch_settings() {
       echo "*** Neither COWBUILDER_DIST nor distribution set - using ${distri_codename} for base.cow if it does not exist yet. ***"
       COWBUILDER_DIST="${distri_codename}"
     fi
-  fi
-
-  if [ -n "${distribution:-}" ] ; then
-    DIST="-${distribution}"
-  fi
-
-  if [ -z "${architecture:-}" ] || [ "${architecture:-}" = "all" ] ; then
-    echo "*** No architecture set or architecture set to 'all', using system arch for cowbuilder ***"
-    ARCH="$(dpkg-architecture -qDEB_HOST_ARCH)"
-    BASE="/var/cache/pbuilder/base${DIST:-}.cow"
-  else
-    echo "*** Using cowbuilder base for architecture ${architecture} ***"
-    ARCH="${architecture}"
-    BASE="/var/cache/pbuilder/base${DIST:-}-${architecture}.cow"
   fi
 }
 
