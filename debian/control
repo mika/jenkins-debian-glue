@@ -26,7 +26,7 @@ Depends: build-essential,
          pristine-tar,
          ${misc:Depends}
 Description: virtual package for Git build environment of jenkins-debian-glue
- This virtual packages depends on the software packages required
+ This virtual package depends on the software packages required
  for using jenkins-debian-glue as standalone build environment
  with Git.
 
@@ -38,7 +38,7 @@ Depends: build-essential,
          xsltproc,
          ${misc:Depends}
 Description: virtual package for Subversion build environment of jenkins-debian-glue
- This virtual packages depends on the software packages required
+ This virtual package depends on the software packages required
  for using jenkins-debian-glue as standalone build environment
  with Subversion.
 
@@ -50,7 +50,7 @@ Depends: build-essential,
          rsync,
          ${misc:Depends}
 Description: virtual package for basic build environment of jenkins-debian-glue
- This virtual packages depends on the software packages required
+ This virtual package depends on the software packages required
  for using jenkins-debian-glue on a slave system inside Jenkins.
 
 Package: jenkins-debian-glue-buildenv-lintian
