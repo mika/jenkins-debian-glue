@@ -4,7 +4,7 @@ set -x
 set -e
 set -u
 
-[ -n "${DEBEMAIL:-}" ] || DEBEMAIL="jenkins.grml.org Autobuilder <jenkins@grml.org>"
+[ -n "${DEBEMAIL:-}" ] || DEBEMAIL="jenkins-debian-glue Autobuilder <jenkins@example.org>"
 export DEBEMAIL
 
 if [ ! -d source ] ; then

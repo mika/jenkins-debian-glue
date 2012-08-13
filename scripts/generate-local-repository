@@ -6,8 +6,8 @@ set -e
 apt-ftparchive packages . | gzip > Packages.gz
 apt-ftparchive contents . > Contents
 cat <<EOF >Release
-Origin: Grml Autobuild
-Label: Grml Autobuild
+Origin: Jenkins Debian Glue Autobuild
+Label: Jenkins Debian Glue Autobuild
 NotAutomatic: yes
 EOF
 apt-ftparchive release . >> Release
