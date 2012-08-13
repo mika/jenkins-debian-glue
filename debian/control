@@ -10,7 +10,7 @@ Vcs-Browser: https://github.com/mika/jenkins-debian-glue
 
 Package: jenkins-debian-glue
 Architecture: all
-Depends: ${misc:Depends}, cowbuilder, devscripts, dpkg-dev, reprepro, sudo
+Depends: cowbuilder, devscripts, dpkg-dev, reprepro, sudo, ${misc:Depends}
 Description: glue scripts for building Debian packages inside Jenkins
  This package provides scripts which should make building Debian
  package inside Jenkins (a Continuous Integration suite) easier.
@@ -20,7 +20,11 @@ Description: glue scripts for building Debian packages inside Jenkins
 
 Package: jenkins-debian-glue-buildenv-git
 Architecture: all
-Depends: ${misc:Depends}, build-essential, git-buildpackage, jenkins-debian-glue, pristine-tar
+Depends: build-essential,
+         git-buildpackage,
+         jenkins-debian-glue,
+         pristine-tar,
+         ${misc:Depends}
 Description: virtual package for Git build environment of jenkins-debian-glue
  This virtual packages depends on the software packages required
  for using jenkins-debian-glue as standalone build environment
@@ -28,7 +32,11 @@ Description: virtual package for Git build environment of jenkins-debian-glue
 
 Package: jenkins-debian-glue-buildenv-svn
 Architecture: all
-Depends: ${misc:Depends}, build-essential, jenkins-debian-glue, subversion-tools, xsltproc
+Depends: build-essential,
+         jenkins-debian-glue,
+         subversion-tools,
+         xsltproc,
+         ${misc:Depends}
 Description: virtual package for Subversion build environment of jenkins-debian-glue
  This virtual packages depends on the software packages required
  for using jenkins-debian-glue as standalone build environment
@@ -36,14 +44,18 @@ Description: virtual package for Subversion build environment of jenkins-debian-
 
 Package: jenkins-debian-glue-buildenv-slave
 Architecture: all
-Depends: ${misc:Depends}, build-essential, jenkins-debian-glue, rsync, openjdk-6-jre-headless | sun-java6-jre | java-runtime-headless
+Depends: build-essential,
+         jenkins-debian-glue,
+         openjdk-6-jre-headless | sun-java6-jre | java-runtime-headless,
+         rsync,
+         ${misc:Depends}
 Description: virtual package for basic build environment of jenkins-debian-glue
  This virtual packages depends on the software packages required
  for using jenkins-debian-glue on a slave system inside Jenkins.
 
 Package: jenkins-debian-glue-buildenv-lintian
 Architecture: all
-Depends: ${misc:Depends}, lintian, ruby
+Depends: lintian, ruby, ${misc:Depends}
 Description: lintian integration in Jenkins
  This package provides the lintian-junit-report script. The
  script can be used for generating JUnit reports of lintian
