@@ -48,7 +48,6 @@ bailout() {
   [ -n "${1:-}" ] && EXIT="${1}" || EXIT=0
   [ -n "${2:-}" ] && echo "$2" >&2
 
-  # only relevant when not using the "ArtifactDeployer Plugin"
   if [ -n "${sources:-}" ] && [ "${sources:-}" != "unset" ] ; then
     echo "*** Removing sources file. ***"
     rm -f "${sources}/"*
@@ -113,7 +112,7 @@ build_info() {
 
 identify_sourcefile() {
   if [ -n "${sources:-}" ]; then
-    echo "*** Variable \$sources set. Consider switching to ArtifactDeployer plugin setup. ***"
+    echo "*** Variable \$sources set, using it for locating source files. ***"
     if [ -z "${distribution:-}" ]; then
         sourcefile=$(echo "${sources}/"*.dsc)
     else
