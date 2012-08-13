@@ -2,7 +2,8 @@ Source: jenkins-debian-glue
 Section: admin
 Priority: extra
 Maintainer: Michael Prokop <mika@debian.org>
-Build-Depends: debhelper (>= 8.0.0), shunit2
+Build-Depends: debhelper (>= 8.0.0),
+               shunit2
 Standards-Version: 3.9.3
 Homepage: https://github.com/mika/jenkins-debian-glue
 Vcs-Git: git://github.com/mika/jenkins-debian-glue.git
@@ -10,7 +11,12 @@ Vcs-Browser: https://github.com/mika/jenkins-debian-glue
 
 Package: jenkins-debian-glue
 Architecture: all
-Depends: cowbuilder, devscripts, dpkg-dev, reprepro, sudo, ${misc:Depends}
+Depends: cowbuilder,
+         devscripts,
+         dpkg-dev,
+         reprepro,
+         sudo,
+         ${misc:Depends}
 Description: glue scripts for building Debian packages inside Jenkins
  This package provides scripts which should make building Debian
  package inside Jenkins (a Continuous Integration suite) easier.
@@ -55,7 +61,9 @@ Description: virtual package for basic build environment of jenkins-debian-glue
 
 Package: jenkins-debian-glue-buildenv-lintian
 Architecture: all
-Depends: lintian, ruby, ${misc:Depends}
+Depends: lintian,
+         ruby,
+         ${misc:Depends}
 Description: lintian integration in Jenkins
  This package provides the lintian-junit-report script. The
  script can be used for generating JUnit reports of lintian
