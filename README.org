@@ -225,21 +225,21 @@ Jenkins job, which usually corresponds to http://$JENKINS_SERVER/job/$JOBNAME/la
 
 To locate this URL from the Jenkins web interface choose "Last build":
 
-[[img/permalinks.png]]
+[[./img/permalinks.png]]
 
 On the left side on the bottom you'll find a link named "Console Output" then:
 
-[[img/console_output_url.png]]
+[[./img/console_output_url.png]]
 
 ** Where do I find the console output of my *-binaries Job / Matrix build?
 
 Locating the console output of Matrix builds sadly is not obvious. You have to visit the according Matrix axe configuration which are listed under the "Configurations" section of your Jenkins job. If you have just one axis inside your Jenkins job configuration it wil be named "default":
 
-[[img/configuration_default.png]]
+[[./img/configuration_default.png]]
 
 Or if you have multiple axes assigned then you'll find them listed below "Configurations", like:
 
-[[img/configuration_multiarch.png]]
+[[./img/configuration_multiarch.png]]
 
 Inside the Matrix configurations you'll find the usual "Permalinks" as documented in the previous section in this FAQ.
 
