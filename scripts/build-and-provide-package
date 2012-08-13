@@ -309,7 +309,10 @@ remove_packages() {
     return 0
   fi
 
-  echo "*** Removing previous versions from repository ***"
+  echo "*** Removing source package version from repository ***"
+  ${SUDO_CMD:-} reprepro -v -A source -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${SOURCE_PACKAGE}"
+
+  echo "*** Removing previous binary package versions from repository ***"
   for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${ARCH}.changes") ; do
     file="$(basename $p)"
     binpackage="${file%%_*}"
