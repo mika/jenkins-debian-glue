@@ -257,6 +257,8 @@ This allows you to choose the branch name that should be used for building the D
 
 + *lintian-junit-report*: run Debian package checks using lintian and report in JUnit format (and provide a plaintext copy of the output inside file /lintian.txt/).
 
++ *repository_checker*: provides simple access to codename/repository and package listings (without the need to know how to handle reprepro) as well as an option to verify whether Debian source packages match with binary package versions.
+
 
 * FAQ
 

@@ -1,0 +1,200 @@
+#!/bin/bash
+
+JENKINS_DEBIAN_GLUE_VERSION=$(dpkg --list jenkins-debian-glue 2>/dev/null | awk '/^ii/ {print $3}')
+JENKINS_DEBIAN_GLUE_VERSION=${JENKINS_DEBIAN_GLUE_VERSION:-unidentified}
+
+if [ -r /etc/jenkins/debian_glue ] ; then
+  . /etc/jenkins/debian_glue
+fi
+
+if [ -z "${REPOSITORY:-}" ] ; then
+  REPOSITORY='/srv/repository'
+fi
+
+if [ -z "${REPREPRO_OPTS:-}" ]  ; then
+  REPREPRO_OPTS='--waitforlock 1000 -v'
+fi
+
+LOGFILE=$(mktemp)
+
+bailout() {
+  [ -n "${1:-}" ] && EXITCODE="$1" || EXITCODE=1
+  rm -f "$LOGFILE"
+  exit $EXITCODE
+}
+
+usage() {
+  echo "$0
+
+Listing options for packages:
+
+  --list-package         <package>  List repositories which provide specified package (source + binary)
+  --list-binary-package  <package>  List repositories which provide specified package (binary only)
+  --list-source-package  <package>  List repositories which provide specified package (source only)
+
+Listing options for repositories (known as Codenames in reprepro!):
+
+  --list-repos           <repos>    List all packages (binary + source) registered in specified repository
+  --list-binary-repos    <repos>    List all binary packages registered in specified repository
+  --list-source-repos    <repos>    List all source packages registered in specified repository
+
+Configuration options:
+
+  --repository </some/directory/>   Use specified directory as base path
+
+Validation options:
+
+  --validate-source-bin-versions    Make sure source packages match with binary package versions.
+
+Misc options:
+
+  --help                            Display this help screen.
+  --version                         Display program version.
+"
+}
+
+validate-source-bin-versions() {
+  rc=0
+
+  for repository in $(awk '/^Codename: / {print $2}' "${REPOSITORY}"/conf/distributions 2>"${LOGFILE}") ; do
+    for sourcepackage in $(reprepro $REPREPRO_OPTS -A source -b "${REPOSITORY}" --list-format='${package}\n' list $repository 2>"${LOGFILE}") ; do
+      sourceversion=$(reprepro $REPREPRO_OPTS -A source -b "${REPOSITORY}" --list-format='${version}\n' list $repository $sourcepackage 2>"${LOGFILE}")
+      for binarypackage in $(reprepro $REPREPRO_OPTS -b "${REPOSITORY}" --list-format='${package}\n' -T deb listfilter "$repository" "\$Source (==$sourcepackage)" 2>"${LOGFILE}") ; do
+        archversion=$(reprepro $REPREPRO_OPTS -A amd64 -b "${REPOSITORY}" --list-format='${version}\n' list $repository $binarypackage 2>"${LOGFILE}")
+
+        if [ -z "$archversion" ] && [ -n "$sourceversion" ] ; then
+          echo "Warning: package $binarypackage in repository $repository has sourceversion $sourceversion but lacks archversion"
+          rc=1
+          continue
+        fi
+
+        if [ -z "$sourceversion" ] && [ -n "$archversion" ] ; then
+          echo "Warning: package $binarypackage in repository $repository has archversion $archversion but lacks sourceversion"
+          rc=1
+          continue
+        fi
+
+        if ! [[ "$sourceversion" == "$archversion" ]] ; then
+          echo "Mismatch in repo $repository with ${binarypackage}: arch version [${archversion}] vs. sourceversion [$sourceversion]"
+          rc=1
+          continue
+        fi
+
+      done
+    done
+  done
+
+  return $rc
+}
+
+
+trap bailout 1 2 3 6 9 14 15
+
+# command line handling
+CMDLINE_OPTS=list-package:,list-binary-package:,list-binary-repos:,list-repos:,list-source-package:,list-source-repos:,repository:,,help,validate-source-bin-versions,version
+
+_opt_temp=$(getopt --name repository_checker -o +vhV --long $CMDLINE_OPTS -- "$@")
+if [ $? -ne 0 ]; then
+  echo "Try '$0 --help' for more information." >& 2
+  exit 1
+fi
+eval set -- "$_opt_temp"
+
+# defaults
+_opt_list_binary_package=false
+_opt_list_binary_repos=false
+_opt_list_packages=false
+_opt_list_repos=false
+_opt_list_source_package=false
+_opt_list_source_repos=false
+_opt_validate_source_bin_versions=false
+
+while :; do
+  case "$1" in
+  --list-package)
+    shift; _opt_list_packages=true ; PACKAGE="$1"
+    ;;
+  --list-binary-package)
+    shift; _opt_list_binary_package=true; PACKAGE="$1"
+    ;;
+  --list-binary-repos)
+    shift; _opt_list_binary_repos=true; REPOS="$1"
+    ;;
+  --list-repos)
+    shift; _opt_list_repos=true; REPOS="$1"
+    ;;
+  --list-source-package)
+    shift; _opt_list_source_package=true; PACKAGE="$1"
+    ;;
+  --list-source-repos)
+    shift; _opt_list_source_repos=true; REPOS="$1"
+    ;;
+  --repository)
+    shift; REPOSITORY="$1"
+    ;;
+  --help)
+    usage ; exit 0;
+    ;;
+  --validate-source-bin-versions)
+    _opt_validate_source_bin_versions=true
+    ;;
+  --version)
+    echo "$0 version $JENKINS_DEBIAN_GLUE_VERSION"; exit 0;
+    ;;
+  --)
+    shift; break
+    ;;
+  *)
+    echo "Internal getopt error! $1" >&2
+    exit 1
+    ;;
+  esac
+  shift
+done
+
+# sanity checks
+if ! [ -r "${REPOSITORY}"/conf/distributions ] ; then
+  echo "Error: reprepro configuration ${REPOSITORY}/conf/distributions can not be read." >&2
+  bailout 1
+fi
+
+# main execution
+if $_opt_list_packages ; then
+  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" ls "${PACKAGE}"
+  bailout 0
+fi
+
+if $_opt_list_source_package ; then
+  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -A source ls "${PACKAGE}"
+  bailout 0
+fi
+
+if $_opt_list_binary_package ; then
+  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -T deb ls "${PACKAGE}"
+  bailout 0
+fi
+
+if $_opt_list_repos ; then
+  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" list "${REPOS}"
+  bailout 0
+fi
+
+if $_opt_list_source_repos ; then
+  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -A source list "${REPOS}"
+  bailout 0
+fi
+
+if $_opt_list_binary_repos ; then
+  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -T deb list "${REPOS}"
+  bailout 0
+fi
+
+if $_opt_validate_source_bin_versions ; then
+  validate-source-bin-versions
+  bailout $?
+fi
+
+usage >&2
+bailout 1
+
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
