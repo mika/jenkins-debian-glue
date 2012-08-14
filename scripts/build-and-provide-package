@@ -291,7 +291,7 @@ cowbuilder_run() {
         --basepath $BASE --debbuildopts "${DEBBUILDOPTS:-}"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
-    amd64|all)
+    amd64|all|*)
       sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
         --basepath $BASE --debbuildopts "${DEBBUILDOPTS:-}"
