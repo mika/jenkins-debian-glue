@@ -202,9 +202,13 @@ Then you should get test reports for your Debian packages based on lintian's out
 
 + /release/: install Debian package in repository name as specified via "$release" instead of the default (being $REPOS), see "/Can I collect multiple Debian packages in one single repository?/" in the FAQ section for further details.
 
-+ /BASE_PATH/: use specified directory as base directory for further actions. Just set it to "${WORKSPACE}" if you don't have a customized "Target directory" in the "Copy artifacts from another project" configuration, otherwise adopt as necessary.
++ /BASE_PATH/: use specified directory as base directory for further actions. Defaults to "${WORKSPACE}" if unset. Adjust it if you e.g. have a customized "Target directory" in the "Copy artifacts from another project" configuration.
 
 + /BUILD_ONLY/: execute the steps building Debian binary package(s) but skip the repository setup/inclusion steps (useful for building the package(s) on slave nodes and including the result on a different node later then)
+
++ /COWBUILDER_BASE/: set path for cowbuilder's base.cow, defaults to //var/cache/pbuilder/base-${COWBUILDER_DIST}-${arch}.cow/ whereas /COWBUILDER_DIST/ depends on its according variable and /arch/ depends on /architecture/ (though doesn't match it if it's set to "all").
+
++ /COWBUILDER_DIST/: distribution that should be used for creating the cowbuilder base.cow. If /distribution/ is set COWBUILDER_DIST defaults to that, otherwise defaults to the currently running distribution and if that can't be determined then falls back to "sid" (being Debian/unstable).
 
 + /PROVIDE_ONLY/: skip the steps building Debian binary package(s) and just run the repository setup/inclusion steps (useful if building the package(s) takes place on slave nodes and the result should by included in repository/repositories on a specific node then)
 
