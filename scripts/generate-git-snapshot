@@ -4,6 +4,10 @@ set -x
 set -e
 set -u
 
+if [ -r /etc/jenkins/debian_glue ] ; then
+  . /etc/jenkins/debian_glue
+fi
+
 [ -n "${DEBEMAIL:-}" ] || DEBEMAIL="jenkins-debian-glue Autobuilder <jenkins@example.org>"
 export DEBEMAIL
 

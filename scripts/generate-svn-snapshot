@@ -7,6 +7,10 @@ set -u
 export LC_ALL=C
 export LANG=C
 
+if [ -r /etc/jenkins/debian_glue ] ; then
+  . /etc/jenkins/debian_glue
+fi
+
 [ -n "${DEBEMAIL:-}" ] || DEBEMAIL="jenkins-debian-glue Autobuilder <jenkins@example.org>"
 export DEBEMAIL
 
