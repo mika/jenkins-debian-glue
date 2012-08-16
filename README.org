@@ -79,8 +79,6 @@ NOTE: the "Delete workspace before build starts" option provided by the [[https:
 Then add another build step of "/Execute shell/" as follows:
 
 #+BEGIN_EXAMPLE
-# JENKINS_DEBIAN_GLUE_SOURCE_HEADER
-
 # when using git:
 /usr/bin/generate-git-snapshot
 
@@ -120,11 +118,6 @@ Screenshot for this /Copy artifacts/ configuration:
 In the "/Build/" section add a build step "/Execute shell/" using:
 
 #+BEGIN_EXAMPLE
-# JENKINS_DEBIAN_GLUE_BINARIES_HEADER
-
-REPOS="${JOB_NAME%-binaries*}"
-/usr/bin/generate-reprepro-codename "${REPOS}"
-
 /usr/bin/build-and-provide-package
 #+END_EXAMPLE
 
@@ -303,10 +296,6 @@ The build-and-provide-package script does support such distributed builds by usi
 Usage example for the *-binaries job:
 
 #+BEGIN_EXAMPLE
-# JENKINS_DEBIAN_GLUE_BINARIES_HEADER
-REPOS="${JOB_NAME%-binaries*}"
-sudo /usr/bin/generate-reprepro-codename "${REPOS}"
-
 export BUILD_ONLY=true
 export SUDO_CMD=sudo
 /usr/bin/build-and-provide-package
@@ -317,7 +306,6 @@ Create a *-repos job which gets triggered from the *-binaries job. Don't forget 
 Inside the *-repos job you can use something like:
 
 #+BEGIN_EXAMPLE
-# JENKINS_DEBIAN_GLUE_REPOS_HEADER
 mkdir -p binaries
 
 for suffix in gz bz2 xz deb dsc changes ; do
@@ -326,9 +314,6 @@ done
 
 # if building a tagged version then do not include that one in the release-trunk repository
 case "$branch" in tags/*|branches/*) export IGNORE_RELEASE_TRUNK=true;; esac
-
-REPOS="${JOB_NAME%-repos*}"
-sudo /usr/bin/generate-reprepro-codename "${REPOS}"
 
 export SUDO_CMD=sudo
 export BASE_PATH="binaries/"
