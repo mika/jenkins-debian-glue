@@ -369,7 +369,7 @@ trunk_release() {
   else
     echo "*** TRUNK_RELEASE is enabled ($TRUNK_RELEASE) ***"
 
-    generate-reprepro-codename "$TRUNK_RELEASE"
+    ${SUDO_CMD:-} generate-reprepro-codename "$TRUNK_RELEASE"
 
     ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
     [ $? -eq 0 ] || bailout 1 "Error: Failed to copy packages from ${REPOS} to ${TRUNK_RELEASE}."
@@ -394,7 +394,7 @@ release_repos() {
   cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${release}/"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to copy binary packages to release directory."
 
-  REPOSITORY=$REPOSITORY generate-reprepro-codename "${release}"
+  ${SUDO_CMD:-} REPOSITORY=$REPOSITORY generate-reprepro-codename "${release}"
 
   if ! grep -q "^Name: $release$" "${REPOSITORY}/conf/incoming" 2>/dev/null ; then
     cat >> "${REPOSITORY}/conf/incoming" << EOF
