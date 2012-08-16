@@ -48,11 +48,6 @@ bailout() {
   [ -n "${1:-}" ] && EXIT="${1}" || EXIT=0
   [ -n "${2:-}" ] && echo "$2" >&2
 
-  if [ -n "${sources:-}" ] && [ "${sources:-}" != "unset" ] ; then
-    echo "*** Removing sources file. ***"
-    rm -f "${sources}/"*
-  fi
-
   echo "*** Getting rid of files in $WORKSPACE/binaries/ to avoid problems in next run. ***"
   rm -f "$WORKSPACE"/binaries/*
 
@@ -75,15 +70,12 @@ identify_package_name() {
 }
 
 set_base_path() {
-  # when BASE_PATH is set in the build step then don't assume a default,
-  # this is useful when building on slave nodes, being used like:
-  # export BASE_PATH="$WORKSPACE/${JOB_NAME%-binaries/*}-source/"
-
+  # when BASE_PATH is set in the build step then don't default to $WORKSPACE
   if [ -n "${BASE_PATH:-}" ] ; then
     echo "*** Using provided ${BASE_PATH} as BASE_PATH ***"
   else
     BASE_PATH="${WORKSPACE}"
-    echo "*** Using \$WORKSPACE [$BASE_PATH] as default BASE_PATH ***"
+    echo "*** Using \$WORKSPACE [$BASE_PATH] as default for BASE_PATH ***"
   fi
 
 }
@@ -105,52 +97,33 @@ build_info() {
 }
 
 identify_sourcefile() {
-  if [ -n "${sources:-}" ]; then
-    echo "*** Variable \$sources set, using it for locating source files. ***"
-    if [ -z "${distribution:-}" ]; then
-        sourcefile=$(echo "${sources}/"*.dsc)
-    else
-        sourcefile=$(echo "${sources}/distribution=${distribution}/"*.dsc)
-    fi
-
-    if [ "$sourcefile" = 'sources/*.dsc' ] ; then
-      bailout 1 "Error: no sourcefile (*.dsc) found. Exiting."
-    fi
-
-    case "$sourcefile" in
-      *\ *) echo "*** Multiple source files (*.dsc) present in $(pwd): ***"
-        ls -la "${sources}/"
-        bailout 1 "Error: Please re-run source job to force clean rebuild."
-        ;;
-    esac
-    p="$(basename $sourcefile .dsc)"
-    newest_version="${p#*_}"
-    SOURCE_PACKAGE="*" # FIXME: SOURCE_PACKAGE is used by identify_build_type
-  else
-    sources="unset"
-    echo "*** Identifying newest package version ***"
-    newest_version="0"
-
-    for file in "${BASE_PATH}/"*.dsc ; do
-      SOURCE_PACKAGE="$(awk '/^Source: / {print $2}' $file)"
-      p="$(basename $file .dsc)"
-      if [ "$p" = '*' ] ; then
-        bailout 1 "Error: No source package found (forgot to configure source files deployment?)"
-      fi
-      cur_version="${p#*_}"
-      if dpkg --compare-versions "${cur_version}" gt "${newest_version}" ; then
-        newest_version="${cur_version}"
-      else
-        base_version="${cur_version}"
-      fi
-    done
-
-    echo "*** Found package version $newest_version ***"
-
-    sourcefile="${BASE_PATH}/${SOURCE_PACKAGE}"_*"${newest_version}".dsc
+  if [ -n "${sources:-}" ] ; then
+    echo "*** WARNING: sources variable [$sources] is set, please use BASE_PATH variable instead ***"
+    echo "*** If \$sources is unrelated to build-and-provide-package you can ignore this warning ***"
   fi
 
-  echo "*** Using $sourcefile (version: ${newest_version}) [sources: $sources]"
+  echo "*** Identifying newest package version ***"
+  newest_version="0"
+
+  for file in "${BASE_PATH}/"*.dsc ; do
+    SOURCE_PACKAGE="$(awk '/^Source: / {print $2}' $file)"
+    p="$(basename $file .dsc)"
+    if [ "$p" = '*' ] ; then
+      bailout 1 "Error: No source package found (forgot to configure source files deployment?)"
+    fi
+    cur_version="${p#*_}"
+    if dpkg --compare-versions "${cur_version}" gt "${newest_version}" ; then
+      newest_version="${cur_version}"
+    else
+      base_version="${cur_version}"
+    fi
+  done
+
+  echo "*** Found package version $newest_version ***"
+
+  sourcefile="${BASE_PATH}/${SOURCE_PACKAGE}"_*"${newest_version}".dsc
+
+  echo "*** Using $sourcefile (version: ${newest_version})"
 }
 
 dist_and_arch_settings() {

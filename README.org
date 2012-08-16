@@ -125,7 +125,6 @@ In the "/Build/" section add a build step "/Execute shell/" using:
 REPOS="${JOB_NAME%-binaries*}"
 /usr/bin/generate-reprepro-codename "${REPOS}"
 
-export BASE_PATH="${WORKSPACE}"
 /usr/bin/build-and-provide-package
 #+END_EXAMPLE
 
@@ -203,9 +202,7 @@ Then you should get test reports for your Debian packages based on lintian's out
 
 + /release/: install Debian package in repository name as specified via "$release" instead of the default (being $REPOS), see "/Can I collect multiple Debian packages in one single repository?/" in the FAQ section for further details.
 
-+ /sources/: use specified directory as base directory for locating Debian source files. Useful if you use a customized "Target directory" in the "Copy artifacts from another project" configuration and do not want to/can't use /BASE_PATH/. (Note: this variable might get removed soon. It's NOT identical to /BASE_PATH/, this is a known issue.)
-
-+ /BASE_PATH/: use specified directory as base directory for further actions. Just set it to "${WORKSPACE}" if you don't have a customized "Target directory" in the "Copy artifacts from another project" configuration, otherwise adopt as necessary. (Note: not identical to /sources/, this is a known issue.)
++ /BASE_PATH/: use specified directory as base directory for further actions. Just set it to "${WORKSPACE}" if you don't have a customized "Target directory" in the "Copy artifacts from another project" configuration, otherwise adopt as necessary.
 
 + /BUILD_ONLY/: execute the steps building Debian binary package(s) but skip the repository setup/inclusion steps (useful for building the package(s) on slave nodes and including the result on a different node later then)
 
@@ -308,7 +305,6 @@ sudo /usr/bin/generate-reprepro-codename "${REPOS}"
 
 export BUILD_ONLY=true
 export SUDO_CMD=sudo
-export BASE_PATH="${WORKSPACE}"
 /usr/bin/build-and-provide-package
 #+END_EXAMPLE
 
