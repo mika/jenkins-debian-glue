@@ -127,50 +127,57 @@ identify_sourcefile() {
 }
 
 dist_and_arch_settings() {
+  if [ -z "${architecture:-}" ] || [ "${architecture:-}" = "all" ] ; then
+    arch="$(dpkg-architecture -qDEB_HOST_ARCH)"
+    echo "*** No architecture set or architecture set to 'all', using system arch ${arch} ***"
+  else
+    arch="${architecture}"
+    echo "*** architecture is set to ${architecture} ***"
+  fi
+
+  # only set $arch for other functions in this script if PROVIDE_ONLY is set
+  if [ -n "${PROVIDE_ONLY:-}" ] ; then
+    echo "*** Config variable 'PROVIDE_ONLY' is set, not setting COWBUILDER_BASE, COWBUILDER_DIST and DIST ***"
+    return 0
+  fi
+
   if [ -n "${distribution:-}" ] ; then
-    local DIST="-${distribution}"
+    local DIST="${distribution}"
   else
     # default to the currently running distribution to avoid hardcoding
     # a distribution which might not be supported by the running system
     local distribution=$(lsb_release --short --codename 2>/dev/null)
     [ -n "${distribution}" ] || distribution="sid"  # fallback to "sid" iff lsb_release fails
-    local DIST="-$distribution"
+    local DIST="$distribution"
   fi
 
-  if [ -z "${architecture:-}" ] || [ "${architecture:-}" = "all" ] ; then
-    echo "*** No architecture set or architecture set to 'all', using system arch for cowbuilder ***"
-    ARCH="$(dpkg-architecture -qDEB_HOST_ARCH)"
-    BASE="/var/cache/pbuilder/base${DIST:-}.cow"
-  else
-    echo "*** Using cowbuilder base for architecture ${architecture} ***"
-    ARCH="${architecture}"
-    BASE="/var/cache/pbuilder/base${DIST:-}-${architecture}.cow"
-  fi
-
-  if [ -n "${PROVIDE_ONLY:-}" ] ; then
-    echo "*** Config variable 'PROVIDE_ONLY' is set, not considering COWBUILDER_DIST ***"
-    return 0
-  fi
-
+  # if COWBUILDER_DIST is set it overrides distribution then
   if [ -n "${COWBUILDER_DIST:-}" ]; then
     echo "*** COWBUILDER_DIST is set to $COWBUILDER_DIST - using it for base.cow if it does not exist yet. ***"
   else
-    echo "*** Using cowbuilder base for distribution ${distribution} ***"
-    COWBUILDER_DIST="${distribution}"
+    echo "*** Using cowbuilder base for distribution ${DIST} ***"
+    COWBUILDER_DIST="${DIST}"
+  fi
+
+  if [ -n "${COWBUILDER_BASE:-}" ] ; then
+    echo "*** COWBUILDER_BASE is set to $COWBUILDER_BASE - using as cowbuilder base.cow ***"
+  else
+    COWBUILDER_BASE="/var/cache/pbuilder/base-${COWBUILDER_DIST}-${arch}.cow"
+    echo "*** No COWBUILDER_BASE set, using $COWBUILDER_BASE as cowbuilder base.cow ***"
   fi
 }
 
 cowbuilder_init() {
-  if [ ! -d "${BASE}" ]; then
-    echo "*** Creating cowbuilder base $BASE for arch $ARCH and distribution $COWBUILDER_DIST ***"
-    sudo cowbuilder --create --basepath "${BASE}" --distribution "${COWBUILDER_DIST}" \
-         --debootstrapopts --arch --debootstrapopts "$ARCH" \
+  if [ ! -d "${COWBUILDER_BASE}" ]; then
+    echo "*** Creating cowbuilder base $COWBUILDER_BASE for arch $arch and distribution $COWBUILDER_DIST ***"
+    sudo cowbuilder --create --basepath "${COWBUILDER_BASE}" --distribution "${COWBUILDER_DIST}" \
+         --debootstrapopts --arch --debootstrapopts "$arch" \
          --debootstrapopts --variant=buildd
-    [ $? -eq 0 ] || bailout 1 "Error: Failed to create cowbuilder base ${BASE}."
+    [ $? -eq 0 ] || bailout 1 "Error: Failed to create cowbuilder base ${COWBUILDER_BASE}."
   else
     echo "*** Updating cowbuilder cow base ***"
-    sudo cowbuilder --update --basepath "${BASE}"
-    [ $? -eq 0 ] || bailout 1 "Error: Failed to update cowbuilder base ${BASE}."
+    sudo cowbuilder --update --basepath "${COWBUILDER_BASE}"
+    [ $? -eq 0 ] || bailout 1 "Error: Failed to update cowbuilder base ${COWBUILDER_BASE}."
   fi
 }
 
@@ -252,13 +259,13 @@ cowbuilder_run() {
     i386)
       linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
-        --basepath $BASE --debbuildopts "${DEBBUILDOPTS:-}"
+        --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
     amd64|all|*)
       sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
-        --basepath $BASE --debbuildopts "${DEBBUILDOPTS:-}"
+        --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
     *)
@@ -277,7 +284,7 @@ remove_packages() {
   ${SUDO_CMD:-} reprepro -v -A source -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${SOURCE_PACKAGE}"
 
   echo "*** Removing previous binary package versions from repository ***"
-  for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${ARCH}.changes" | grep '\.deb$') ; do
+  for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${arch}.changes" | grep '\.deb$') ; do
     file="$(basename $p)"
     binpackage="${file%%_*}"
     binary_list="${binary_list:-} ${binpackage}"
@@ -287,8 +294,8 @@ remove_packages() {
       echo "*** Removing existing package ${binpackage} from repository ${REPOS} (arch all) ***"
       ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
     else
-      echo "*** Removing existing package ${binpackage} from repository ${REPOS} for arch ${ARCH} ***"
-      ${SUDO_CMD:-} reprepro -v -A "${ARCH}" -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
+      echo "*** Removing existing package ${binpackage} from repository ${REPOS} for arch ${arch} ***"
+      ${SUDO_CMD:-} reprepro -v -A "${arch}" -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
     fi
 
   done
