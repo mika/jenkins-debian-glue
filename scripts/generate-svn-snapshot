@@ -164,10 +164,4 @@ fi
 # revert to original debian/changelog to avoid highly increasing version numbers with each build
 ( cd source/${branch:-} ; svn revert debian/changelog )
 
-# needed for deploying artifacts
-mkdir -p "${JENKINS_HOME}/userContent/${JOB_NAME}/"
-
-echo "*** Cleaning up ${JENKINS_HOME}/userContent/${JOB_NAME} to get rid of possibly outdated data ***"
-rm -f "${JENKINS_HOME}/userContent/${JOB_NAME}/"*
-
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
