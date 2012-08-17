@@ -103,6 +103,8 @@ Under /Configuration Matrix/ create a user-defined Axis titled "/architecture/" 
 
 Choose "/Run each configuration sequentially/".
 
+In the /Build Environment/ section enable the "Delete workspace before build starts" option (provided by the Workspace Cleanup Plugin).
+
 In the "/Build/" section add a build step "/Copy artifacts from another project/" using:
 
    : Project name: $JOBNAME-source
