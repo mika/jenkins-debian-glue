@@ -168,17 +168,38 @@ dist_and_arch_settings() {
 }
 
 cowbuilder_init() {
+  if [ -n "${COMPONENTS:-}" ] ; then
+    echo "*** COMPONENTS is set [$COMPONENTS], using for pbuilder configuration ***"
+    local pbuilderrc=$(mktemp)
+    echo "COMPONENTS=\"${COMPONENTS}\"" > $pbuilderrc
+    local pbuildercfg="--configfile=$pbuilderrc"
+  fi
+
+  # workaround for Ubuntu problem, as cowdancer is available only in universe :(
+  # https://bugs.launchpad.net/ubuntu/+source/cowdancer/+bug/237591
+  # https://bugs.launchpad.net/ubuntu/+source/cowdancer/+bug/747053
+  if lsb_release --id 2>/dev/null | grep -q Ubuntu ; then
+    if [ -z "${COMPONENTS:-}" ] ; then
+      echo "*** Ubuntu detected, enabling universe repository component to work around cowdancer issue ***"
+      local pbuilderrc=$(mktemp)
+      echo 'COMPONENTS="main universe"' > $pbuilderrc
+      local pbuildercfg="--configfile=$pbuilderrc"
+    fi
+  fi
+
   if [ ! -d "${COWBUILDER_BASE}" ]; then
     echo "*** Creating cowbuilder base $COWBUILDER_BASE for arch $arch and distribution $COWBUILDER_DIST ***"
     sudo cowbuilder --create --basepath "${COWBUILDER_BASE}" --distribution "${COWBUILDER_DIST}" \
          --debootstrapopts --arch --debootstrapopts "$arch" \
-         --debootstrapopts --variant=buildd
+         --debootstrapopts --variant=buildd ${pbuildercfg:-}
     [ $? -eq 0 ] || bailout 1 "Error: Failed to create cowbuilder base ${COWBUILDER_BASE}."
   else
     echo "*** Updating cowbuilder cow base ***"
     sudo cowbuilder --update --basepath "${COWBUILDER_BASE}"
     [ $? -eq 0 ] || bailout 1 "Error: Failed to update cowbuilder base ${COWBUILDER_BASE}."
   fi
+
+  [ -n "${pbuilderrc:-}" ] && rm -f "$pbuilderrc"
 }
 
 

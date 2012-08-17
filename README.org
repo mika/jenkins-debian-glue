@@ -9,7 +9,7 @@ homogeneous as possible.
 * System requirements
 
 + [[http://jenkins-ci.org/][Jenkins]]
-+ [[http://www.debian.org/][Debian]]
++ [[http://www.debian.org/][Debian]] / [[http://www.ubuntu.com/][Ubuntu]]
 + [[http://packages.debian.org/sid/cowbuilder][cowbuilder]], [[http://packages.debian.org/sid/reprepro][reprepro]] and [[http://packages.debian.org/sid/sudo][sudo]] (all available via apt-get/aptitude)
 
 Debian packages of jenkins-debian-glue are available at http://jenkins.grml.org/job/jenkins-debian-glue-binaries/ for your service.
@@ -198,6 +198,8 @@ Then you should get test reports for your Debian packages based on lintian's out
 + /BASE_PATH/: use specified directory as base directory for further actions. Defaults to "${WORKSPACE}" if unset. Adjust it if you e.g. have a customized "Target directory" in the "Copy artifacts from another project" configuration.
 
 + /BUILD_ONLY/: execute the steps building Debian binary package(s) but skip the repository setup/inclusion steps (useful for building the package(s) on slave nodes and including the result on a different node later then)
+
++ /COMPONENTS/: the specified repository components will be enabled when creating a new cowbuilder base.cow. If unset defaults to pbuilder's defaults (the underlying system of cowbuilder). Notice that on Ubuntu systems /COMPONENTS/ will be automatically set to "main universe" (if /COMPONENTS/ isn't set yet) to work around a cowdancer issue.
 
 + /COWBUILDER_BASE/: set path for cowbuilder's base.cow, defaults to //var/cache/pbuilder/base-${COWBUILDER_DIST}-${arch}.cow/ whereas /COWBUILDER_DIST/ depends on its according variable and /arch/ depends on /architecture/ (though doesn't match it if it's set to "all").
 
