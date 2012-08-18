@@ -1,3 +1,91 @@
+jenkins-debian-glue (0.2.0) unstable; urgency=low
+
+  The "wisdom tooth removal" release ٩(͡๏̯͡๏)۶
+
+  [ Michael Prokop ]
+  * Bugfix related changes:
+    - [9fdd9fd] Check out temporary branch based on GIT_COMMIT to make
+      git-dch happy
+    - [3a304b1] create_local_branch: make check for remotes/origin/$BRANCH
+      more explicit. Thanks to Axel Beckert
+    - [672aa36] Also remove source package from REPOS
+    - [57ba7e0] Set ARCH/BASE/DIST in dist_and_arch_settings() also for
+      PROVIDE_ONLY runs
+    - [de56110] remove_missing_binary_packages: make check for missing
+      package match whole words
+    - [a00449e] Enable cowbuilder_run() for all architectures
+    - [a12b28a] Always include $distribution in cow base name [closes #17]
+      Thanks to Christoph Berg for the suggestion
+    - [456305e] Call generate-reprepro-codename in reprepro_wrapper + update
+      README accordingly. Thanks to Christoph Berg <myon@debian.org> for
+      idea + patch
+    - [7903737] Invoke all generate-reprepro-codename commands through
+      $SUDO_CMD
+
+  * Major changes:
+    - [f68b0fe] Drop userContent support
+    - [24ad13f] Drop $sources support and default with $BASE_PATH to
+      $WORKSPACE
+    - [8279e90] Drop the deprecated scripts generate-local-repository +
+      include-in-repos
+
+  * New features:
+    - [2593cc8] trigger_jenkins: support sending tags to a release dashboard
+      + iterate over all modified projects
+    - [d1b43a7] include-in-repos: allow overwriting $BASE_DIR, default to
+      working directory
+    - [96f3cb6] Support overriding cowbuilder's base.cow via COWBUILDER_BASE
+      and refactor code
+    - [f6550e9] New script repository_checker
+    - [c37a20a] Install repository_checker in jenkins-debian-glue package
+    - [c27e896] Add official Ubuntu support
+    - [6b43ea6] Initial deployment script + puppet recipe for automatic
+      installation
+    - [af494a8] Adjust path of puppet file for master branch
+    - [33b4195] Puppet deployment script: support EC2 by returning its
+      public IP address
+
+  * Minor updates:
+    - [d236f1a] Do not use Grml-specific defaults for DEBEMAIL and
+      generate-local-repository's Release file
+    - [a271c48] Do not execute dist_and_arch_settings() if PROVIDE_ONLY
+      is set
+    - [dd3c1db] Adjust identify_sourcefile to not mention ArtifactDeployer
+      any longer
+    - [20ef6f3] Apply wrap-and-sort on Debian package
+    - [3e55f3e] debian package description: fix typo
+    - [043002d] Execute wrap-and-sort with -a option to wrap all
+      {Build-,}Depends
+    - [0c2a33e] Limit package removal of binary packages to .deb files only
+    - [101fb3b] Source /etc/jenkins/debian_glue in generate-*-snapshot
+
+  * Documentation related changes:
+    - [00ccf25] Update list of contributors
+    - [f1f3d78] Update list of Known TODOs
+    - [14e8b79] Mention Debian packages
+    - [c2f8835] Document how to find console output of Jenkins jobs
+    - [0f3b985] Clarify best practices, current development + cover
+      some FAQs, closes #9
+    - [9c52b4b] Minor syntax fixes and rewordings
+    - [1bcac3d] Document COWBUILDER_BASE and COWBUILDER_DIST
+    - [0c907e0] Mention the "Delete workspace before build starts"
+      option for the binary job
+
+  [ Christoph Berg ]
+  * [06be70c] Update svn setup instructions.
+  * [6f21ae0] Remove duplicate signal from trap call.
+  * [757ce4a] Add a workaround for SOURCE_PACKAGE
+  * [8a8c98c] Reset current directory in identify_build_type
+  * [0893665] Remove a stray newline in README.org.
+
+  [ Axel Beckert ]
+  * [fc8638f] git-buildpackage refuse to operate on a single git commit,
+    too
+  * [aaa1298] Fix README about DCH_OPTS and DCH_EXTRA_OPTS
+  * [f144899] arch:all packages don't need ${shlibs:Depends}
+
+ -- Michael Prokop <mika@grml.org>  Sat, 18 Aug 2012 13:33:23 +0200
+
 jenkins-debian-glue (0.1.1) unstable; urgency=low
 
   * [8092cc5] generate-git-snapshot: use git-dch's auto mode as default
