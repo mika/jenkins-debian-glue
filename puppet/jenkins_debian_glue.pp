@@ -353,6 +353,78 @@ class jenkins::config {
 </matrix-project>
 "
   }
+
+  file { '/var/lib/jenkins/config.xml':
+    ensure  => present,
+    mode    => '0644',
+    owner   => 'jenkins',
+    require => Package['jenkins'],
+    notify  => Service['jenkins'],
+    content => "<?xml version='1.0' encoding='UTF-8'?>
+<hudson>
+  <useSecurity>true</useSecurity>
+  <authorizationStrategy class='hudson.security.FullControlOnceLoggedInAuthorizationStrategy'/>
+  <securityRealm class='hudson.security.HudsonPrivateSecurityRealm'>
+    <disableSignup>true</disableSignup>
+    <enableCaptcha>false</enableCaptcha>
+  </securityRealm>
+  <systemMessage>&lt;h1&gt;&lt;a href=&quot;http://jenkins-debian-glue.org/&quot;&gt;jenkins-debian-glue&lt;/a&gt; Continuous Integration labs&lt;/h1&gt;</systemMessage>
+</hudson>
+"
+  }
+
+  file { '/var/lib/jenkins/users/':
+    ensure  => directory,
+    mode    => '0755',
+    owner   => 'jenkins',
+    require => Package['jenkins'],
+  }
+
+  file { '/var/lib/jenkins/users/jenkins-debian-glue/':
+    ensure  => directory,
+    mode    => '0755',
+    owner   => 'jenkins',
+    require => File['/var/lib/jenkins/users/'],
+  }
+
+  # PASSWORD_HASH will be adjusted by jenkins-debian-glue's apply.sh script
+  file { '/var/lib/jenkins/users/jenkins-debian-glue/config.xml':
+    ensure       => present,
+    mode         => '0644',
+    owner        => 'jenkins',
+    require      => File['/var/lib/jenkins/users/jenkins-debian-glue/'],
+    notify       => Service['jenkins'],
+    content      => "<?xml version='1.0' encoding='UTF-8'?>
+<user>
+  <fullName>Jenkins Debian Glue</fullName>
+  <properties>
+    <jenkins.security.ApiTokenProperty>
+      <apiToken>R5A9eoSreMtS3iYuvmCyrIJ1q3DQGGquBgkr7sJapuYNPLWvy5cfaT6EOAnb10kY</apiToken>
+    </jenkins.security.ApiTokenProperty>
+    <hudson.model.MyViewsProperty>
+      <views>
+        <hudson.model.AllView>
+          <owner class='hudson.model.MyViewsProperty' reference='../../..'/>
+          <name>All</name>
+          <filterExecutors>false</filterExecutors>
+          <filterQueue>false</filterQueue>
+          <properties class='hudson.model.View$PropertyList'/>
+        </hudson.model.AllView>
+      </views>
+    </hudson.model.MyViewsProperty>
+    <hudson.search.UserSearchProperty>
+      <insensitiveSearch>false</insensitiveSearch>
+    </hudson.search.UserSearchProperty>
+    <hudson.security.HudsonPrivateSecurityRealm_-Details>
+      <passwordHash>jenkins-debian-glue:PASSWORD_HASH_TO_BE_ADJUSTED</passwordHash>
+    </hudson.security.HudsonPrivateSecurityRealm_-Details>
+    <hudson.tasks.Mailer_-UserProperty>
+      <emailAddress>jenkins@example.org</emailAddress>
+    </hudson.tasks.Mailer_-UserProperty>
+  </properties>
+</user>
+"
+  }
 }
 
 ## software
