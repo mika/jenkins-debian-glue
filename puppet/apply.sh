@@ -7,13 +7,13 @@ if ! [ -r jenkins_debian_glue.pp ] ; then
   if [ -n "$1" ] ; then
     wget -O jenkins_debian_glue.pp --no-check-certificate "$1"
   else
-    wget --no-check-certificate http://raw.github.com/mika/jenkins-debian-glue/puppet/jenkins_debian_glue.pp
+    wget --no-check-certificate https://raw.github.com/mika/jenkins-debian-glue/master/puppet/jenkins_debian_glue.pp
   fi
 fi
 
 if ! [ -r jenkins_debian_glue.pp ] ; then
   echo "Error: can not find jenkins_debian_glue.pp." >&2
-  echo "Either manually grab https://raw.github.com/mika/jenkins-debian-glue/puppet/jenkins_debian_glue.pp" >&2
+  echo "Either manually grab https://raw.github.com/mika/jenkins-debian-glue/master/puppet/jenkins_debian_glue.pp" >&2
   echo "       or run $0 <http://path/to/some/puppetfile.pp>" >&2
   exit 1
 fi
