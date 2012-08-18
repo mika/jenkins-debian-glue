@@ -118,6 +118,10 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
+  jenkins::plugin::install { 'xunit':
+    require => Package['jenkins'],
+  }
+
   package { 'jenkins':
     ensure  => present,
     require => [
@@ -257,10 +261,14 @@ class jenkins::config {
 # when using subversion:
 # /usr/bin/generate-svn-snapshot</command>
     </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>mkdir -p report
+/usr/bin/lintian-junit-report *.dsc &gt; report/lintian.xml</command>
+    </hudson.tasks.Shell>
   </builders>
   <publishers>
     <hudson.tasks.ArtifactArchiver>
-      <artifacts>*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes</artifacts>
+      <artifacts>*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes,lintian.txt</artifacts>
       <latestOnly>false</latestOnly>
     </hudson.tasks.ArtifactArchiver>
     <hudson.tasks.Fingerprinter>
@@ -275,6 +283,11 @@ class jenkins::config {
         <color>BLUE</color>
       </threshold>
     </hudson.tasks.BuildTrigger>
+    <hudson.tasks.junit.JUnitResultArchiver>
+      <testResults>**/lintian.xml</testResults>
+      <keepLongStdio>false</keepLongStdio>
+      <testDataPublishers/>
+    </hudson.tasks.junit.JUnitResultArchiver>
   </publishers>
   <buildWrappers/>
 </project>
@@ -331,16 +344,25 @@ class jenkins::config {
       <command>echo &quot;Listing packages inside the jenkins-debian-glue repository:&quot;
 /usr/bin/repository_checker --list-repos jenkins-debian-glue</command>
     </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>mkdir -p report
+/usr/bin/lintian-junit-report *.dsc &gt; report/lintian.xml</command>
+    </hudson.tasks.Shell>
   </builders>
   <publishers>
     <hudson.tasks.ArtifactArchiver>
-      <artifacts>*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes</artifacts>
+      <artifacts>*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes,lintian.txt</artifacts>
       <latestOnly>false</latestOnly>
     </hudson.tasks.ArtifactArchiver>
     <hudson.tasks.Fingerprinter>
       <targets></targets>
       <recordBuildArtifacts>true</recordBuildArtifacts>
     </hudson.tasks.Fingerprinter>
+    <hudson.tasks.junit.JUnitResultArchiver>
+      <testResults>**/lintian.xml</testResults>
+      <keepLongStdio>false</keepLongStdio>
+      <testDataPublishers/>
+    </hudson.tasks.junit.JUnitResultArchiver>
   </publishers>
   <buildWrappers>
     <hudson.plugins.ws__cleanup.PreBuildCleanup>
