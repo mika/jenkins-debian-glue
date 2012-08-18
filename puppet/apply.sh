@@ -23,14 +23,17 @@ if ! type puppet &>/dev/null ; then
   apt-get -y install puppet || exit 1
 fi
 
-# you have seen nothing, move along :)
-GW_IP=$(ip addr show dev $(route -n | awk '/^0\.0\.0\.0/{print $NF}') | awk '/inet / {print $2}' | head -1 |sed "s;/.*;;")
+# Amazon EC2 returns the internal IP by default, so ask about the public one
+IP=$(facter ec2_public_ipv4 2>/dev/null) # curl http://169.254.169.254/latest/meta-data/public-ipv4
+if [ -z "$IP" ] ; then
+  IP=$(ip addr show dev $(route -n | awk '/^0\.0\.0\.0/{print $NF}') | awk '/inet / {print $2}' | head -1 |sed "s;/.*;;")
+fi
 
 if [[ $(facter fqdn) == "" ]] ; then
   echo "Error: please make sure you have a valid FQDN configured in /etc/hosts" >&2
   echo "NOTE:  Something like adding the following snippet to /etc/hosts might help:
 
-$GW_IP $(hostname).example.org $(hostname)
+$IP $(hostname).example.org $(hostname)
 "
   exit 1
 fi
@@ -44,4 +47,4 @@ fi
 
 date
 
-echo "Now point your browser to http://${GW_IP}:8080"
+echo "Now point your browser to http://${IP}:8080"
