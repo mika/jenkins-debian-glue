@@ -409,7 +409,7 @@ class jenkins::config {
     require => File['/var/lib/jenkins/users/'],
   }
 
-  # PASSWORD_HASH will be adjusted by jenkins-debian-glue's apply.sh script
+  # SEED_TO_BE_ADJUSTED and PASSWORD_HASH will be adjusted by jenkins-debian-glue's apply.sh script
   file { '/var/lib/jenkins/users/jenkins-debian-glue/config.xml':
     ensure       => present,
     mode         => '0644',
@@ -438,7 +438,7 @@ class jenkins::config {
       <insensitiveSearch>false</insensitiveSearch>
     </hudson.search.UserSearchProperty>
     <hudson.security.HudsonPrivateSecurityRealm_-Details>
-      <passwordHash>jenkins-debian-glue:PASSWORD_HASH_TO_BE_ADJUSTED</passwordHash>
+      <passwordHash>SEED_TO_BE_ADJUSTED:PASSWORD_HASH_TO_BE_ADJUSTED</passwordHash>
     </hudson.security.HudsonPrivateSecurityRealm_-Details>
     <hudson.tasks.Mailer_-UserProperty>
       <emailAddress>jenkins@example.org</emailAddress>

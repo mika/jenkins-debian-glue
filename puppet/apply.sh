@@ -14,7 +14,14 @@ if [ $# -lt 1 ] ; then
   exit 1
 fi
 
-PASSWORD_HASH=$(echo -n "${1}{jenkins-debian-glue}" | sha256sum | awk '{print $1}')
+SEED=$(head -c 12 /dev/urandom | base64)
+
+if [ -z "$SEED" ] ; then
+  echo "Error calculating seed. :(" >&2
+  exit 1
+fi
+
+PASSWORD_HASH=$(echo -n "${1}"{"${SEED}"} | sha256sum | awk '{print $1}')
 
 if [ -z "$PASSWORD_HASH" ] ; then
   echo "Error calculating password hash. :(" >&2
@@ -48,6 +55,7 @@ if ! grep -q PASSWORD_HASH_TO_BE_ADJUSTED jenkins_debian_glue.pp ; then
 else
   printf "Adjusting password in jenkins_debian_glue.pp: "
   sed -i "s/PASSWORD_HASH_TO_BE_ADJUSTED/$PASSWORD_HASH/" jenkins_debian_glue.pp || exit 1
+  sed -i "s/SEED_TO_BE_ADJUSTED/$SEED/" jenkins_debian_glue.pp || exit 1
   echo OK
 fi
 
