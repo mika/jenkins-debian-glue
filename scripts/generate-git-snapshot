@@ -140,19 +140,6 @@ identify_latest_change() {
   fi
 }
 
-git_tag_build() {
-  git checkout "${tag}"
-
-  if [ -n "${distribution:-}" ] ; then
-    echo "Distribution found. Adding distribution specific version (${distribution})."
-    dch -b -v "${VERSION_STRING}+${distribution:-}" \
-      "Tagged autobuild for ${distribution} via jenkins-debian-glue."
-  else
-    dch -v "${VERSION_STRING}" \
-      "Tagged autobuild via jenkins-debian-glue."
-  fi
-}
-
 # Clean up any unexpected local changes
 #git reset --hard HEAD
 
@@ -167,13 +154,19 @@ create_local_branch pristine-tar
 # git-dch and git-buildpackage refuse to operate on a single git
 # commit, so instead create a temporary branch to work on
 random_branch="jenkins-debian-glue-buildbranch$RANDOM"
-echo "Checking out branch $random_branch based on $GIT_COMMIT"
-git branch -D "$random_branch" || true
-git checkout -b "$random_branch" "$GIT_COMMIT"
 
 if [ -n "${tag:-}" ] ; then
-  echo "Tag parameter found, using dch for changelog generation."
-  git_tag_build
+  echo "Checking out branch $random_branch based on tag $tag"
+  git branch -D "$random_branch" || true
+  git checkout -b "$random_branch" "$tag"
+else
+  echo "Checking out branch $random_branch based on commit $GIT_COMMIT"
+  git branch -D "$random_branch" || true
+  git checkout -b "$random_branch" "$GIT_COMMIT"
+fi
+
+if [ -n "${tag:-}" ] ; then
+  echo "Tag parameter found, not touching the changelog."
 elif [ "${1:-}" = "identify" ] ; then
   echo "Trying to identify latest tag / merge..."
 
@@ -191,8 +184,11 @@ else
   git_dch_auto
 fi
 
-# get rid of "UNRELEASED" distribution header
-debchange --release ""
+# get rid of "UNRELEASED" distribution header, only
+# necessary if the debian/changelog was modified
+if [ -z "${tag:-}" ] ; then
+  debchange --release ""
+fi
 
 # prepare orig.tar.gz using pristine-tar, but without actually building the source package
 if [ "${IGNORE_GIT_BUILDPACKAGE:-}" = "true" ] ; then
