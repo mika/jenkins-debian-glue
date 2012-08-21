@@ -418,7 +418,7 @@ IncomingDir: incoming/$release
 TempDir: tmp
 LogDir: log
 MorgueDir: ${REPOSITORY}/morgue
-Default: unstable
+Default: $release
 Cleanup: unused_files on_deny on_error
 
 EOF
