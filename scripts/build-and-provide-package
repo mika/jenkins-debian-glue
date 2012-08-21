@@ -405,17 +405,10 @@ release_repos() {
   mkdir -p "${REPOSITORY}/incoming/${release}"
   mkdir -p "${REPOSITORY}/conf"
 
-  if [ -n "${SUDO_CMD:-}" ] ; then
-    ${SUDO_CMD:-} mkdir -p "${REPOSITORY}/incoming/${release}"
-    ${SUDO_CMD:-} mkdir -p "${REPOSITORY}/conf"
-    ${SUDO_CMD:-} chown -R "$(id -un)" "${REPOSITORY}/conf"
-    ${SUDO_CMD:-} chown -R "$(id -un)" "${REPOSITORY}/incoming/${release}"
-  fi
-
   cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${release}/"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to copy binary packages to release directory."
 
-  ${SUDO_CMD:-} REPOSITORY=$REPOSITORY generate-reprepro-codename "${release}"
+  REPOSITORY=$REPOSITORY generate-reprepro-codename "${release}"
 
   if ! grep -q "^Name: $release$" "${REPOSITORY}/conf/incoming" 2>/dev/null ; then
     cat >> "${REPOSITORY}/conf/incoming" << EOF
