@@ -433,7 +433,8 @@ EOF
 
   local old_dir=$(pwd)
   cd "${REPOSITORY}/incoming/${release}"
-  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" processincoming "${release}" "$(basename ${WORKSPACE}/binaries/*.changes)"
+  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
+                processincoming "${release}" "$(basename ${WORKSPACE}/binaries/*.changes)"
   local RC=$?
   cd "$old_dir"
 
