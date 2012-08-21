@@ -1,3 +1,29 @@
+jenkins-debian-glue (0.3.0) unstable; urgency=low
+
+  The "Le prénom" release
+
+  * [f85d9b4] deployment: ship /var/lib/jenkins/config.xml and user
+    jenkins-debian-glue with custom password
+  * [377d53a] Add support for JUnit reports via lintian in automated
+    deployment
+  * [ff72534] README: drop docs, point to http://jenkins-debian-glue.org/
+  * [2a13a53] Drop img/ (provided through website now)
+  * [e901557] Use seed for password hashing. Thanks to Peter Palfrader
+    <weasel@debian.org> for bringing this up while reviewing the script
+  * [3b1e604] repository_checker: support --validate-incoming
+  * [65dbf08] Do not modify debian/changelog if building from a tag
+  * [465be62] run reprepro's processincoming cmdline also with
+    --ignore=wrongdistribution + --waitforlock option. Thanks to Axel
+    Beckert <abe@deuxchevaux.org> for the hint
+  * [76e101f] incoming repos: allow all kinds of distributions listed in
+    packages enter the repos. Thanks to Bernhard R. Link
+    <brlink@debian.org> for the hint regarding "Default:"
+  * [daecb07] Drop sudo wrappers for release repositories
+  * [0f87451] incoming repos: use release name as Default
+  * [69e6730] puppet: build master branch in jenkins-debian-glue-source
+
+ -- Michael Prokop <mika@grml.org>  Tue, 21 Aug 2012 20:44:23 +0200
+
 jenkins-debian-glue (0.2.0) unstable; urgency=low
 
   The "wisdom tooth removal" release ٩(͡๏̯͡๏)۶
