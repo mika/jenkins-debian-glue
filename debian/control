@@ -68,3 +68,18 @@ Description: lintian integration in Jenkins
  This package provides the lintian-junit-report script. The
  script can be used for generating JUnit reports of lintian
  checking Debian packages inside Jenkins jobs.
+
+Package: jenkins-debian-glue-buildenv-taptools
+Architecture: all
+Depends: devscripts,
+         libperl-critic-perl,
+         ruby,
+         ${misc:Depends}
+Description: taptools integration in Jenkins
+ This package provides scripts to check shell and perl source code
+ for common errors, using checkbashism and perlcritic to
+ generate according TAP reports for usage inside Jenkins.
+ .
+ The provided tap_tool_dispatcher script can be used to automatically
+ detect according shell scripts and perl scripts to execute
+ checkbashism_tap and perlcritic_tap accordingly.

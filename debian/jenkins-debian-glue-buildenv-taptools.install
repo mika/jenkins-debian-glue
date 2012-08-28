@@ -1,0 +1,3 @@
+debian/tmp/usr/bin/checkbashism_tap usr/bin/
+debian/tmp/usr/bin/perlcritic_tap usr/bin/
+debian/tmp/usr/bin/tap_tool_dispatcher usr/bin/

@@ -1,0 +1,37 @@
+#!/bin/bash
+
+set -u
+
+if [ -z "${REPORTS_DIRECTORY:-}" ] ; then
+  export REPORTS_DIRECTORY='reports'
+fi
+
+if [ -z "${WORKSPACE:-}" ] ; then
+  echo "Error: WORKSPACE unset, please run inside Jenkins. ">&2
+  exit 1
+fi
+
+if ! [ -d source ] ; then
+  echo "Error: no source directory found, please run inside Jenkins." >&2
+  exit 1
+fi
+
+# start with clean report dir
+rm -rf "${REPORTS_DIRECTORY}"
+mkdir -p "${REPORTS_DIRECTORY}"/perl
+mkdir -p "${REPORTS_DIRECTORY}"/shell
+
+# run perlcritic_tap
+echo "*** perlcritic_tap ***"
+find source -type f ! -path '*.svn*' -prune -exec \
+  sh -c 'input="$1"; output=$(echo $input | sed -e s,/,_,g); /usr/bin/perlcritic_tap "$input" > "${REPORTS_DIRECTORY}/perl/${output}"' '{}' '{}' ';'
+
+# run checkbashism_tap
+echo "*** checkbashism_tap ***"
+find source -type f ! -path '*.svn*' -prune -exec \
+  sh -c 'input="$1"; output=$(echo $input | sed -e s,/,_,g); /usr/bin/checkbashism_tap "$input" > "${REPORTS_DIRECTORY}/shell/${output}"' '{}' '{}' ';'
+
+# get rid of empty files
+find "${REPORTS_DIRECTORY}" -type f -empty -exec rm {} +
+
+## END OF FILE #################################################################

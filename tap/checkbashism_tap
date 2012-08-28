@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+if ARGV[0].nil?
+  $stderr.puts "Usage: #{File.basename $0} <file>"
+  exit 1
+end
+
+if not system "which checkbashisms >/dev/null 2>&1"
+  $stderr.puts "Error: program checkbashisms does not exist (install devscripts package)."
+  exit 1
+end
+
+file = ARGV[0]
+
+if not File.exists? file
+  $stderr.puts "Error: file #{file} could not be read."
+  exit 1
+end
+
+output = %x{checkbashisms --posix #{file} 2>&1}
+
+num_lines = output.lines.count / 2 # checkbasims has one line message and one line code
+exit 0 if num_lines == 0 # nothing found, jey
+counter = 1
+
+if output =~ /does not appear to have a #! interpreter line/
+  $stderr.puts "File #{file} does not appear to have a #! interpreter line, skipping."
+  exit 0
+end
+
+
+# output result in TAP format
+puts "1..#{num_lines}"
+output.gsub(/:\n/, ':').each_line do |critic|
+  next unless critic =~ /^possible bashism in/
+  puts "not ok #{counter}           #{critic}"
+  counter += 1
+end

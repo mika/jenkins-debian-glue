@@ -1,0 +1,43 @@
+#!/usr/bin/env ruby
+
+if ARGV[0].nil?
+  $stderr.puts "Usage: #{File.basename $0} <file>"
+  exit 1
+end
+
+if not system "which perlcritic >/dev/null 2>&1"
+  $stderr.puts "Error: program perlcritic does not exist (install libperl-critic-perl?)."
+  exit 1
+end
+
+# not sure whether we really should check this here..
+#if !File.exists?('/usr/share/perl5/Test/Log4perl.pm')
+#  $stderr.puts "Error: libtest-log4perl-perl not installed."
+#  exit 1
+#end
+
+file = ARGV[0]
+
+# make sure we're checking a perl script
+mimetype = `file -b --keep-going #{file}`.gsub(/\n/,"")
+if not /.*perl/i.match(mimetype)
+  $stderr.puts "File #{file} doesn't look like perl [#{mimetype}]. Ignoring."
+  exit 0
+end
+
+# let's see what perlcritic thinks...
+output = %x{perlcritic #{file}}
+num_lines = output.lines.count
+counter = 1
+
+# output result in TAP format
+puts "1..#{num_lines}"
+output.each_line do |critic|
+  if critic =~ /.* source OK$/
+    puts "ok #{counter}           #{critic}"
+  else
+    puts "not ok #{counter}        #{critic}"
+  end
+
+  counter += 1
+end
