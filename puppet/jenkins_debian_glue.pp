@@ -134,7 +134,9 @@ class jenkins::software {
   package { [ 'jenkins-debian-glue',
             'jenkins-debian-glue-buildenv-git',
             'jenkins-debian-glue-buildenv-lintian',
-            'jenkins-debian-glue-buildenv-svn' ]:
+            'jenkins-debian-glue-buildenv-svn',
+            'jenkins-debian-glue-buildenv-taptools',
+            'jenkins-debian-glue-buildenv-piuparts' ]:
     ensure  => present,
     require => [
       File['/etc/apt/sources.list.d/jenkins-debian-glue.list'],
