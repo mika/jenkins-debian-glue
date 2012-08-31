@@ -1,3 +1,32 @@
+jenkins-debian-glue (0.4.0) unstable; urgency=low
+
+  The "upgrade tests ftw" release ／人◕‿◕人＼
+
+  [ Patrick Schoenfeld ]
+  * [201ec1e] generate-git-snapshot: Allow skipping of git-dch
+
+  [ Michael Prokop ]
+  * New features:
+    - [abc1949] New package jenkins-debian-glue-buildenv-taptools
+    - [87bb207] Initial piuparts support with new package
+      jenkins-debian-glue-buildenv-piuparts
+  * Minor updates:
+    - [3872b18] generate-git-snapshot: Do not fail if SKIP_DCH is
+      unset; use 'true' for checking for SKIP_DCH; inform user about it
+  * Puppet deployment:
+    - [714c019] apply.sh: use ";" as separator in sed cmdline as
+      hash string might contain "/"
+    - [67bdc6e] deploy jenkins-debian-glue-buildenv-taptools +
+      jenkins-debian-glue-buildenv-piuparts
+    - [b8cf4a5] enable piuparts, debootstrap + piuparts_wrapper in
+      /etc/sudoers.d/jenkins
+    - [b2c0c83] deploy TAP Jenkins plugin
+    - [cd2bcf9] provide description in *-source and *-binaries job,
+      including how to access the repos
+    - [647ebb0] provide jenkins-debian-glue-piuparts Jenkins job
+
+ -- Michael Prokop <mika@grml.org>  Fri, 31 Aug 2012 15:07:13 +0200
+
 jenkins-debian-glue (0.3.0) unstable; urgency=low
 
   The "Le prénom" release
