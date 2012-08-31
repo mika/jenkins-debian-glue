@@ -155,7 +155,10 @@ class jenkins::software {
 
   file { '/etc/sudoers.d/jenkins':
     mode    => '0440',
-    content => 'jenkins ALL=NOPASSWD: /usr/sbin/cowbuilder, /usr/sbin/chroot
+    content => '# for *-binaries job
+jenkins ALL=NOPASSWD: /usr/sbin/cowbuilder, /usr/sbin/chroot
+# for *-piuparts job
+jenkins ALL=NOPASSWD: /usr/sbin/piuparts, /usr/sbin/debootstrap, /usr/bin/piuparts_wrapper
 ',
     require => Package['sudo'],
   }
