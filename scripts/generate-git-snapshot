@@ -166,31 +166,33 @@ else
 fi
 
 # Allow skipping of changelog creation, e.g. to build a branch as-is
-if [ "$SKIP_DCH" != "1" ]; then
-    if [ -n "${tag:-}" ] ; then
-      echo "Tag parameter found, not touching the changelog."
-    elif [ "${1:-}" = "identify" ] ; then
-      echo "Trying to identify latest tag / merge..."
+if [ "${SKIP_DCH:-}" = "true" ] ; then
+  echo "*** SKIP_DCH is set, not modifying debian/changelog therefore ***"
+else
+  if [ -n "${tag:-}" ] ; then
+    echo "Tag parameter found, not touching the changelog."
+  elif [ "${1:-}" = "identify" ] ; then
+    echo "Trying to identify latest tag / merge..."
 
-      if ! git describe $(git rev-list --tags='[^u]*' --max-count=1 HEAD) >/dev/null ; then
-        echo "Failed to identify latest change, falling back to auto mode."
-        git_dch_auto
-      else
-        identify_latest_change
-      fi
-    elif [ -r debian/gbp.conf ] ; then
-      echo "Found debian/gbp.conf, using git-dch with auto mode."
+    if ! git describe $(git rev-list --tags='[^u]*' --max-count=1 HEAD) >/dev/null ; then
+      echo "Failed to identify latest change, falling back to auto mode."
       git_dch_auto
     else
-      echo "Using git-dch with auto mode."
-      git_dch_auto
+      identify_latest_change
     fi
+  elif [ -r debian/gbp.conf ] ; then
+    echo "Found debian/gbp.conf, using git-dch with auto mode."
+    git_dch_auto
+  else
+    echo "Using git-dch with auto mode."
+    git_dch_auto
+  fi
 
-    # get rid of "UNRELEASED" distribution header, only
-    # necessary if the debian/changelog was modified
-    if [ -z "${tag:-}" ] ; then
-      debchange --release ""
-    fi
+  # get rid of "UNRELEASED" distribution header, only
+  # necessary if the debian/changelog was modified
+  if [ -z "${tag:-}" ] ; then
+    debchange --release ""
+  fi
 fi
 
 # prepare orig.tar.gz using pristine-tar, but without actually building the source package
