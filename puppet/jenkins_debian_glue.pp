@@ -56,6 +56,14 @@ define apt::key($ensure = present, $source) {
   }
 }
 
+if $ec2_public_ipv4 {
+  $jenkins_server = "$ec2_public_ipv4"
+} elsif $ipaddress {
+  $jenkins_server = "$ipaddress"
+} else {
+  $jenkins_server = "YOUR_JENKINS_SERVER"
+}
+
 class jenkins::repos {
 
   apt::key { 'D50582E6':
@@ -214,7 +222,7 @@ class jenkins::config {
     content => "<?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description></description>
+  <description>Build Debian source package of jenkins-debian-glue</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class='hudson.plugins.git.GitSCM'>
@@ -319,7 +327,23 @@ class jenkins::config {
     content => "<?xml version='1.0' encoding='UTF-8'?>
 <matrix-project>
   <actions/>
-  <description></description>
+  <description>&lt;p&gt;Build Debian binary packages of jenkins-debian-glue&lt;/p&gt;&#xd;
+&#xd;
+&lt;h2&gt;Usage instructions how to remotely access and use the repository&lt;/h2&gt;&#xd;
+&#xd;
+&lt;p&gt;Install apache webserver:&lt;/p&gt;&#xd;
+&#xd;
+&lt;pre&gt;&#xd;
+  sudo apt-get install apache2&#xd;
+  sudo ln -s /srv/repository /var/www/debian&#xd;
+&lt;/pre&gt;&#xd;
+&#xd;
+&lt;p&gt;Then access to this repository is available using the following sources.list entry:&lt;/p&gt;&#xd;
+&#xd;
+&lt;pre&gt;&#xd;
+  deb     http://${jenkins_server}/debian/ jenkins-debian-glue main&#xd;
+  deb-src http://${jenkins_server}/debian/ jenkins-debian-glue main&#xd;
+&lt;/pre&gt;</description>
   <keepDependencies>false</keepDependencies>
   <properties/>
   <scm class='hudson.scm.NullSCM'/>
