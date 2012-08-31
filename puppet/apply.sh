@@ -54,8 +54,8 @@ if ! grep -q PASSWORD_HASH_TO_BE_ADJUSTED jenkins_debian_glue.pp ; then
   echo "################################################################################"
 else
   printf "Adjusting password in jenkins_debian_glue.pp: "
-  sed -i "s/PASSWORD_HASH_TO_BE_ADJUSTED/$PASSWORD_HASH/" jenkins_debian_glue.pp || exit 1
-  sed -i "s/SEED_TO_BE_ADJUSTED/$SEED/" jenkins_debian_glue.pp || exit 1
+  sed -i "s;PASSWORD_HASH_TO_BE_ADJUSTED;$PASSWORD_HASH;" jenkins_debian_glue.pp || exit 1
+  sed -i "s;SEED_TO_BE_ADJUSTED;$SEED;" jenkins_debian_glue.pp || exit 1
   echo OK
 fi
 
