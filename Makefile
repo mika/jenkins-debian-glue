@@ -1,6 +1,6 @@
 PREFIX := /usr
 
-PROGRAMS := scripts/*
+PROGRAMS := scripts/* tap/*
 
 build:
 	tests/increase-version-number

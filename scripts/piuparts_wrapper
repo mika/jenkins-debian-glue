@@ -1,0 +1,95 @@
+#!/bin/bash
+
+set -e
+set -u
+
+if [ "$#" -lt 1 ] ; then
+  echo "Usage: $0 <debian_package(s).deb>" >&2
+  exit 1
+fi
+
+if [ -z "${distribution:-}" ] ; then
+  # default to the currently running distribution to avoid hardcoding
+  # a distribution which might not be supported by the running system
+  distribution=$(lsb_release --short --codename 2>/dev/null)
+  [ -n "${distribution}" ] || distribution="sid"  # fallback to "sid" iff lsb_release fails
+  echo "*** distribution variable is unset, using distribution $distribution ***"
+fi
+
+if [ -z "${architecture:-}" ] ; then
+  architecture=$(dpkg-architecture -qDEB_HOST_ARCH)
+  echo "*** architecture variable is unset, using system architecture [$architecture] ***"
+fi
+
+if [ -n "${SCRIPTSDIR:-}" ] ; then
+  echo "*** SCRIPTSDIR variable is set to $SCRIPTSDIR - using for piuparts run ***"
+  scriptsdir="--scriptsdir=$SCRIPTSDIR"
+fi
+
+create_base_tgz() {
+  [ -r /var/cache/pbuilder/base-${distribution}-${architecture}.tgz ] && return 0
+
+  if [ -n "${MIRROR:-}" ] ; then
+    echo "*** MIRROR variable is set [$MIRROR], using it ***"
+  else
+    if lsb_release --id 2>/dev/null | grep -q Ubuntu ; then
+      MIRROR='http://archive.ubuntu.com/ubuntu'
+    else
+      MIRROR='http://http.debian.net/debian'
+    fi
+    echo "*** Using mirror $MIRROR ***"
+  fi
+
+  if [ -n "${COMPONENTS:-}" ] ; then
+    echo "*** COMPONENTS is set [$COMPONENTS], using for debootstrapping ***"
+    components="$COMPONENTS"
+  elif lsb_release --id 2>/dev/null | grep -q Ubuntu ; then
+    components='main,universe,restricted,multiverse'
+    echo "*** Ubuntu detected, using components $components ***"
+  else
+    components='main,contrib,non-free'
+    echo "*** COMPONENTS is unset and looks like Debian - therefore using components $components ***"
+  fi
+
+  tmpdir=$(mktemp -d)
+
+  debootstrap --variant=minbase \
+              --components="$components" \
+              --arch="$architecture" \
+              "$distribution" \
+              "$tmpdir" \
+              "$MIRROR"
+
+  (
+    cd "$tmpdir"
+    tar acf /var/cache/pbuilder/base-${distribution}-${architecture}.tgz *
+    rm -rf ./*
+  )
+}
+
+if [ -n "${SKIP_BASE_TGZ:-}" ] ; then
+  echo "*** SKIP_BASE_TGZ is set, not using building/using /var/cache/pbuilder/base-${distribution}-${architecture}.tgz ***"
+else
+  create_base_tgz
+  basetgz="--basetgz=/var/cache/pbuilder/base-${distribution}-${architecture}.tgz"
+fi
+
+# option not available with piuparts 0.38
+if piuparts --help 2>/dev/null | grep -q -- '--warn-on-leftovers-after-purge' ; then
+  warn_on_leftovers_after_purge_option="--warn-on-leftovers-after-purge"
+fi
+
+piuparts_version=$(piuparts --version 2>/dev/null | awk '{print $2}')
+if dpkg --compare-versions $piuparts_version lt 0.43 ; then
+  echo "*************************************************************************"
+  echo "*** WARNING - piuparts version $piuparts_version is not recent enough ***"
+  echo "*** You might run into problems, please consider upgrading piuparts   ***"
+  echo "*************************************************************************"
+fi
+
+piuparts \
+  -d "${distribution}" ${warn_on_leftovers_after_purge_option:-} \
+  --log-file='piuparts.txt' \
+  ${scriptsdir:-} \
+  ${basetgz:-} \
+  "$@"

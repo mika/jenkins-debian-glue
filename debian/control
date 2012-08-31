@@ -83,3 +83,14 @@ Description: taptools integration in Jenkins
  The provided tap_tool_dispatcher script can be used to automatically
  detect according shell scripts and perl scripts to execute
  checkbashism_tap and perlcritic_tap accordingly.
+
+Package: jenkins-debian-glue-buildenv-piuparts
+Architecture: all
+Depends: piuparts,
+         ruby,
+         ${misc:Depends}
+Description: piuparts integration in Jenkins
+ This package provides the piuparts integration for testing
+ package installation and upgrades of generated Debian packages.
+ The scripts can be used for generating TAP reports of piuparts
+ runs checking Debian packages inside Jenkins jobs.

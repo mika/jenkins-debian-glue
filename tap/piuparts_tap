@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+
+if ARGV[0].nil?
+  $stderr.puts "Usage: #{File.basename $0} <piuparts_logfile>"
+  exit 1
+end
+
+file = ARGV[0]
+counter = 1
+found_error = 0
+
+begin
+	output = File.open("#{file}", "r").read
+rescue
+	$stderr.puts "Error: can't read file #{file}"
+	exit 1
+end
+
+# is the number of lines the piuparts logfile contains
+# and not the actual number of reports, but the TAP
+# plugin of Jenkins doesn't rely on that so we're good
+# with it as it is
+num_lines = output.lines.count
+
+puts "1..#{num_lines}"
+output.gsub(/:\n/, ':').each_line do |critic|
+	if critic =~ /.*Command ok:.*/
+		cmd = /(.*)? (DEBUG: Command ok: )(.*)?/.match(critic)[3]
+		puts "ok #{counter}           #{cmd}"
+		counter += 1
+        elsif critic =~ /.*DEBUG: Command failed \(status=1\), but ignoring error:.*/
+                cmd = /(.*)? (DEBUG: Command failed \(status=1\), but ignoring error:) (.*)?/.match(critic)[3]
+		puts "ok #{counter}           #{cmd} # skip Ignoring failed command"
+		counter += 1
+        elsif critic =~ /.*ERROR: Command failed \(status=100\):.*/
+                cmd = /(.*)? (ERROR: Command failed \(status=100\):) (.*)?/.match(critic)[3]
+		puts "not ok #{counter}           #{cmd}"
+		counter += 1
+	elsif critic =~ /.*ERROR: FAIL.*/
+		cmd = /(.*)? (ERROR: FAIL: )(.*)?/.match(critic)[3]
+		puts "not ok #{counter}           #{cmd}"
+		counter += 1
+	end
+end
