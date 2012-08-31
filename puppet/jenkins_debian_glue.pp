@@ -396,6 +396,14 @@ class jenkins::config {
       <keepLongStdio>false</keepLongStdio>
       <testDataPublishers/>
     </hudson.tasks.junit.JUnitResultArchiver>
+    <hudson.tasks.BuildTrigger>
+      <childProjects>jenkins-debian-glue-piuparts</childProjects>
+      <threshold>
+        <name>SUCCESS</name>
+        <ordinal>0</ordinal>
+        <color>BLUE</color>
+      </threshold>
+    </hudson.tasks.BuildTrigger>
   </publishers>
   <buildWrappers>
     <hudson.plugins.ws__cleanup.PreBuildCleanup>
@@ -406,6 +414,80 @@ class jenkins::config {
     <runSequentially>true</runSequentially>
   </executionStrategy>
 </matrix-project>
+"
+  }
+
+  file { '/var/lib/jenkins/jobs/jenkins-debian-glue-piuparts/':
+    ensure  => directory,
+    mode    => '0755',
+    owner   => 'jenkins',
+    require => Package['jenkins'],
+  }
+
+  file { '/var/lib/jenkins/jobs/jenkins-debian-glue-piuparts/config.xml':
+    ensure  => present,
+    mode    => '0644',
+    owner   => 'jenkins',
+    require => File['/var/lib/jenkins/jobs/jenkins-debian-glue-piuparts'],
+    notify  => Service['jenkins'],
+    content => "<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Installation and upgrade tests for jenkins-debian-glue Debian packages</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>architecture</name>
+          <description></description>
+          <defaultValue>$::architecture</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+  </properties>
+  <scm class='hudson.scm.NullSCM'/>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers class='vector'/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.plugins.copyartifact.CopyArtifact>
+      <projectName>jenkins-debian-glue-binaries/architecture=\$architecture</projectName>
+      <filter>*.deb</filter>
+      <target>artifacts/</target>
+      <selector class='hudson.plugins.copyartifact.TriggeredBuildSelector'>
+        <fallbackToLastSuccessful>true</fallbackToLastSuccessful>
+      </selector>
+      <flatten>true</flatten>
+    </hudson.plugins.copyartifact.CopyArtifact>
+    <hudson.tasks.Shell>
+      <command># sadly piuparts always returns with exit code 1 :((
+sudo piuparts_wrapper \${PWD}/artifacts/*.deb || true</command>
+    </hudson.tasks.Shell>
+    <hudson.tasks.Shell>
+      <command>piuparts_tap piuparts.txt &gt; piuparts.tap</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <org.tap4j.plugin.TapPublisher>
+      <testResults>piuparts.tap</testResults>
+      <failedTestsMarkBuildAsFailure>false</failedTestsMarkBuildAsFailure>
+      <outputTapToConsole>false</outputTapToConsole>
+    </org.tap4j.plugin.TapPublisher>
+    <hudson.tasks.ArtifactArchiver>
+      <artifacts>piuparts.*</artifacts>
+      <latestOnly>false</latestOnly>
+    </hudson.tasks.ArtifactArchiver>
+  </publishers>
+  <buildWrappers>
+    <hudson.plugins.ws__cleanup.PreBuildCleanup>
+      <deleteDirs>false</deleteDirs>
+    </hudson.plugins.ws__cleanup.PreBuildCleanup>
+  </buildWrappers>
+</project>
 "
   }
 
