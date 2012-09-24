@@ -79,6 +79,11 @@ if piuparts --help 2>/dev/null | grep -q -- '--warn-on-leftovers-after-purge' ; 
   warn_on_leftovers_after_purge_option="--warn-on-leftovers-after-purge"
 fi
 
+# logrotate test is kind of useless until http://bugs.debian.org/582630 is solved
+if piuparts --help 2>/dev/null | grep -q -- '--skip-logrotatefiles-test' ; then
+  skip_logrotatefiles_test_option="--skip-logrotatefiles-test"
+fi
+
 piuparts_version=$(piuparts --version 2>/dev/null | awk '{print $2}')
 if dpkg --compare-versions $piuparts_version lt 0.43 ; then
   echo "*************************************************************************"
@@ -88,7 +93,9 @@ if dpkg --compare-versions $piuparts_version lt 0.43 ; then
 fi
 
 piuparts \
-  -d "${distribution}" ${warn_on_leftovers_after_purge_option:-} \
+  -d "${distribution}" \
+  ${warn_on_leftovers_after_purge_option:-} \
+  ${skip_logrotatefiles_test_option:-} \
   --log-file='piuparts.txt' \
   ${scriptsdir:-} \
   ${basetgz:-} \
