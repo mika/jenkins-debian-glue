@@ -2,6 +2,7 @@
 # git hook: post-receive
 
 # !!! PLEASE ADJUST !!!
+server=http://jenkins.example.org
 projectname=ADJUSTME
 token=ADJUSTME
 
@@ -26,29 +27,30 @@ trigger_jenkins()
 
   case "$change_type" in
     create|update)
-    rev="$newrev"
-    rev_type="$newrev_type"
-    ;;
+      rev="$newrev"
+      rev_type="$newrev_type"
+      ;;
     delete)
-    return # we are not interested in deletes
-    ;;
+      return # we are not interested in deletes
+      ;;
   esac
 
   case "$refname","$rev_type" in
     refs/heads/*,commit)
-    # branch
-    refname_type="branch"
-    branch_name=${refname##refs/heads/}
+      # branch
+      refname_type="branch"
+      branch_name=${refname##refs/heads/}
+      ;;
   esac
 
   echo "Detected branch $branch_name"
 
-  # request autobuild in jenkins.grml.org
+  # trigger autobuild
   if wget --tries=2 --dns-timeout=5 --connect-timeout=5 --read-timeout=5 \
-          -O /dev/null "http://jenkins.grml.org/job/${projectname}/buildWithParameters?token=$token&branch=origin/${branch_name}" >/dev/null 2>&1 ; then
-    echo "Triggered autobuild at http://jenkins.grml.org/job/${projectname}/lastBuild/"
+          -O /dev/null "${server}/job/${projectname}/buildWithParameters?token=$token&branch=origin/${branch_name}" >/dev/null 2>&1 ; then
+    echo "Triggered autobuild at ${server}/job/${projectname}/lastBuild/"
   else
-    echo "Could not trigger autobuild at jenkins.grml.org (project not present/set up?)"
+    echo "Could not trigger autobuild at ${server} (project not present/set up?)"
   fi
 }
 
