@@ -52,6 +52,15 @@ trigger_jenkins()
   else
     echo "Could not trigger autobuild at ${server} (project not present/set up?)"
   fi
+
+  # or with curl:
+  # cause=git-hook-trigger
+  # if curl --insecure --max-time 5 --connect-timeout 5 \
+  #        --data-urlencode "token=${token}" \
+  #        --data-urlencode "cause=${cause}" \
+  #        --data-urlencode "branch=${branch_name}" \
+  #        "${server}/job/${projectname}/buildWithParameters" >/dev/null 2>&1; then
+  # ...
 }
 
 if [ -n "$1" -a -n "$2" -a -n "$3" ]; then
