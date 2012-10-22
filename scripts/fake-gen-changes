@@ -1,0 +1,88 @@
+#!/bin/sh
+# Filename:      fake-gen-changes
+# Purpose:       generate *.changes Debian file based on source archive and binary packages
+################################################################################
+
+# dpkg-parsechangelog  -c1
+if [ -n "$1" ] ; then
+  CHANGELOG="$1"
+else
+  echo "Usage: $0 <changelog> [/path/to/working/directory/]" >&2
+  exit 1
+fi
+
+if [ -n "$2" ] ; then
+  cd "$2" || exit 1
+fi
+
+if [ -r /etc/jenkins/debian_glue ] ; then
+  . /etc/jenkins/debian_glue
+fi
+
+if ! [ -r "$CHANGELOG" ] ; then
+  echo "Can not read specified changelog file $CHANGELOG" >&2
+  exit 1
+fi
+
+if ! grep -q '^Date: ' "$CHANGELOG" ; then
+  echo "Specified changelog file $CHANGELOG does not look like output of 'dpkg-parsechangelog -c1'" >&2
+  exit 1
+fi
+
+printf "Format: 1.8\n"
+printf "Date: %s\n" "$(date --rfc-2822)"
+
+for package in *.deb ; do
+  binaries="$binaries $(dpkg --info $package | awk '/^ Package: / {print $2}')"
+done
+printf "Binary: %s\n" "$binaries"
+
+for file in * ; do
+  case $file in
+    *.dsc)
+      echo "$archs" | grep -wq "source" || archs="$archs source"
+      ;;
+    *.deb)
+      newarch=$(dpkg --info $file 2>/dev/null | awk '/^ Architecture: / {print $2}');
+      echo "$archs" | grep -wq "$newarch" || archs="$archs $newarch"
+      ;;
+  esac
+done
+printf "Architecture: %s\n" "$archs"
+
+printf "Changed-By: jenkins.grml.org Autobuilder <jenkins@grml.org>\n" # FIXME
+
+printf "Description:\n"
+for package in *.deb ; do
+ printf " %s - %s\n" "$(dpkg --info $package | awk '/^ Package: / {print $2}')" "$(dpkg --info $package | awk '/^ Description: / { $1 = ""; print }')"
+done
+
+grep -v '^Date: ' "$CHANGELOG"
+
+printf "Checksums-Sha1:\n"
+for file in *.gz *.bz2 *.xz *.deb *.dsc ; do
+  test -f "$file" || continue
+  checksum="$(sha1sum $file | awk '{print $1}')"
+  size="$(/usr/bin/stat --format='%s' $file)"
+  printf " %s %s %s\n" "$checksum" "$size" "$file"
+done
+
+printf "Checksums-Sha256:\n"
+for file in *.gz *.bz2 *.xz *.deb *.dsc ; do
+  test -f "$file" || continue
+  checksum="$(sha256sum $file | awk '{print $1}')"
+  size="$(/usr/bin/stat --format='%s' $file)"
+  printf " %s %s %s\n" "$checksum" "$size" "$file"
+done
+
+printf "Files:\n"
+for file in *.gz *.bz2 *.xz *.deb *.dsc ; do
+  test -f "$file" || continue
+  checksum="$(md5sum $file | awk '{print $1}')"
+  size="$(/usr/bin/stat --format='%s' $file)"
+  section="admin"  # TODO - better option?
+  priority="extra" # TODO - better option?
+  printf " %s %s %s %s %s\n" "$checksum" "$size" "$section" "$priority" "$file"
+done
+
+## END OF FILE #################################################################
