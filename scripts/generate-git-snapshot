@@ -206,7 +206,7 @@ git checkout - # switch back to previous "branch" before removing the tmp branch
 git branch -D "$random_branch"
 
 # build source package
-( cd .. ; dpkg-source -i\.git -b source )
+( cd .. ; dpkg-source -I -b source )
 
 # revert to original debian/changelog to avoid merge conflicts
 git checkout -- debian/changelog
