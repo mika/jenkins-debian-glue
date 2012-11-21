@@ -195,11 +195,19 @@ else
   fi
 fi
 
+# support overriding git-buildpackage options
+if [ -n "${GIT_BLDPKG_OPTS:-}" ] ; then
+  echo "Found environment variable GIT_BLDPKG_OPTS, set to ${GIT_BLDPKG_OPTS}"
+else
+  GIT_BLDPKG_OPTS="-nc --git-force-create --git-ignore-new -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true"
+  echo "Using default git-buildpackage options (${GIT_BLDPKG_OPTS})"
+fi
+
 # prepare orig.tar.gz using pristine-tar, but without actually building the source package
 if [ "${IGNORE_GIT_BUILDPACKAGE:-}" = "true" ] ; then
   echo "Skipping git-buildpackage execution as requested via IGNORE_GIT_BUILDPACKAGE ***"
 else
-  git-buildpackage -nc --git-force-create --git-ignore-new -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true
+  git-buildpackage $GIT_BLDPKG_OPTS
 fi
 
 git checkout - # switch back to previous "branch" before removing the tmp branch
