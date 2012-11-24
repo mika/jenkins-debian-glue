@@ -15,7 +15,7 @@ Depends: cowbuilder,
          devscripts,
          dpkg-dev,
          reprepro,
-         sudo,
+         sudo | sudo-ldap,
          ${misc:Depends}
 Description: glue scripts for building Debian packages inside Jenkins
  This package provides scripts which should make building Debian
