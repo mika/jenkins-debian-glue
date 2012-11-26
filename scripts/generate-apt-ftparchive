@@ -1,0 +1,120 @@
+#!/bin/bash
+
+set -x
+set -e
+
+if [ -r /etc/jenkins/debian_glue ] ; then
+  . /etc/jenkins/debian_glue
+fi
+
+if [ "${BUILD_ONLY:-}" = "true" ] ; then
+  echo "BUILD_ONLY is set to true, ignoring request to generate local repository."
+  exit 0
+fi
+
+if [ "$#" -lt 1 ] ; then
+  echo "Usage: $0 <codename> - Please provide a REPOSITORY" >&2
+  exit 1
+fi
+
+# repository/codename that should be added
+REPOS="$1"
+
+JENKINS_DEBIAN_GLUE_VERSION=$(dpkg --list jenkins-debian-glue 2>/dev/null | awk '/^ii/ {print $3}')
+if [ -n "${JENKINS_DEBIAN_GLUE_VERSION:-}" ] ; then
+  echo "*** Running jenkins-debian-glue version $JENKINS_DEBIAN_GLUE_VERSION ***"
+fi
+
+if [ -z "${REPOSITORY:-}" ] ; then
+  REPOSITORY='/srv/repository'
+  echo "*** Repository variable REPOSITORY is unset, using default [$REPOSITORY] ***"
+fi
+
+if [ -n "${ARCHIVEDIR:-}" ] ; then
+  echo "Found environment variable ARCHIVEDIR, set to ${ARCHIVEDIR}"
+else
+  ARCHIVEDIR="${REPOSITORY}/apt"
+  echo "Using default ARCHIVEDIR: (${ARCHIVEDIR})"
+fi
+
+if [ -n "${CACHEDIR:-}" ] ; then
+  echo "Found environment variable CACHEDIR, set to ${CACHEDIR}"
+else
+  CACHEDIR="${REPOSITORY}/apt/.cache"
+  echo "Using default CACHEDIR: (${CACHEDIR})"
+fi
+
+if [ -n "${POOL:-}" ] ; then
+  echo "Found environment variable POOL, set to ${POOL}"
+else
+  POOL="main"
+  echo "Using default Pool: (${POOL})"
+fi
+
+if ! ${SUDO_CMD:-} mkdir -p "${ARCHIVEDIR}" ; then
+  echo "Error creating ${ARCHIVEDIR} (forgot to create ${REPOSITORY} and chown jenkins?)" >&2
+  exit 1
+fi
+
+if ! ${SUDO_CMD:-} mkdir -p "${CACHEDIR}" ; then
+  echo "Error creating ${CACHEDIR} (forgot to create ${REPOSITORY} and chown jenkins?)" >&2
+  exit 1
+fi
+
+if ! ${SUDO_CMD:-} mkdir -p "${ARCHIVEDIR}/pool/${POOL}" ; then
+  echo "Error creating pool directory:"${ARCHIVEDIR}/pool/${POOL}" (forgot to create ${REPOSITORY} and chown jenkins?)" >&2
+  exit 1
+fi
+
+if ! ${SUDO_CMD:-} mkdir -p "${ARCHIVEDIR}/dists$REPO/$POOL/binary-amd64" ; then
+  echo "Error creating directory: "${ARCHIVEDIR}/dists/${REPOS}/${POOL}/binary-amd64" (forgot to create ${REPOSITORY} and chown jenkins?)" >&2
+  exit 1
+fi
+
+if ! ${SUDO_CMD:-} mkdir -p "${ARCHIVEDIR}/dists$REPO/$POOL/binary-i386" ; then
+  echo "Error creating directory: "${ARCHIVEDIR}/dists/${REPOS}/${POOL}/binary-i386" (forgot to create ${REPOSITORY} and chown jenkins?)" >&2
+  exit 1
+fi
+
+if [ ! -f ${ARCHIVEDIR}/apt-repository-${REPOS}.conf ]; then
+    echo "apt-ftpachive configuration  not found. Creating: ${ARCHIVEDIR}/apt-repository-${REPOS}.conf"
+    cat > "${ARCHIVEDIR}"/apt-repository-${REPOS}.conf << EOF
+Dir {   
+        ArchiveDir "${ARCHIVEDIR}";
+        CacheDir "${CACHEDIR}";
+};
+
+Default {
+        Packages::Compress ". gzip bzip2";
+        Contents::Compress ". gzip bzip2";
+};
+
+TreeDefault {
+        BinCacheDB "${ARCHIVEDIR}/packages-\$(SECTION)-\$(ARCH).db";
+        Directory "${ARCHIVEDIR}/pool/\$(SECTION)";
+        Packages "${ARCHIVEDIR}/\$(DIST)/\$(SECTION)/binary-\$(ARCH)/Packages";
+        Contents "${ARCHIVEDIR}/\$(DIST)/Contents-\$(ARCH)";
+};
+
+Tree "dists/${REPOS}" {
+        Sections "main";
+        Architectures "i386 amd64";
+};
+EOF
+fi
+
+if [ ! -f ${ARCHIVEDIR}/apt-release-${REPOS}.conf ]; then
+    echo "apt-release-${REPOS}.conf not found. Creating: ${ARCHIVEDIR}/apt-release-${REPOS}.conf"
+    cat > "${ARCHIVEDIR}"/apt-release-${REPOS}.conf << EOF
+APT::FTPArchive::Release::Origin: "${APT_ORIGIN}";
+APT::FTPArchive::Release::Label: "${APT_LABEL}";
+APT::FTPArchive::Release::Suite: "${APT_SUITE}";
+APT::FTPArchive::Release::Codename: "${APT_CODENAME:-$REPOS}";
+APT::FTPArchive::Release::Version: "${APT_VER}";
+APT::FTPArchive::Release::Architectures: "${APT_ARCH}";
+APT::FTPArchive::Release::Components: "${APT_COMPONENT:-$POOL}";
+APT::FTPArchive::Release::Description: "${APT_DESC}";
+EOF
+fi
+
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
