@@ -81,6 +81,14 @@ else
   echo "Using extra git-dch options (${DCH_EXTRA_OPTS})"
 fi
 
+# support overriding git-buildpackage options
+if [ -n "${GBP_OPTS:-}" ] ; then
+  echo "Found environment variable GBP_OPTS, set to ${GBP_OPTS}"
+else
+  GBP_OPTS=" -nc --git-force-create --git-ignore-new -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true "
+  echo "Using git-buildpackage default options provided by jenkins-debian-glue"
+fi
+
 create_local_branch() {
   [ -n "${1:-}" ] || return 1
 
@@ -199,7 +207,7 @@ fi
 if [ "${IGNORE_GIT_BUILDPACKAGE:-}" = "true" ] ; then
   echo "Skipping git-buildpackage execution as requested via IGNORE_GIT_BUILDPACKAGE ***"
 else
-  git-buildpackage -nc --git-force-create --git-ignore-new -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true
+  git-buildpackage ${GBP_OPTS}
 fi
 
 git checkout - # switch back to previous "branch" before removing the tmp branch
