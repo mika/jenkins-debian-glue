@@ -11,6 +11,11 @@ if [ -z "${REPOSITORY:-}" ] ; then
   REPOSITORY='/srv/repository'
 fi
 
+if [ -n "${RELEASE_REPOSITORY:-}" ] ; then
+  REPOSITORY="${RELEASE_REPOSITORY}"
+  echo "*** Release REPOSITORY is set, using [$RELEASE_REPOSITORY] ***"
+fi
+
 if [ -z "${REPOSITORY_OUT_DIR:-}" ] ; then
   REPOSITORY_OUT_DIR='+b'
 fi
