@@ -33,6 +33,10 @@ checks_and_defaults() {
   if [ -z "${REPOSITORY:-}" ] ; then
     REPOSITORY='/srv/repository'
   fi
+
+  if [ -z "${SEPARATE_RELEASE:-}" ] ; then
+    SEPARATE_RELEASE=true
+  fi
 }
 
 clean_workspace() {
@@ -400,7 +404,9 @@ trunk_release() {
 release_repos() {
   echo "*** Environment variable 'release' is set, running through release steps. ***"
 
-  local REPOSITORY="${REPOSITORY}/release/${release}"
+  if ${SEPARATE_RELEASE}; then
+    local REPOSITORY="${REPOSITORY}/release/${release}"
+  fi;
 
   mkdir -p "${REPOSITORY}/incoming/${release}"
   mkdir -p "${REPOSITORY}/conf"
@@ -408,7 +414,8 @@ release_repos() {
   cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${release}/"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to copy binary packages to release directory."
 
-  REPOSITORY=$REPOSITORY generate-reprepro-codename "${release}"
+  export RELEASE_REPOSITORY="${REPOSITORY}"
+  generate-reprepro-codename "${release}"
 
   if ! grep -q "^Name: $release$" "${REPOSITORY}/conf/incoming" 2>/dev/null ; then
     cat >> "${REPOSITORY}/conf/incoming" << EOF
