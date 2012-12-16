@@ -444,7 +444,7 @@ release_repos() {
   cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${release}/"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to copy binary packages to release directory."
 
-  export REPOSITORY="${REPOSITORY}"
+  export RELEASE_REPOSITORY="${REPOSITORY}"
   generate-reprepro-codename "${release}"
 
   if ! grep -q "^Name: $release$" "${REPOSITORY}/conf/incoming" 2>/dev/null ; then
