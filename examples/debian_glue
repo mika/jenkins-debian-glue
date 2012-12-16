@@ -17,3 +17,18 @@
 # packages will be build then.
 # If unset it will default to the architecture of the host system.
 # MAIN_ARCHITECTURE="amd64"
+
+# The reprepro repository
+# Defaults:
+# REPOSITORY='/srv/repository'
+
+# You can define every reprepro directory separately.
+# $REPOSITORY is used as the base directory (+b)
+# Defaults:
+# REPOSITORY_OUT_DIR='+b'
+# REPOSITORY_CONF_DIR='+b/conf'
+# REPOSITORY_DIST_DIR='+o/dists'
+# REPOSITORY_LOG_DIR='+b/logs'
+# REPOSITORY_DB_DIR='+b/db'
+# REPOSITORY_LIST_DIR='+b/lists'
+# REPOSITORY_MORGUE_DIR='+b/morgue'
