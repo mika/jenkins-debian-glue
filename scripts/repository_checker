@@ -11,9 +11,39 @@ if [ -z "${REPOSITORY:-}" ] ; then
   REPOSITORY='/srv/repository'
 fi
 
+if [ -z "${REPOSITORY_OUT_DIR:-}" ] ; then
+  REPOSITORY_OUT_DIR='+b'
+fi
+
+if [ -z "${REPOSITORY_CONF_DIR:-}" ] ; then
+  REPOSITORY_CONF_DIR='+b/conf'
+fi
+
+if [ -z "${REPOSITORY_DIST_DIR:-}" ] ; then
+  REPOSITORY_DIST_DIR='+o/dists'
+fi
+
+if [ -z "${REPOSITORY_LOG_DIR:-}" ] ; then
+  REPOSITORY_LOG_DIR='+b/logs'
+fi
+
+if [ -z "${REPOSITORY_DB_DIR:-}" ] ; then
+  REPOSITORY_DB_DIR='+b/db'
+fi
+
+if [ -z "${REPOSITORY_LIST_DIR:-}" ] ; then
+  REPOSITORY_LIST_DIR='+b/lists'
+fi
+
+if [ -z "${REPOSITORY_MORGUE_DIR:-}" ] ; then
+  REPOSITORY_MORGUE_DIR='+b/morgue'
+fi
+
 if [ -z "${REPREPRO_OPTS:-}" ]  ; then
   REPREPRO_OPTS='--waitforlock 1000 -v'
 fi
+
+REPREPRO_DIRS=`echo -e --basedir "${REPOSITORY}" --outdir "${REPOSITORY_OUT_DIR}" --distdir "${REPOSITORY_DIST_DIR}" --confdir "${REPOSITORY_CONF_DIR}" --logdir "${REPOSITORY_LOG_DIR}" --dbdir "${REPOSITORY_DB_DIR}" --listdir "${REPOSITORY_LIST_DIR}" --morguedir "${REPOSITORY_MORGUE_DIR}"`
 
 LOGFILE=$(mktemp)
 
@@ -86,10 +116,10 @@ validate-source-bin-versions() {
   rc=0
 
   for repository in $(awk '/^Codename: / {print $2}' "${REPOSITORY}"/conf/distributions 2>"${LOGFILE}") ; do
-    for sourcepackage in $(reprepro $REPREPRO_OPTS -A source -b "${REPOSITORY}" --list-format='${package}\n' list $repository 2>"${LOGFILE}") ; do
-      sourceversion=$(reprepro $REPREPRO_OPTS -A source -b "${REPOSITORY}" --list-format='${version}\n' list $repository $sourcepackage 2>"${LOGFILE}")
-      for binarypackage in $(reprepro $REPREPRO_OPTS -b "${REPOSITORY}" --list-format='${package}\n' -T deb listfilter "$repository" "\$Source (==$sourcepackage)" 2>"${LOGFILE}") ; do
-        archversion=$(reprepro $REPREPRO_OPTS -A amd64 -b "${REPOSITORY}" --list-format='${version}\n' list $repository $binarypackage 2>"${LOGFILE}")
+    for sourcepackage in $(reprepro $REPREPRO_OPTS -A source ${REPREPRO_DIRS} --list-format='${package}\n' list $repository 2>"${LOGFILE}") ; do
+      sourceversion=$(reprepro $REPREPRO_OPTS -A source ${REPREPRO_DIRS} --list-format='${version}\n' list $repository $sourcepackage 2>"${LOGFILE}")
+      for binarypackage in $(reprepro $REPREPRO_OPTS ${REPREPRO_DIRS} --list-format='${package}\n' -T deb listfilter "$repository" "\$Source (==$sourcepackage)" 2>"${LOGFILE}") ; do
+        archversion=$(reprepro $REPREPRO_OPTS -A amd64 ${REPREPRO_DIRS} --list-format='${version}\n' list $repository $binarypackage 2>"${LOGFILE}")
 
         if [ -z "$archversion" ] && [ -n "$sourceversion" ] ; then
           echo "Warning: package $binarypackage in repository $repository has sourceversion $sourceversion but lacks archversion"
@@ -193,32 +223,32 @@ fi
 
 # main execution
 if $_opt_list_packages ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" ls "${PACKAGE}"
+  reprepro ${REPREPRO_OPTS} ${REPREPRO_DIRS} ls "${PACKAGE}"
   bailout 0
 fi
 
 if $_opt_list_source_package ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -A source ls "${PACKAGE}"
+  reprepro ${REPREPRO_OPTS} ${REPREPRO_DIRS} -A source ls "${PACKAGE}"
   bailout 0
 fi
 
 if $_opt_list_binary_package ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -T deb ls "${PACKAGE}"
+  reprepro ${REPREPRO_OPTS} ${REPREPRO_DIRS} -T deb ls "${PACKAGE}"
   bailout 0
 fi
 
 if $_opt_list_repos ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" list "${REPOS}"
+  reprepro ${REPREPRO_OPTS} ${REPREPRO_DIRS} list "${REPOS}"
   bailout 0
 fi
 
 if $_opt_list_source_repos ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -A source list "${REPOS}"
+  reprepro ${REPREPRO_OPTS} ${REPREPRO_DIRS} -A source list "${REPOS}"
   bailout 0
 fi
 
 if $_opt_list_binary_repos ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -T deb list "${REPOS}"
+  reprepro ${REPREPRO_OPTS} ${REPREPRO_DIRS} -T deb list "${REPOS}"
   bailout 0
 fi
 
