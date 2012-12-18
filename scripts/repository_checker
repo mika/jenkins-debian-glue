@@ -117,7 +117,7 @@ validate-source-bin-versions() {
 }
 
 
-trap bailout 1 2 3 6 9 14 15
+trap bailout SIGHUP SIGINT SIGQUIT SIGABRT SIGKILL SIGALRM SIGTERM
 
 # command line handling
 CMDLINE_OPTS=list-package:,list-binary-package:,list-binary-repos:,list-repos:,list-source-package:,list-source-repos:,repository:,,help,validate-incoming,validate-source-bin-versions,version
