@@ -23,12 +23,12 @@ mkdir -p "${REPORTS_DIRECTORY}"/shell
 
 # run perlcritic_tap
 echo "*** perlcritic_tap ***"
-find source -type f ! -path '*.svn*' -prune -exec \
+find source -type f ! -path '*.svn*' ! -path '*.git/*' -prune -exec \
   sh -c 'input="$1"; output=$(echo $input | sed -e s,/,_,g); /usr/bin/perlcritic_tap "$input" > "${REPORTS_DIRECTORY}/perl/${output}"' '{}' '{}' ';'
 
 # run checkbashism_tap
 echo "*** checkbashism_tap ***"
-find source -type f ! -path '*.svn*' -prune -exec \
+find source -type f ! -path '*.svn*' ! -path '*.git/*' -prune -exec \
   sh -c 'input="$1"; output=$(echo $input | sed -e s,/,_,g); /usr/bin/checkbashism_tap "$input" > "${REPORTS_DIRECTORY}/shell/${output}"' '{}' '{}' ';'
 
 # get rid of empty files
