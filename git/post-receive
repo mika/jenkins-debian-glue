@@ -63,7 +63,7 @@ trigger_jenkins()
   # ...
 }
 
-if [ -n "$1" -a -n "$2" -a -n "$3" ]; then
+if [ -n "$1" ] && [ -n "$2" ] && [ -n "$3" ]; then
   trigger_jenkins $2 $3 $1
 else
   while read oldrev newrev refname; do
