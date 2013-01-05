@@ -210,7 +210,7 @@ else
   git-buildpackage ${GBP_OPTS}
 fi
 
-git checkout - # switch back to previous "branch" before removing the tmp branch
+git checkout ${GIT_BRANCH} # switch back to previous "branch" before removing the tmp branch
 git branch -D "$random_branch"
 
 # build source package
