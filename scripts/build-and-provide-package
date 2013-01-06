@@ -199,6 +199,13 @@ dist_and_arch_settings() {
     COWBUILDER_BASE="/var/cache/pbuilder/base-${COWBUILDER_DIST}-${arch}.cow"
     echo "*** No COWBUILDER_BASE set, using $COWBUILDER_BASE as cowbuilder base.cow ***"
   fi
+  
+  if [ -n "${COWBUILDER_HOOK_DIR:-}" ] ; then
+    echo "*** COWBUILDER_HOOK_DIR is set to ${COWBUILDER_HOOK_DIR} ***"
+  else
+    COWBUILDER_HOOK_DIR="/var/cache/pbuilder/hook.d/"
+    echo "*** No COWBUILDER_HOOK_DIR set, using ${COWBUILDER_HOOK_DIR} ***"
+  fi
 }
 
 cowbuilder_init() {
@@ -225,11 +232,12 @@ cowbuilder_init() {
     echo "*** Creating cowbuilder base $COWBUILDER_BASE for arch $arch and distribution $COWBUILDER_DIST ***"
     sudo cowbuilder --create --basepath "${COWBUILDER_BASE}" --distribution "${COWBUILDER_DIST}" \
          --debootstrapopts --arch --debootstrapopts "$arch" \
-         --debootstrapopts --variant=buildd ${pbuildercfg:-}
+         --debootstrapopts --variant=buildd \
+		 --hookdir ${COWBUILDER_HOOK_DIR} ${pbuildercfg:-}
     [ $? -eq 0 ] || bailout 1 "Error: Failed to create cowbuilder base ${COWBUILDER_BASE}."
   else
     echo "*** Updating cowbuilder cow base ***"
-    sudo cowbuilder --update --basepath "${COWBUILDER_BASE}"
+    sudo cowbuilder --update --basepath "${COWBUILDER_BASE}" --hookdir ${COWBUILDER_HOOK_DIR}
     [ $? -eq 0 ] || bailout 1 "Error: Failed to update cowbuilder base ${COWBUILDER_BASE}."
   fi
 
