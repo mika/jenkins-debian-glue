@@ -38,25 +38,24 @@ cd source
 
 # retrieve and adjust information
 ORIG_VERSION=$(dpkg-parsechangelog --count 1 | awk '/Version/ {print $2}')
-INCREASED_VERSION=$(increase-version-number $ORIG_VERSION)
 DISTRIBUTION=$(dpkg-parsechangelog --count 1 | awk '/^Distribution/ {print $2}')
 
 # we want to get a version string like
-# $ORIG_VERSION+0~$TIMESTAMP.$BUILD_NUMBER~1.$GIT_ID
+# $ORIG_VERSION-$BUILD_NUMBER~1.$GIT_ID
 # so the version is always increasing over time, no matter what
-TIMESTAMP="$(date +%s)" # seconds since 1970-01-01 00:00:00 UTC, reversible via `date -d @$TIMESTAMP`
-BUILD_VERSION="${TIMESTAMP}.${BUILD_NUMBER}" # git-dch appends something like ~1.gbp5f433e then
 
 # we do NOT raise the version number, if we detect an unreleased version,
 # otherwise the released version would be older than our snapshot builds
 APPLY_VERSION_WORKAROUND=false
-if [ "$DISTRIBUTION" = "UNRELEASED" ] && dpkg --compare-versions "$ORIG_VERSION" lt "$INCREASED_VERSION" ; then
-  echo "*** Not increasing version number as distribution is set to UNRELEASED ***"
-  INCREASED_VERSION="$ORIG_VERSION"
+if [ "$DISTRIBUTION" = "UNRELEASED" ] ; then
   APPLY_VERSION_WORKAROUND=true
 fi
 
-VERSION_STRING="${INCREASED_VERSION}~${BUILD_VERSION}"
+VERSION_STRING="${ORIG_VERSION}"
+
+if [ -n "${APPEND_BUILD_NUMBER:-}" ] ; then
+  VERSION_STRING="${VERSION_STRING}-${BUILD_NUMBER}" # git-dch appends something like ~1.gbp5f433e then
+fi
 
 if [ -n "${distribution:-}" ] ; then
   echo "Distribution variable found. Adding distribution specific version."
@@ -210,7 +209,7 @@ else
   git-buildpackage ${GBP_OPTS}
 fi
 
-git checkout - # switch back to previous "branch" before removing the tmp branch
+git checkout ${GIT_BRANCH} # switch back to previous "branch" before removing the tmp branch
 git branch -D "$random_branch"
 
 # build source package

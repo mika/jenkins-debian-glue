@@ -30,6 +30,11 @@ if [ -z "${REPOSITORY:-}" ] ; then
   echo "*** Repository variable REPOSITORY is unset, using default [$REPOSITORY] ***"
 fi
 
+if [ -n "${RELEASE_REPOSITORY:-}" ] ; then
+  REPOSITORY="${RELEASE_REPOSITORY}"
+  echo "*** Release REPOSITORY is set, using [$RELEASE_REPOSITORY] ***"
+fi
+
 if ! ${SUDO_CMD:-} mkdir -p "${REPOSITORY}"/conf ; then
   echo "Error creating ${REPOSITORY}/conf (forgot to create /srv/repository and chown jenkins?)" >&2
   exit 1
