@@ -167,6 +167,10 @@ if [ -n "${tag:-}" ] ; then
   echo "Checking out branch $random_branch based on tag $tag"
   git branch -D "$random_branch" || true
   git checkout -b "$random_branch" "$tag"
+elif [ -n "${branch:-}" ] ; then
+  echo "Checking out branch $random_branch based on branch $branch"
+  git branch -D "$random_branch" || true
+  git checkout -b "$random_branch" "$branch"
 else
   echo "Checking out branch $random_branch based on commit $GIT_COMMIT"
   git branch -D "$random_branch" || true
@@ -179,6 +183,8 @@ if [ "${SKIP_DCH:-}" = "true" ] ; then
 else
   if [ -n "${tag:-}" ] ; then
     echo "Tag parameter found, not touching the changelog."
+  elif [ -n "${branch:-}" ] ; then
+    echo "Branch parameter found, not touching the changelog."
   elif [ "${1:-}" = "identify" ] ; then
     echo "Trying to identify latest tag / merge..."
 
@@ -198,7 +204,7 @@ else
 
   # get rid of "UNRELEASED" distribution header, only
   # necessary if the debian/changelog was modified
-  if [ -z "${tag:-}" ] ; then
+  if [ -z "${tag:-}" ] && [ -z "${branch:-}" ] ; then
     debchange --release ""
   fi
 fi
