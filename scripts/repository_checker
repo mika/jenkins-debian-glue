@@ -15,6 +15,11 @@ if [ -z "${REPREPRO_OPTS:-}" ]  ; then
   REPREPRO_OPTS='--waitforlock 1000 -v'
 fi
 
+if [ -n "${RELEASE_REPOSITORY:-}" ] ; then
+  REPOSITORY="${RELEASE_REPOSITORY}"
+  echo "*** Release REPOSITORY is set, using [$RELEASE_REPOSITORY] ***"
+fi
+
 LOGFILE=$(mktemp)
 
 bailout() {
