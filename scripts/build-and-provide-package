@@ -33,6 +33,10 @@ checks_and_defaults() {
   if [ -z "${REPOSITORY:-}" ] ; then
     REPOSITORY='/srv/repository'
   fi
+
+  if [ -z "${PBUILDER_HOOKDIR:-}" ] ; then
+    PBUILDER_HOOKDIR='/usr/share/jenkins-debian-glue/pbuilder-hookdir/'
+  fi
 }
 
 clean_workspace() {
@@ -50,6 +54,7 @@ bailout() {
 
   echo "*** Getting rid of files in $WORKSPACE/binaries/ to avoid problems in next run. ***"
   rm -f "$WORKSPACE"/binaries/*
+  ${SUDO_CMD:-} rm -rf /tmp/adt-$$
 
   [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
   echo "*** Finished execution of $0 at $(date) [running ${SECONDS} seconds] ***"
@@ -191,7 +196,8 @@ cowbuilder_init() {
     echo "*** Creating cowbuilder base $COWBUILDER_BASE for arch $arch and distribution $COWBUILDER_DIST ***"
     sudo cowbuilder --create --basepath "${COWBUILDER_BASE}" --distribution "${COWBUILDER_DIST}" \
          --debootstrapopts --arch --debootstrapopts "$arch" \
-         --debootstrapopts --variant=buildd ${pbuildercfg:-}
+         --debootstrapopts --variant=buildd ${pbuildercfg:-} \
+         --hookdir "${PBUILDER_HOOKDIR}"
     [ $? -eq 0 ] || bailout 1 "Error: Failed to create cowbuilder base ${COWBUILDER_BASE}."
   else
     echo "*** Updating cowbuilder cow base ***"
@@ -265,14 +271,27 @@ identify_build_type() {
   rm -rf "${TMPDIR}"
 }
 
+autopkgtest_results() {
+  if [ -n "${SKIP_AUTOPKGTEST_RESULTS:-}" ] ; then
+    echo "** Skipping autopkgtest_results as requested via SKIP_AUTOPKGTEST_RESULTS ***"
+    return 0
+  fi
+
+  # copy autopkgtest results from /tmp
+  rm -rf adt
+  ${SUDO_CMD:-} chmod -R go+rX /tmp/adt-$$
+  cp -a /tmp/adt-$$ adt
+}
+
 cowbuilder_run() {
   echo "*** cowbuilder build phase for arch $architecture ***"
-  mkdir -p "$WORKSPACE"/binaries/
+  mkdir -p "$WORKSPACE"/binaries/ /tmp/adt-$$
 
   # make sure we build arch specific packages only when necessary
   identify_build_type
 
   if $SKIP_ARCH_BUILD ; then
+    autopkgtest_results
     bailout 0 "Nothing to do, architecture all binary packages only for non-primary architecture."
   fi
 
@@ -280,13 +299,15 @@ cowbuilder_run() {
     i386)
       linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
-        --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}"
+        --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}" \
+        --hookdir "${PBUILDER_HOOKDIR}" --bindmounts /tmp/adt-$$
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
     amd64|all|*)
       sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
-        --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}"
+        --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}" \
+        --hookdir "${PBUILDER_HOOKDIR}" --bindmounts /tmp/adt-$$
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
     *)
@@ -485,6 +506,7 @@ else
 fi
 
 binaries_to_workspace
+autopkgtest_results
 
 bailout 0
 

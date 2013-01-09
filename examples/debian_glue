@@ -17,3 +17,7 @@
 # packages will be build then.
 # If unset it will default to the architecture of the host system.
 # MAIN_ARCHITECTURE="amd64"
+
+# Hook scripts for pbuilder/cowbuilder, used e.g. for autopkgtest.
+# Default:
+# PBUILDER_HOOKDIR=/usr/share/jenkins-debian-glue/pbuilder-hookdir/

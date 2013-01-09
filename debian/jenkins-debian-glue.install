@@ -5,3 +5,4 @@ debian/tmp/usr/bin/generate-svn-snapshot usr/bin/
 debian/tmp/usr/bin/increase-version-number usr/bin/
 debian/tmp/usr/bin/repository_checker usr/bin/
 debian/tmp/usr/share/jenkins-debian-glue/examples usr/share/jenkins-debian-glue/
+debian/tmp/usr/share/jenkins-debian-glue/pbuilder-hookdir/ usr/share/jenkins-debian-glue/

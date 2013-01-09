@@ -1,0 +1,40 @@
+#!/bin/sh
+# Copyright 2013 Michael Prokop <mika@debian.org>
+# Copyright 2012 Christoph Berg <myon@debian.org>
+# Licensed under the terms of the MIT License.
+
+set -ex
+
+cd /tmp/buildd/*/debian/..
+
+if [ ! -f debian/tests/control ]; then
+  echo "Package does not have autopkgtest support, debian/tests/control is missing"
+  exit 0
+fi
+
+if [ ! -f debian/files ]; then
+  echo "Package source is not built, debian/files is missing" >&2
+  exit 1
+fi
+
+set -- /tmp/adt-*/
+TMPADT="$1"
+if [ ! -d "$TMPADT" ]; then
+  echo "Didn't find any /tmp/adt-*/ directory. It should have been created before invoking cowbuilder." >&2
+  ls -la /tmp
+  exit 1
+fi
+
+# runner/adt-run uses apt-utils's apt-ftparchive and
+# pbuilder's pbuilder-satisfydepends-classic
+apt-get install -y autopkgtest apt-utils pbuilder
+
+mkdir -p "$TMPADT/out"
+binaries=$(awk '/\.deb / { print "--binary ../" $1 }' debian/files)
+
+adt-run --tmp-dir $TMPADT/out --summary $TMPADT/summary \
+  $binaries --built-tree $PWD --- adt-virt-null || EXIT=$?
+
+# 4 means some test failed, exit 0 here and let adtsummary2junit report the failure
+[ ${EXIT:-0} = 4 ] && exit 0
+exit ${EXIT:-0}

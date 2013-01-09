@@ -1,0 +1,38 @@
+#!/usr/bin/env ruby
+
+if ARGV[0].nil?
+  $stderr.puts "Usage: #{File.basename $0} <autopkgtest_summary_file>"
+  exit 1
+end
+
+file = ARGV[0]
+counter = 1
+found_error = 0
+
+begin
+	output = File.open("#{file}", "r").read
+rescue
+	$stderr.puts "Error: can't read file #{file}"
+	exit 1
+end
+
+num_lines = output.lines.count
+
+if num_lines == 0
+  puts "1..0 # Skipped: no autopkgtest output found"
+  exit 0
+end
+
+puts "1..#{num_lines}"
+output.gsub(/:\n/, ':').each_line do |critic|
+	if critic =~ /.*PASS.*/
+		cmd = /(.*)? (PASS)$/.match(critic)[1]
+		puts "ok #{counter}           #{cmd}"
+		counter += 1
+	elsif critic =~ /.*FAIL status.*/
+		test = /(.*)? (FAIL status:)(.*)?/.match(critic)[1]
+		cmd = /(.*)? (FAIL status:)(.*)?/.match(critic)[3]
+		puts "not ok #{counter}           #{test} #{cmd}"
+		counter += 1
+	end
+end
