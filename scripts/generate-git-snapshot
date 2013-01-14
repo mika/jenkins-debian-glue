@@ -11,7 +11,9 @@ fi
 [ -n "${DEBEMAIL:-}" ] || DEBEMAIL="jenkins-debian-glue Autobuilder <jenkins@example.org>"
 export DEBEMAIL
 
-if [ ! -d source ] ; then
+[ -n "${SOURCE_DIRECTORY:-}" ] || SOURCE_DIRECTORY='source' # where checkout of sources resides
+
+if [ ! -d "${SOURCE_DIRECTORY}" ] ; then
   echo "Please run the script in the jenkins workspace." >&2
   exit 1
 fi
@@ -31,63 +33,64 @@ if [ -n "${JENKINS_DEBIAN_GLUE_VERSION:-}" ] ; then
   echo "*** Running jenkins-debian-glue version $JENKINS_DEBIAN_GLUE_VERSION ***"
 fi
 
-echo "***  source package build phase ***"
-rm -f ./* || true
+gbp_opts() {
+  # support overriding git-buildpackage options
+  if [ -n "${GBP_OPTS:-}" ] ; then
+    echo "Found environment variable GBP_OPTS, set to ${GBP_OPTS}"
+  else
+    GBP_OPTS=" -nc --git-force-create --git-ignore-new -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true "
+    echo "Using git-buildpackage default options provided by jenkins-debian-glue"
+  fi
+}
 
-cd source
+version_information() {
+  # retrieve and adjust information
+  ORIG_VERSION=$(dpkg-parsechangelog --count 1 | awk '/Version/ {print $2}')
+  INCREASED_VERSION=$(increase-version-number $ORIG_VERSION)
+  DISTRIBUTION=$(dpkg-parsechangelog --count 1 | awk '/^Distribution/ {print $2}')
 
-# retrieve and adjust information
-ORIG_VERSION=$(dpkg-parsechangelog --count 1 | awk '/Version/ {print $2}')
-INCREASED_VERSION=$(increase-version-number $ORIG_VERSION)
-DISTRIBUTION=$(dpkg-parsechangelog --count 1 | awk '/^Distribution/ {print $2}')
+  # we want to get a version string like
+  # $ORIG_VERSION+0~$TIMESTAMP.$BUILD_NUMBER~1.$GIT_ID
+  # so the version is always increasing over time, no matter what
+  TIMESTAMP="$(date +%s)" # seconds since 1970-01-01 00:00:00 UTC, reversible via `date -d @$TIMESTAMP`
+  BUILD_VERSION="${TIMESTAMP}.${BUILD_NUMBER}" # git-dch appends something like ~1.gbp5f433e then
 
-# we want to get a version string like
-# $ORIG_VERSION+0~$TIMESTAMP.$BUILD_NUMBER~1.$GIT_ID
-# so the version is always increasing over time, no matter what
-TIMESTAMP="$(date +%s)" # seconds since 1970-01-01 00:00:00 UTC, reversible via `date -d @$TIMESTAMP`
-BUILD_VERSION="${TIMESTAMP}.${BUILD_NUMBER}" # git-dch appends something like ~1.gbp5f433e then
+  # we do NOT raise the version number, if we detect an unreleased version,
+  # otherwise the released version would be older than our snapshot builds
+  APPLY_VERSION_WORKAROUND=false
+  if [ "$DISTRIBUTION" = "UNRELEASED" ] && dpkg --compare-versions "$ORIG_VERSION" lt "$INCREASED_VERSION" ; then
+    echo "*** Not increasing version number as distribution is set to UNRELEASED ***"
+    INCREASED_VERSION="$ORIG_VERSION"
+    APPLY_VERSION_WORKAROUND=true
+  fi
 
-# we do NOT raise the version number, if we detect an unreleased version,
-# otherwise the released version would be older than our snapshot builds
-APPLY_VERSION_WORKAROUND=false
-if [ "$DISTRIBUTION" = "UNRELEASED" ] && dpkg --compare-versions "$ORIG_VERSION" lt "$INCREASED_VERSION" ; then
-  echo "*** Not increasing version number as distribution is set to UNRELEASED ***"
-  INCREASED_VERSION="$ORIG_VERSION"
-  APPLY_VERSION_WORKAROUND=true
-fi
+  VERSION_STRING="${INCREASED_VERSION}~${BUILD_VERSION}"
 
-VERSION_STRING="${INCREASED_VERSION}~${BUILD_VERSION}"
+  if [ -n "${distribution:-}" ] ; then
+    echo "Distribution variable found. Adding distribution specific version."
+    VERSION_STRING="${VERSION_STRING}+${distribution}"
+  fi
 
-if [ -n "${distribution:-}" ] ; then
-  echo "Distribution variable found. Adding distribution specific version."
-  VERSION_STRING="${VERSION_STRING}+${distribution}"
-fi
-
-echo "*** Version string set to $VERSION_STRING ***"
+  echo "*** Version string set to $VERSION_STRING ***"
+}
 
 # support overriding git-dch options
-if [ -n "${DCH_OPTS:-}" ] ; then
-  echo "Found environment variable DCH_OPTS, set to ${DCH_OPTS}"
-else
-  DCH_OPTS="-S --multimaint-merge --ignore-branch"
-  echo "Using default git-dch options (${DCH_OPTS})"
-fi
+dch_opts() {
+  if [ -n "${DCH_OPTS:-}" ] ; then
+    echo "Found environment variable DCH_OPTS, set to ${DCH_OPTS}"
+  else
+    DCH_OPTS="-S --multimaint-merge --ignore-branch"
+    echo "Using default git-dch options (${DCH_OPTS})"
+  fi
 
-# support overriding extra options for git-dch
-if [ -n "${DCH_EXTRA_OPTS:-}" ] ; then
-  echo "Found environment variable DCH_EXTRA_OPTS, set to ${DCH_EXTRA_OPTS}"
-else
-  DCH_EXTRA_OPTS="--new-version=${VERSION_STRING}"
-  echo "Using extra git-dch options (${DCH_EXTRA_OPTS})"
-fi
-
-# support overriding git-buildpackage options
-if [ -n "${GBP_OPTS:-}" ] ; then
-  echo "Found environment variable GBP_OPTS, set to ${GBP_OPTS}"
-else
-  GBP_OPTS=" -nc --git-force-create --git-ignore-new -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true "
-  echo "Using git-buildpackage default options provided by jenkins-debian-glue"
-fi
+  # support overriding extra options for git-dch
+  if [ -n "${DCH_EXTRA_OPTS:-}" ] ; then
+    echo "Found environment variable DCH_EXTRA_OPTS, set to ${DCH_EXTRA_OPTS}"
+  else
+    DCH_EXTRA_OPTS="--new-version=${VERSION_STRING}"
+    echo "Using extra git-dch options (${DCH_EXTRA_OPTS})"
+  fi
+}
 
 create_local_branch() {
   [ -n "${1:-}" ] || return 1
@@ -148,66 +151,82 @@ identify_latest_change() {
   fi
 }
 
-# Clean up any unexpected local changes
-#git reset --hard HEAD
+branch_checkout() {
+  # git-dch and git-buildpackage refuse to operate on a single git
+  # commit, so instead create a temporary branch to work on
+  random_branch="jenkins-debian-glue-buildbranch$RANDOM"
+
+  if [ -n "${tag:-}" ] && [ "${tag:-}" != "none" ] ; then
+    echo "Checking out branch $random_branch based on tag $tag"
+    git branch -D "$random_branch" || true
+    git checkout -b "$random_branch" "$tag"
+  elif [ -n "${branch:-}" ] ; then
+    echo "Checking out branch $random_branch based on branch $branch"
+    git branch -D "$random_branch" || true
+    git checkout -b "$random_branch" "$branch"
+  else
+    echo "Checking out branch $random_branch based on commit $GIT_COMMIT"
+    git branch -D "$random_branch" || true
+    git checkout -b "$random_branch" "$GIT_COMMIT"
+  fi
+}
+
+changelog_generation() {
+  # Allow skipping of changelog creation, e.g. to build a branch as-is
+  if [ "${SKIP_DCH:-}" = "true" ] ; then
+    echo "*** SKIP_DCH is set, not modifying debian/changelog therefore ***"
+  else
+    if [ -n "${tag:-}" ] && [ "${tag:-}" != "none" ] ; then
+      echo "Tag parameter found (and not set to 'none'), not touching the changelog."
+    elif [ "${1:-}" = "identify" ] ; then
+      echo "Trying to identify latest tag / merge..."
+
+      if ! git describe $(git rev-list --tags='[^u]*' --max-count=1 HEAD) >/dev/null ; then
+        echo "Failed to identify latest change, falling back to auto mode."
+        git_dch_auto
+      else
+        identify_latest_change
+      fi
+    elif [ -r debian/gbp.conf ] ; then
+      echo "Found debian/gbp.conf, using git-dch with auto mode."
+      git_dch_auto
+    else
+      echo "Using git-dch with auto mode."
+      git_dch_auto
+    fi
+
+    # get rid of "UNRELEASED" distribution header, only
+    # necessary if the debian/changelog was modified
+    if [ -z "${tag:-}" ] ; then
+      debchange --release ""
+    fi
+  fi
+}
+
+# main execution
+echo "*** source package build phase ***"
+rm -f ./* || true
+
+cd "$SOURCE_DIRECTORY"
 
 # make sure common branches are available for git-buildpackage
 create_local_branch upstream
 create_local_branch debian
 create_local_branch pristine-tar
 
-# Drop residual files
-#git clean -xfd
+# check out the according branch/tag with help of $random_branch
+branch_checkout
 
-# git-dch and git-buildpackage refuse to operate on a single git
-# commit, so instead create a temporary branch to work on
-random_branch="jenkins-debian-glue-buildbranch$RANDOM"
+# retrieve version information *after* checking out the according branch/tag,
+# otherwise version number might result in something different than expected
+version_information
 
-if [ -n "${tag:-}" ] ; then
-  echo "Checking out branch $random_branch based on tag $tag"
-  git branch -D "$random_branch" || true
-  git checkout -b "$random_branch" "$tag"
-elif [ -n "${branch:-}" ] ; then
-  echo "Checking out branch $random_branch based on branch $branch"
-  git branch -D "$random_branch" || true
-  git checkout -b "$random_branch" "$branch"
-else
-  echo "Checking out branch $random_branch based on commit $GIT_COMMIT"
-  git branch -D "$random_branch" || true
-  git checkout -b "$random_branch" "$GIT_COMMIT"
-fi
+# handling of debian/changelog
+dch_opts
+changelog_generation
 
-# Allow skipping of changelog creation, e.g. to build a branch as-is
-if [ "${SKIP_DCH:-}" = "true" ] ; then
-  echo "*** SKIP_DCH is set, not modifying debian/changelog therefore ***"
-else
-  if [ -n "${tag:-}" ] ; then
-    echo "Tag parameter found, not touching the changelog."
-  elif [ -n "${branch:-}" ] ; then
-    echo "Branch parameter found, not touching the changelog."
-  elif [ "${1:-}" = "identify" ] ; then
-    echo "Trying to identify latest tag / merge..."
-
-    if ! git describe $(git rev-list --tags='[^u]*' --max-count=1 HEAD) >/dev/null ; then
-      echo "Failed to identify latest change, falling back to auto mode."
-      git_dch_auto
-    else
-      identify_latest_change
-    fi
-  elif [ -r debian/gbp.conf ] ; then
-    echo "Found debian/gbp.conf, using git-dch with auto mode."
-    git_dch_auto
-  else
-    echo "Using git-dch with auto mode."
-    git_dch_auto
-  fi
-
-  # get rid of "UNRELEASED" distribution header, only
-  # necessary if the debian/changelog was modified
-  if [ -z "${tag:-}" ] && [ -z "${branch:-}" ] ; then
-    debchange --release ""
-  fi
-fi
+# set $GBP_OPTS
+gbp_opts
 
 # prepare orig.tar.gz using pristine-tar, but without actually building the source package
 if [ "${IGNORE_GIT_BUILDPACKAGE:-}" = "true" ] ; then
@@ -218,12 +237,12 @@ fi
 
 # build source package, run before switching back to previous branch
 # to get the actual requested version
-( cd .. ; dpkg-source -I -b source )
+( cd .. ; dpkg-source -I -b "$SOURCE_DIRECTORY" )
+
+# revert to original debian/changelog to avoid merge conflicts
+git checkout -- $(readlink -f debian/changelog)
 
 git checkout ${GIT_BRANCH} # switch back to previous "branch" before removing the tmp branch
 git branch -D "$random_branch"
-
-# revert to original debian/changelog to avoid merge conflicts
-git checkout -- debian/changelog
 
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
