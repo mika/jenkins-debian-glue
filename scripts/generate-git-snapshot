@@ -157,16 +157,40 @@ branch_checkout() {
   random_branch="jenkins-debian-glue-buildbranch$RANDOM"
 
   if [ -n "${tag:-}" ] && [ "${tag:-}" != "none" ] ; then
-    echo "Checking out branch $random_branch based on tag $tag"
+    echo "Making sure that random_branch $random_branch does not exist"
     git branch -D "$random_branch" || true
+
+    echo "Checking out branch $random_branch based on tag $tag"
     git checkout -b "$random_branch" "$tag"
   elif [ -n "${branch:-}" ] ; then
-    echo "Checking out branch $random_branch based on branch $branch"
+    # prepend "origin" when checking out a branch, otherwise we might be
+    # checking out a branch which doesn't exist locally yet, failing with:
+    # | fatal: git checkout: updating paths is incompatible with switching branches.
+    # | Did you intend to checkout '$BRANCH' which can not be resolved as commit?
+    local checkout_branch
+
+    case "$branch" in
+      # rewrite refs/heads/FOO to refs/remotes/origin/FOO, otherwise it fails;
+      # the refs/heads/FOO is something e.g. github pushes through its API
+      refs/heads/*) checkout_branch="${branch/refs\/heads/refs/remotes/origin}" ;;
+
+      # keep as it is when receiving origin/* already
+          origin/*) checkout_branch="$branch" ;;
+
+      # prepend "origin/" otherwise
+                 *) checkout_branch="origin/${branch}" ;;
+    esac
+
+    echo "Making sure that random_branch $random_branch does not exist"
     git branch -D "$random_branch" || true
-    git checkout -b "$random_branch" "$branch"
+
+    echo "Checking out branch $random_branch based on branch $checkout_branch"
+    git checkout -b "$random_branch" "$checkout_branch"
   else
-    echo "Checking out branch $random_branch based on commit $GIT_COMMIT"
+    echo "Making sure that random_branch $random_branch does not exist"
     git branch -D "$random_branch" || true
+
+    echo "Checking out branch $random_branch based on commit $GIT_COMMIT"
     git checkout -b "$random_branch" "$GIT_COMMIT"
   fi
 }
