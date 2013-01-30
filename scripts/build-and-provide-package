@@ -37,6 +37,28 @@ checks_and_defaults() {
   if [ -z "${PBUILDER_HOOKDIR:-}" ] ; then
     PBUILDER_HOOKDIR='/usr/share/jenkins-debian-glue/pbuilder-hookdir/'
   fi
+
+  # Evaluate Freight default options - we use the system wide freight
+  # directories and configuration, unless either $FREIGHT_REPOSITORY or
+  # $FREIGHT_BASE are specified.
+  if [ -z "${FREIGHT_REPOSITORY:-}" ] && [ -z "${FREIGHT_BASE:-}" ] ; then
+    FREIGHT_VARLIB=/var/lib/freight
+    FREIGHT_VARCACHE=/var/cache/freight
+    FREIGHT_CONF=/etc/freight.conf
+  elif [ -z "${FREIGHT_REPOSITORY:-}" ] && [ -n "${FREIGHT_BASE:-}" ] ; then
+    FREIGHT_VARLIB=${FREIGHT_BASE}/default-source
+    FREIGHT_VARCACHE=${FREIGHT_BASE}/default
+    FREIGHT_CONF=${FREIGHT_BASE}/default.conf
+  else
+    # Default to /srv/freight unless specifed
+    if [ -z "${FREIGHT_BASE:-}" ] ; then
+      FREIGHT_BASE=/srv/freight
+    fi
+
+    FREIGHT_VARLIB=${FREIGHT_BASE}/${FREIGHT_REPOSITORY}-source
+    FREIGHT_VARCACHE=${FREIGHT_BASE}/${FREIGHT_REPOSITORY}
+    FREIGHT_CONF=${FREIGHT_BASE}/${FREIGHT_REPOSITORY}.conf
+  fi
 }
 
 clean_workspace() {
@@ -401,6 +423,44 @@ reprepro_wrapper() {
   [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
 }
 
+freight_ensure_repo() {
+  echo "*** Creating freight directory structure ***"
+  mkdir -p ${FREIGHT_VARCACHE} ${FREIGHT_VARLIB}
+
+  if [ ! -f $FREIGHT_CONF ] ; then
+    echo "*** Creating freight repository configuration in $FREIGHT_CONF ***"
+
+    cat > ${FREIGHT_CONF} <<EOF
+# Gernated by Debian-Jenkins-Glue
+#
+# Directories for the Freight library and Freight cache.  Your web
+# server's document root should point to VARCACHE.
+VARLIB="${FREIGHT_VARLIB}"
+VARCACHE="${FREIGHT_VARCACHE}"
+
+# Default 'Origin' and 'Label' fields for 'Release' files.
+ORIGIN="Freight"
+LABEL="Freight"
+# From Debian-Jenkins-Glue KEY_ID
+GPG="${KEY_ID}"
+EOF
+  fi
+
+  [ -f $FREIGHT_CONF ] || bailout 1 "Error: Failed to create freight configuration in $FREIGHT_CONF"
+}
+
+freight_wrapper() {
+  freight_ensure_repo
+
+  echo "*** Including packages via freight in repository ${FREIGHT_VARLIB}/${REPOS} ***"
+  ${SUDO_CMD:-} freight add -v -c $FREIGHT_CONF "${WORKSPACE}/binaries/"*"${newest_version}"*"deb" apt/${REPOS}
+  [ $? -eq 0 ] || bailout 1 "Error: Failed to add binary package to repository."
+
+  echo "*** Generating freight cache ***"
+  ${SUDO_CMD:-} freight cache -v -c $FREIGHT_CONF
+  [ $? -eq 0 ] || bailout 1 "Error: Failed to generate freight cache for ${FREIGHT_VARCACHE}."
+}
+
 trunk_release() {
   # setting TRUNK_RELEASE=true enables release-trunk repository,
   # to always get a copy of the package(s) to a central place
@@ -458,6 +518,13 @@ EOF
 }
 
 deploy_to_releases() {
+  if [ -n "${USE_FREIGHT:-}" ] ; then
+    freight_wrapper
+    # Freight is currently not able to manage release or trunk release repos,
+    # so this is the stage where we exit in that case.
+    return 0
+  fi
+
   if [ -n "${release:-}" ] && [ "$release" != "none" ] && [ "$release" != "trunk" ] && \
     # '${release}' is a hidden bomb: when provided through predefined parameters
     # from an upstream jenkins job (like foo-binaries receiving the parameters
