@@ -30,10 +30,6 @@ checks_and_defaults() {
     echo "*** Falling back to default, using host architecture ${architecture}. ***"
   fi
 
-  if [ -z "${REPOSITORY:-}" ] ; then
-    REPOSITORY='/srv/repository'
-  fi
-
   if [ -z "${PBUILDER_HOOKDIR:-}" ] ; then
     PBUILDER_HOOKDIR='/usr/share/jenkins-debian-glue/pbuilder-hookdir/'
   fi
@@ -59,6 +55,18 @@ checks_and_defaults() {
     FREIGHT_VARCACHE=${FREIGHT_BASE}/${FREIGHT_REPOSITORY}
     FREIGHT_CONF=${FREIGHT_BASE}/${FREIGHT_REPOSITORY}.conf
   fi
+
+  # repository defaults
+  REPOSITORY="${REPOSITORY:-/srv/repository}"
+  REPOSITORY_OUT_DIR="${REPOSITORY_OUT_DIR:-+b/}"
+  REPOSITORY_CONF_DIR="${REPOSITORY_CONF_DIR:-+b/conf}"
+  REPOSITORY_DIST_DIR="${REPOSITORY_DIST_DIR:-+o/dists}"
+  REPOSITORY_LOG_DIR="${REPOSITORY_LOG_DIR:-+b/logs}"
+  REPOSITORY_DB_DIR="${REPOSITORY_DB_DIR:-+b/db}"
+  REPOSITORY_LIST_DIR="${REPOSITORY_LIST_DIR:-+b/lists}"
+  REPOSITORY_MORGUE_DIR="${REPOSITORY_MORGUE_DIR:-+b/morgue}"
+
+  REPREPRO_DIRS="--basedir ${REPOSITORY} --outdir ${REPOSITORY_OUT_DIR} --distdir ${REPOSITORY_DIST_DIR} --confdir ${REPOSITORY_CONF_DIR} --logdir ${REPOSITORY_LOG_DIR} --dbdir ${REPOSITORY_DB_DIR} --listdir ${REPOSITORY_LIST_DIR} --morguedir ${REPOSITORY_MORGUE_DIR}"
 }
 
 clean_workspace() {
@@ -345,7 +353,7 @@ remove_packages() {
   fi
 
   echo "*** Removing source package version from repository ***"
-  ${SUDO_CMD:-} reprepro -v -A source -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${SOURCE_PACKAGE}"
+  ${SUDO_CMD:-} reprepro -v -A source ${REPREPRO_DIRS} --waitforlock 1000 remove "${REPOS}" "${SOURCE_PACKAGE}"
 
   echo "*** Removing previous binary package versions from repository ***"
   for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${arch}.changes" | grep '\.deb$') ; do
@@ -356,10 +364,10 @@ remove_packages() {
     # note: "removesrc" would remove foreign arch files (of different builds)
     if echo "$file" | egrep -q '_all.deb$'; then
       echo "*** Removing existing package ${binpackage} from repository ${REPOS} (arch all) ***"
-      ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
+      ${SUDO_CMD:-} reprepro -v ${REPREPRO_DIRS} --waitforlock 1000 remove "${REPOS}" "${binpackage}"
     else
       echo "*** Removing existing package ${binpackage} from repository ${REPOS} for arch ${arch} ***"
-      ${SUDO_CMD:-} reprepro -v -A "${arch}" -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
+      ${SUDO_CMD:-} reprepro -v -A "${arch}" ${REPREPRO_DIRS} --waitforlock 1000 remove "${REPOS}" "${binpackage}"
     fi
 
   done
@@ -386,7 +394,7 @@ remove_missing_binary_packages() {
       ;;
   esac
 
-  for p in $(${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --list-format '${package}\n' listmatched "${REPOS}" '*' | sort -u); do
+  for p in $(${SUDO_CMD:-} reprepro -v ${REPREPRO_DIRS} --waitforlock 1000 --list-format '${package}\n' listmatched "${REPOS}" '*' | sort -u); do
     echo " $binary_list " | grep -q " $p " || missing_packages="${missing_packages:-} $p"
   done
 
@@ -395,7 +403,7 @@ remove_missing_binary_packages() {
 
     for p in $missing_packages ; do
       echo "*** Removing $p from $REPOS to avoid out-of-date data ***"
-      ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${p}"
+      ${SUDO_CMD:-} reprepro -v ${REPREPRO_DIRS} --waitforlock 1000 remove "${REPOS}" "${p}"
     done
   fi
 }
@@ -418,7 +426,7 @@ reprepro_wrapper() {
   esac
 
   echo "*** Including packages in repository $REPOS ***"
-  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
+  ${SUDO_CMD:-} reprepro -v ${REPREPRO_DIRS} --waitforlock 1000 --ignore=wrongdistribution \
     include "${REPOS}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
   [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
 }
@@ -473,7 +481,7 @@ trunk_release() {
 
     ${SUDO_CMD:-} generate-reprepro-codename "$TRUNK_RELEASE"
 
-    ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
+    ${SUDO_CMD:-} reprepro -v ${REPREPRO_DIRS} --waitforlock 1000 --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
     [ $? -eq 0 ] || bailout 1 "Error: Failed to copy packages from ${REPOS} to ${TRUNK_RELEASE}."
   fi
 }
@@ -481,7 +489,13 @@ trunk_release() {
 release_repos() {
   echo "*** Environment variable 'release' is set, running through release steps. ***"
 
-  local REPOSITORY="${REPOSITORY}/release/${release}"
+  if [ -n "${RELEASE_REPOSITORY:-}" ] ; then
+    local REPOSITORY="${RELEASE_REPOSITORY:-}"
+    echo "*** RELEASE_REPOSITORY is set [$RELEASE_REPOSITORY], using it for REPOSITORY ***"
+  else
+    local REPOSITORY="${REPOSITORY}/release/${release}"
+    echo "*** RELEASE_REPOSITORY is unset, using default [$REPOSITORY] ***"
+  fi;
 
   mkdir -p "${REPOSITORY}/incoming/${release}"
   mkdir -p "${REPOSITORY}/conf"
@@ -507,7 +521,7 @@ EOF
 
   local old_dir=$(pwd)
   cd "${REPOSITORY}/incoming/${release}"
-  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
+  ${SUDO_CMD:-} reprepro -v ${REPREPRO_DIRS} --waitforlock 1000 --ignore=wrongdistribution \
                 processincoming "${release}" "$(basename ${WORKSPACE}/binaries/*.changes)"
   local RC=$?
   cd "$old_dir"

@@ -21,3 +21,26 @@
 # Hook scripts for pbuilder/cowbuilder, used e.g. for autopkgtest.
 # Default:
 # PBUILDER_HOOKDIR=/usr/share/jenkins-debian-glue/pbuilder-hookdir/
+
+# Path to the main reprepro repository
+# Default:
+# REPOSITORY='/srv/repository'
+
+# You can define every reprepro directory separately.
+# $REPOSITORY is used as the base directory (+b), visit
+# man reprepro(1) for further details
+# Defaults:
+# REPOSITORY_OUT_DIR='+b'
+# REPOSITORY_CONF_DIR='+b/conf'
+# REPOSITORY_DIST_DIR='+o/dists'
+# REPOSITORY_LOG_DIR='+b/logs'
+# REPOSITORY_DB_DIR='+b/db'
+# REPOSITORY_LIST_DIR='+b/lists'
+# REPOSITORY_MORGUE_DIR='+b/morgue'
+
+# Iff the environment variable 'release' is set then by default
+# ${REPOSITORY}/release/${release} is used instead of just ${REPOSITORY}.
+# If you do not want to separate release reprepro repositories
+# or use a different one you can override that via RELEASE_REPOSITORY
+# Default:
+# RELEASE_REPOSITORY="${REPOSITORY}/release/${release}"
