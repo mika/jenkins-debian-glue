@@ -63,8 +63,6 @@ AlsoAcceptFor: unstable
 Architectures: amd64 i386 source
 Components: main
 UDebComponents: main
-DebIndices: Packages Release . .gz
-DscIndices: Sources Release .gz
 Tracking: minimal
 EOF
 
