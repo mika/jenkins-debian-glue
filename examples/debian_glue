@@ -21,3 +21,9 @@
 # Hook scripts for pbuilder/cowbuilder, used e.g. for autopkgtest.
 # Default:
 # PBUILDER_HOOKDIR=/usr/share/jenkins-debian-glue/pbuilder-hookdir/
+
+# If $release is set then "${REPOSITORY}/release/${release}"
+# is used as release repository. If you want to use a different
+# directory set RELEASE_REPOSITORY accordingly.
+# Default:
+# RELEASE_REPOSITORY="${REPOSITORY}/release/${release}"
