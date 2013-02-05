@@ -73,6 +73,11 @@ fi
 
 # Amazon EC2 returns the internal IP by default, so ask about the public one
 IP=$(facter ec2_public_ipv4 2>/dev/null) # curl http://169.254.169.254/latest/meta-data/public-ipv4
+# 'facter ec2_public_ipv4' returns nothing on Debian's AMI :(
+if [ -z "$IP" ] ; then
+  IP=$(curl --connect-timeout 3 http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null)
+fi
+# not using EC2? fallback then
 if [ -z "$IP" ] ; then
   IP=$(ip addr show dev $(route -n | awk '/^0\.0\.0\.0/{print $NF}') | awk '/inet / {print $2}' | head -1 |sed "s;/.*;;")
 fi
