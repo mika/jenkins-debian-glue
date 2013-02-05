@@ -418,7 +418,8 @@ reprepro_wrapper() {
   esac
 
   echo "*** Including packages in repository $REPOS ***"
-  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 --ignore=wrongdistribution \
+  ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 \
+    --ignore=wrongdistribution --ignore=uploaders \
     include "${REPOS}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
   [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
 }
