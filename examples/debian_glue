@@ -22,6 +22,10 @@
 # Default:
 # PBUILDER_HOOKDIR=/usr/share/jenkins-debian-glue/pbuilder-hookdir/
 
+# Base directory for reprepro repositories
+# Default:
+# REPOSITORY='/srv/repository'
+
 # If $release is set then "${REPOSITORY}/release/${release}"
 # is used as release repository. If you want to use a different
 # directory set RELEASE_REPOSITORY accordingly.
