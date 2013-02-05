@@ -1,3 +1,56 @@
+jenkins-debian-glue (0.5.0) unstable; urgency=low
+
+  [ Michael Prokop ]
+  * [00dc44d] piuparts_wrapper: use --skip-logrotatefiles-test if
+    available
+  * [fd81e82] git post-receive hook: use $server variable instead of
+    jenkins.grml.org
+  * [de10cec] git post-receive hook: provide curl usage example
+  * [f6a3ab9] generate-git-snapshot: use dpkg-source's -I switch without
+    any arguments. Thanks to yanfalies for the bugreport
+  * [ea73944] replace signal numbers in trap with their according signal
+    names
+  * [11fd8db] Drop "possible bashism" from source/git/post-receive
+  * [e814cfe] tap_tool_dispatcher: ignore .git directory as well
+  * [b56f16b] tap_tool_dispatcher: use .tap suffix for output files
+  * [85a8250] generate-git-snapshot: make sure we're building the
+    requested version via dpkg-source
+  * [1418a32] generate-git-snapshot: support $branch as alternative to
+    $tag
+  * [7f55630] refactor generate-git-snapshot
+  * [f5852ad] Update copyright information in LICENSE file
+  * [95a35fe] support autopkgtest
+  * [747fda3] generate-git-snapshot: prepend "origin" when checking out a
+    $branch. Thanks to Stefan Schlesinger <sts@ono.at> for the bug report
+    and testing
+  * [e240dcc] Support configuration of release repository via
+    $RELEASE_REPOSITORY. Thanks to Marcel Beck <nexeck@outlook.com> for
+    the initial patch in pull-request 34 which triggered development of
+    this feature
+  * [6b1e196] Provide configuration example for REPOSITORY in default
+    config
+  * [b690dbb] Bump Standards-Version to 3.9.4
+
+  [ Yury Vidineev ]
+  * [09cfda3] Depends of sudo or sudo-ldap
+
+  [ Marcelo Martins ]
+  * [015b2fb] Added a variable to also allow one to overwrite the git-
+    buildpackage options. If variable not set it just falls back to the
+    original options.
+
+  [ Marcel Beck ]
+  * [bd87c78] Do not checkout HEAD, checkout the Branch that is given in
+    jenkins
+
+  [ Stefan Schlesinger ]
+  * [42cb68c] Adding freight support to build-and-provide-package
+
+  [ Stanislav Bogatyrev ]
+  * [8abadb7] Add UDebComponents. Needed by some packages.
+
+ -- Michael Prokop <mika@debian.org>  Tue, 05 Feb 2013 14:18:43 +0100
+
 jenkins-debian-glue (0.4.0) unstable; urgency=low
 
   The "upgrade tests ftw" release ／人◕‿◕人＼
