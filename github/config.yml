@@ -1,0 +1,3 @@
+token: github_jenkins_ci
+cause: git_commit_triggered
+server: https://jenkins.example.local/

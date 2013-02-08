@@ -1,0 +1,19 @@
+README for github directory in jenkins-debian-glue
+--------------------------------------------------
+
+The script hook_server.rb provides a simple gateway between GitHub and
+an (internal) Jenkins server to receive Git push actions from GitHub and
+trigger Jenkins jobs accordingly. Place this script on a host which is
+available from GitHub and has access to the (internal) Jenkins system as
+well.
+
+Instructions for usage:
+
+* configure hook_server settings via config.yml
+* adapt script hook_server.rb as needed
+* install dependencies via bundle [http://bundler.io/]:
+  bundle install --path=bundled --verbose --binstubs
+* start service:
+  bundle exec ./hook_server.rb
+* enable hook settings of according project(s) under GitHub's "WebHook
+  URL", usage example: http://webhook.example.local:8042/trigger
