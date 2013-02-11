@@ -76,7 +76,7 @@ bailout() {
 
   echo "*** Getting rid of files in $WORKSPACE/binaries/ to avoid problems in next run. ***"
   rm -f "$WORKSPACE"/binaries/*
-  ${SUDO_CMD:-} rm -rf /tmp/adt-$$
+  ${SUDO_CMD:-} rm -rf /tmp/adt-$$ /tmp/apt-$$
 
   [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
   echo "*** Finished execution of $0 at $(date) [running ${SECONDS} seconds] ***"
@@ -307,7 +307,9 @@ autopkgtest_results() {
 
 cowbuilder_run() {
   echo "*** cowbuilder build phase for arch $architecture ***"
-  mkdir -p "$WORKSPACE"/binaries/ /tmp/adt-$$
+  mkdir -p "$WORKSPACE"/binaries/ /tmp/adt-$$ /tmp/apt-$$
+
+  local BINDMOUNTS="/tmp/adt-$$ /tmp/apt-$$"
 
   # make sure we build arch specific packages only when necessary
   identify_build_type
@@ -317,19 +319,37 @@ cowbuilder_run() {
     bailout 0 "Nothing to do, architecture all binary packages only for non-primary architecture."
   fi
 
+  # For release builds use release repo to satisfy dependencies
+  if [ -n "${release:-}" ] && [ "$release" != "none" ] && [ "$release" != "trunk" ] && \
+    [ "${release}" != '${release}' ] ; then
+    if [ -n "${RELEASE_REPOSITORY:-}" ]; then
+      local REPOSITORY="${RELEASE_REPOSITORY}"
+    else
+      local REPOSITORY="${REPOSITORY}/release/${release}"
+    fi;
+
+    if [ -d "$REPOSITORY" ]; then
+      BINDMOUNTS="$BINDMOUNTS $REPOSITORY"
+      cat > /tmp/apt-$$/release.list <<EOF
+deb file://${REPOSITORY} ${release} main
+deb-src file://${REPOSITORY} ${release} main
+EOF
+    fi
+  fi
+
   case "$architecture" in
     i386)
       linux32 sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
         --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}" \
-        --hookdir "${PBUILDER_HOOKDIR}" --bindmounts /tmp/adt-$$
+        --hookdir "${PBUILDER_HOOKDIR}" --bindmounts "$BINDMOUNTS"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
     amd64|all|*)
       sudo cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
         --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}" \
-        --hookdir "${PBUILDER_HOOKDIR}" --bindmounts /tmp/adt-$$
+        --hookdir "${PBUILDER_HOOKDIR}" --bindmounts "$BINDMOUNTS"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
     *)

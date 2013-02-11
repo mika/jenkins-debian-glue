@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -ex
+
+set -- /tmp/apt-*/
+TMPAPT="$1"
+
+if [ -d "$TMPAPT" ] && ls ${TMPAPT}*.list 2>/dev/null; then
+  echo "Using additional apt sources:"
+  cat ${TMPAPT}*.list
+
+  cp ${TMPAPT}*.list /etc/apt/sources.list.d/
+  /usr/bin/apt-get update
+fi
