@@ -605,6 +605,37 @@ binaries_to_workspace() {
   rmdir "${WORKSPACE}/binaries/"
 }
 
+sign_package() {
+  KEY_ID=`gpg --list-secret-keys --with-colons ${KEY_ID:-} | sed -n '/sec::/{s/^sec::[0-9]*:[0-9]*:\([0-9A-F]*\):.*$/\1/;p}'`
+  if [ -z "$KEY_ID" ] ; then
+    # generate a gpg key if missing?
+    echo "*** private key '${KEY_ID}' not found (specify a valid one with KEY_ID) package will not be signed ***"
+  else
+    # debsign the package
+    debsign -k"${KEY_ID}" ${WORKSPACE}/binaries/*.changes
+    [ $? -eq 0 ] || bailout 1 "Error: failed to sign the package with key ${KEY_ID}"
+  fi
+}
+
+# upload the package to an arbitrary location
+upload_package() {
+  if [ -z "$UPLOAD_METHOD" ] && [ -z "$UPLOAD_FQDN" ] && [ -z "$UPLOAD_PATH" ] ; then
+    echo "*** not uploading to a separate location ***"
+    return 0
+  fi
+  # generate a .dput.cf file for this repo
+  cat > ${WORKSPACE}/dput.cf <<EOF
+[${UPLOAD_FQDN:-localhost}]
+run_lintian = 0
+method = ${UPLOAD_METHOD:-local}
+fqdn = ${UPLOAD_FQDN:-localhost}
+incoming = ${UPLOAD_PATH:-${REPOSITORY}/incoming}
+EOF
+  # dput the package
+  dput -c ${WORKSPACE}/dput.cf ${UPLOAD_FQDN:-localhost} ${WORKSPACE}/binaries/*.changes
+  [ $? -eq 0 ] || bailout 1 "Error: could not upload package using dput"
+}
+
 # main execution
 trap bailout SIGHUP SIGINT SIGQUIT SIGABRT SIGKILL SIGALRM SIGTERM
 
@@ -630,6 +661,9 @@ if [ -n "${BUILD_ONLY:-}" ] ; then
 else
   deploy_to_releases
 fi
+
+sign_package
+upload_package
 
 binaries_to_workspace
 autopkgtest_results
