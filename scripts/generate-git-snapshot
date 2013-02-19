@@ -8,7 +8,7 @@ if [ -r /etc/jenkins/debian_glue ] ; then
   . /etc/jenkins/debian_glue
 fi
 
-[ -n "${DEBEMAIL:-}" ] || DEBEMAIL="jenkins-debian-glue Autobuilder <jenkins@example.org>"
+[ -n "${DEBEMAIL:-}" ] || DEBEMAIL="jenkins-debian-glue Autobuilder <jenkins@`hostname -f`>"
 export DEBEMAIL
 
 [ -n "${SOURCE_DIRECTORY:-}" ] || SOURCE_DIRECTORY='source' # where checkout of sources resides
