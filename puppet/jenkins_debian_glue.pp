@@ -114,11 +114,15 @@ class jenkins::repos {
 
 class jenkins::software {
 
-  jenkins::plugin::install { 'git':
+  jenkins::plugin::install { 'copyartifact':
     require => Package['jenkins'],
   }
 
-  jenkins::plugin::install { 'copyartifact':
+  jenkins::plugin::install { 'git-client':
+    require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'git':
     require => Package['jenkins'],
   }
 
