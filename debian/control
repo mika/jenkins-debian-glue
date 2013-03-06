@@ -40,7 +40,7 @@ Package: jenkins-debian-glue-buildenv-svn
 Architecture: all
 Depends: build-essential,
          jenkins-debian-glue,
-         subversion-tools,
+         subversion-tools (<= 1.6.18dfsg-1) | svn2cl,
          xsltproc,
          ${misc:Depends}
 Description: virtual package for Subversion build environment of jenkins-debian-glue

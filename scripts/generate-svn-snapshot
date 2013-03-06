@@ -30,7 +30,7 @@ if [ -z "${SVN_REVISION:-}" ] ; then
 fi
 
 if ! [ -x "$(which svn2cl)" ] ; then
-  echo "Error: svn2cl not available, please install subversion-tools." >&2
+  echo "Error: svn2cl not available, please install subversion-tools <= 1.6.18dfsg-1 or svn2cl." >&2
   exit 1
 fi
 
