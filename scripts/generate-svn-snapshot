@@ -77,7 +77,7 @@ build_snapshot() {
 
   DISTRIBUTION=$(dpkg-parsechangelog --count 1 | awk '/^Distribution/ {print $2}')
 
-  TIMESTAMP=$(date +%s) # seconds since 1970-01-01 00:00:00 UTC, ensuring version gets always newer...
+  TIMESTAMP=$(date -u +%Y%m%d%H%M%S)
 
   if [ "$DISTRIBUTION" = "UNRELEASED" ] ; then
     # we do NOT raise the version number, if we detect an unreleased version
