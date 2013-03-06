@@ -171,7 +171,13 @@ class jenkins::software {
 
   file { '/etc/sudoers.d/jenkins':
     mode    => '0440',
-    content => '# for *-binaries job
+    content => '## Deployed via jenkins_debian_glue.pp
+
+# Make sure DEB_* options reach cowbuilder, like e.g.:
+#  export DEB_BUILD_OPTIONS="parallel=8" /usr/bin/build-and-provide-package
+Defaults  env_keep+="DEB_*"
+
+# for *-binaries job
 jenkins ALL=NOPASSWD: /usr/sbin/cowbuilder, /usr/sbin/chroot
 # for *-piuparts job
 jenkins ALL=NOPASSWD: /usr/sbin/piuparts, /usr/sbin/debootstrap, /usr/bin/piuparts_wrapper
