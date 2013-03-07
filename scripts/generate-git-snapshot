@@ -231,6 +231,16 @@ changelog_generation() {
 echo "*** source package build phase ***"
 rm -f ./* || true
 
+if ! [ -z "$PRE_SOURCE_HOOK" ] ; then
+	if ! [ -s "$PRE_SOURCE_HOOK" ]; then
+	    echo "Could not find hook: $PRE_SOURCE_HOOK"
+	    exit 1
+	else
+        echo "Found environment variable PRE_SOURCE_HOOK, set to ${PRE_SOURCE_HOOK}"
+	    sh $PRE_SOURCE_HOOK
+    fi
+fi
+
 cd "$SOURCE_DIRECTORY"
 
 # make sure common branches are available for git-buildpackage
