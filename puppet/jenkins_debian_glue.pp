@@ -134,10 +134,6 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
-  jenkins::plugin::install { 'xunit':
-    require => Package['jenkins'],
-  }
-
   package { 'jenkins':
     ensure  => present,
     require => [
