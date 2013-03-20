@@ -261,7 +261,7 @@ fi
 
 # build source package, run before switching back to previous branch
 # to get the actual requested version
-( cd .. ; dpkg-source -I -b "$SOURCE_DIRECTORY" )
+( cd .. ; dpkg-source -i -I -b "$SOURCE_DIRECTORY" )
 
 # revert to original debian/changelog to avoid merge conflicts
 git checkout -- $(readlink -f debian/changelog)
