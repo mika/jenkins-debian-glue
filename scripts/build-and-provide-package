@@ -511,6 +511,11 @@ release_repos() {
   mkdir -p "${REPOSITORY}/incoming/${release}"
   mkdir -p "${REPOSITORY}/conf"
 
+  if [ "${REMOVE_FROM_RELEASE}" = 'true' ]; then
+    echo "*** REMOVE_FROM_RELEASE is set, trying to remove package(s) from release repository"
+    REPOS="${release}" remove_packages
+  fi
+
   cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${release}/"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to copy binary packages to release directory."
 
