@@ -266,7 +266,7 @@ fi
 # revert to original debian/changelog to avoid merge conflicts
 git checkout -- $(readlink -f debian/changelog)
 
-git checkout ${GIT_BRANCH} # switch back to previous "branch" before removing the tmp branch
+git checkout -f ${GIT_BRANCH} # switch back to previous "branch" before removing the tmp branch
 git branch -D "$random_branch"
 
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
