@@ -31,3 +31,9 @@
 # directory set RELEASE_REPOSITORY accordingly.
 # Default:
 # RELEASE_REPOSITORY="${REPOSITORY}/release/${release}"
+
+# Remove packages from a $release before processing incoming
+# This allows to rebuild and provide versions already existent
+# in the release repository they are built for.
+# Default:
+# REMOVE_FROM_RELEASE=false
