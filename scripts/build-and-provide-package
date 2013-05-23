@@ -373,8 +373,21 @@ remove_packages() {
     binpackage="${file%%_*}"
     binary_list="${binary_list:-} ${binpackage}"
 
-    # note: "removesrc" would remove foreign arch files (of different builds)
-    if echo "$file" | egrep -q '_all.deb$'; then
+    skip=false # don't skip any package(s) unless it's listed in SKIP_PACKAGE_FROM_REMOVAL
+
+    if [ -n "${SKIP_PACKAGE_FROM_REMOVAL:-}" ] ; then
+      echo "*** SKIP_PACKAGE_FROM_REMOVAL is set [${SKIP_PACKAGE_FROM_REMOVAL}]"
+      for package in $SKIP_PACKAGE_FROM_REMOVAL ; do
+        if echo "${package}" | grep -q "${binpackage}" ; then
+          skip=true
+        fi
+      done
+    fi
+
+    if $skip ; then
+      echo "*** Package '$binpackage' listed in SKIP_PACKAGE_FROM_REMOVAL - skipping removal therefore ***"
+    elif echo "$file" | egrep -q '_all.deb$'; then
+      # note: "removesrc" would remove foreign arch files (of different builds)
       echo "*** Removing existing package ${binpackage} from repository ${REPOS} (arch all) ***"
       ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${binpackage}"
     else
@@ -414,9 +427,25 @@ remove_missing_binary_packages() {
     echo "*** Binary package(s) found, missing in build version: ${missing_packages:-} ***"
 
     for p in $missing_packages ; do
-      echo "*** Removing $p from $REPOS to avoid out-of-date data ***"
-      ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${p}"
-    done
+      skip=false # don't skip any package(s) unless it's listed in SKIP_PACKAGE_FROM_REMOVAL
+
+      if [ -n "${SKIP_PACKAGE_FROM_REMOVAL:-}" ] ; then
+        echo "*** SKIP_PACKAGE_FROM_REMOVAL is set [${SKIP_PACKAGE_FROM_REMOVAL}]"
+        for package in $SKIP_PACKAGE_FROM_REMOVAL ; do
+          if echo "${package}" | grep -q "${p}" ; then
+            skip=true
+          fi
+        done
+      fi
+
+      if $skip ; then
+        echo "*** Package '$p' listed in SKIP_PACKAGE_FROM_REMOVAL - skipping removal therefore ***"
+      else
+        echo "*** Removing $p from $REPOS to avoid out-of-date data ***"
+        ${SUDO_CMD:-} reprepro -v -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${p}"
+      fi
+   done
+
   fi
 }
 
