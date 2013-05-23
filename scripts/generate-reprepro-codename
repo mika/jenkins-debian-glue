@@ -35,7 +35,11 @@ if ! ${SUDO_CMD:-} mkdir -p "${REPOSITORY}"/conf ; then
   exit 1
 fi
 
-${SUDO_CMD:-} chown $(id -un) "${REPOSITORY}"/conf
+if ! ${SUDO_CMD:-} chown $(id -un) "${REPOSITORY}"/conf ; then
+  echo "*** Warning: failed to adjust permissions of ${REPOSITORY}/conf ***"
+  echo "*** This might be caused by a remote FS like sshfs, so not failing the build. ***"
+  echo "*** Please fix the underlying problem if you depend on according permissions. ***"
+fi
 touch "${REPOSITORY}"/conf/distributions
 
 if [ -r /etc/jenkins/debian_glue ] ; then
