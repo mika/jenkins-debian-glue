@@ -75,7 +75,7 @@ fi
 IP=$(facter ec2_public_ipv4 2>/dev/null) # curl http://169.254.169.254/latest/meta-data/public-ipv4
 # 'facter ec2_public_ipv4' returns nothing on Debian's AMI :(
 if [ -z "$IP" ] ; then
-  IP=$(wget --quiet --timeout=3 -O - http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null)
+  IP=$(wget --quiet --tries=3 --timeout=3 -O - http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null)
 fi
 # not using EC2? fallback then
 if [ -z "$IP" ] ; then
