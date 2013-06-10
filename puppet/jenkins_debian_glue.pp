@@ -134,12 +134,17 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
+  package { 'default-jre-headless':
+    ensure  => present,
+  }
+
   package { 'jenkins':
     ensure  => present,
     require => [
       File['/etc/apt/sources.list.d/jenkins.list'],
       File['/etc/sudoers.d/jenkins'],
       Exec['refresh-apt-jenkins'],
+      Package['default-jre-headless'],
     ]
   }
 
