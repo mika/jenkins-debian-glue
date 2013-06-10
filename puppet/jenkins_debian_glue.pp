@@ -466,7 +466,7 @@ class jenkins::config {
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.plugins.copyartifact.CopyArtifact>
-      <projectName>jenkins-debian-glue-binaries/architecture=\$architecture</projectName>
+      <project>jenkins-debian-glue-binaries/architecture=\$architecture</project>
       <filter>*.deb</filter>
       <target>artifacts/</target>
       <selector class='hudson.plugins.copyartifact.TriggeredBuildSelector'>
@@ -485,12 +485,17 @@ sudo piuparts_wrapper \${PWD}/artifacts/*.deb || true</command>
   <publishers>
     <org.tap4j.plugin.TapPublisher>
       <testResults>piuparts.tap</testResults>
+      <failIfNoResults>false</failIfNoResults>
       <failedTestsMarkBuildAsFailure>false</failedTestsMarkBuildAsFailure>
       <outputTapToConsole>false</outputTapToConsole>
+      <enableSubtests>true</enableSubtests>
+      <discardOldReports>false</discardOldReports>
+      <todoIsFailure>false</todoIsFailure>
     </org.tap4j.plugin.TapPublisher>
     <hudson.tasks.ArtifactArchiver>
       <artifacts>piuparts.*</artifacts>
       <latestOnly>false</latestOnly>
+      <allowEmptyArchive>false</allowEmptyArchive>
     </hudson.tasks.ArtifactArchiver>
   </publishers>
   <buildWrappers>
