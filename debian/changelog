@@ -1,3 +1,71 @@
+jenkins-debian-glue (0.6.0) unstable; urgency=low
+
+  The "nothing is better than a children's smile" release ／人◕‿◕人＼
+
+  [ Michael Prokop ]
+  * Feature related changes:
+  - [55709c2] build-and-provide-package: new variable SKIP_PACKAGE_FROM_REMOVAL
+    to skip specific packages from removal [Closes gh#50]
+
+  * Bugfix related changes:
+    - [fdb9b22] Depend on subversion-tools (<= 1.6.18dfsg-1) *or* svn2cl
+    - [ede0fb0] generate-git-snapshot: force switching back to previous
+      branch
+    - [00d1e85] generate-reprepro-codename: do not fail build if chown of
+      reprepro conf fails [Closes gh#53]
+    - [694b926] generate-*-snapshot: do not fail if PRE_SOURCE_HOOK is unset
+    - [1f211d5] generate-git-snapshot: use --git-ignore-branch as default
+      build option for gbp [Closes gh#47]
+    - [7a573b8] build-and-provide-package: do not fail if
+      REMOVE_FROM_RELEASE is unset
+    - [db1bb37] jenkins_debian_glue.pp: depend on default-jre-headless
+      package. Thanks to Cyril Brulebois for the bug report
+    - [bd6d573] piuparts_tap: explicitly set Encoding::UTF_8 for Ruby 1.9.
+      Thanks to Christian Hofstaedtler <ch@zeha.at> for feedback
+
+  * Deployment related changes:
+    - [b75a45e] provide fallback for EC2 IP retrieval
+    - [7495221] install git-client plugin by default
+    - [b098b7c] allow DEB_* environment variables in sudo configuration
+    - [b4e73e0] use wget instead of curl as fallback for public IP retrieval
+    - [35e87f9] do not install xunit plugin by default.
+      Thanks to Sylvestre Ledru <sylvestre.ledru@scilab-enterprises.com>
+    - [5d84958] limit amount of retries for wget-ing EC2 info to 3
+    - [1f7226d] update CopyArtifact configuration
+
+  * Misc changes:
+    - [fedc856] Ship examples/debian_glue as /etc/jenkins/debian_glue
+      default configuration file [Closes: gh#49]
+    - [1cb24b3] piuparts_wrapper: run with --scriptsdir=/etc/piuparts/scripts/
+      by default. Thanks to Holger Levsen for the hint
+    - [6e8f6df] invoke 'reprepro include' cmdline with --ignore=uploaders.
+      Thanks to anarcat for the bug report and suggestion [Closes: gh#36]
+    - [83e779a] generate-reprepro-codename: drop default
+      DebIndices/DscIndices settings. Thanks to anarcat for the bug report
+      and suggestion
+    - [8f33c0c] generate-reprepro-codename: drop AlsoAcceptFor default
+      setting. Thanks to anarcat
+
+  [ Stanislav Bogatyrev ]
+  * [2cf5563] Use release repo for all builds with same release parameter.
+
+  [ Antoine Beaupré ]
+  * [6faa90d] use a more sensible default for DEBEMAIL
+
+  [ Sylvestre Ledru ]
+  * [521e0cf] Add the management of a PRE_SOURCE_HOOK variable. If set,
+    the script pointed by PRE_SOURCE_HOOK will be executed before the .dsc
+    creation
+
+  [ Patrick Schoenfeld ]
+  * [2a8b22e] Allow removal of packages from releases
+  * [586207e] Bugfix: Make dpkg-source ignore .git in more cases
+
+  [ Slawomir Bochenski ]
+  * [d98f440] Change timestamp format used in version string
+
+ -- Michael Prokop <mika@grml.org>  Mon, 10 Jun 2013 23:26:58 +0200
+
 jenkins-debian-glue (0.5.0) unstable; urgency=low
 
   [ Michael Prokop ]

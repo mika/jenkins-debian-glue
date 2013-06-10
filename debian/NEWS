@@ -1,0 +1,15 @@
+jenkins-debian-glue (0.6.0) unstable; urgency=low
+
+  The timestamp format used in automatically generated version
+  strings changed.
+
+  Until and including version 0.5.0 jenkins-debian-glue's
+  generate-git-snapshot and generate-svn-snapshot scripts used
+  "seconds since 1970-01-01 00:00:00 UTC" inside the version
+  string.  The new timestamp format YYYYMMDDhhmmss (in UTC) sorts
+  equally well as unix timestamp and yet it is much more usable
+  for human beings. As this timestamp change still increases the
+  version numbers the change does NOT break any existing setups,
+  but to avoid confusion it's worth noting.
+
+ -- Michael Prokop <mika@grml.org>  Mon, 10 Jun 2013 23:38:45 +0200
