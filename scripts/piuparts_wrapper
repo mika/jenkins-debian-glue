@@ -3,6 +3,9 @@
 set -e
 set -u
 
+# make sure we have the sbin directories in our PATH to find piuparts ootb
+PATH="${PATH}:/sbin:/usr/local/sbin:/usr/sbin"
+
 if [ "$#" -lt 1 ] ; then
   echo "Usage: $0 <debian_package(s).deb>" >&2
   exit 1
