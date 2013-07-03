@@ -37,3 +37,13 @@
 # in the release repository they are built for.
 # Default:
 # REMOVE_FROM_RELEASE=false
+
+# By default the underlying build system (cowbuilder/pbuilder)
+# automatically destroys the build environment, even if building
+# fails for whatever reason. If DEB_KEEP_BUILD_ENV is set then
+# a copy of the build environment is created under
+# /var/cache/pbuilder/build/debug.$JOBNAME
+# Please be aware that those build environments usually require
+# quite some disk space, so do not forget to remove them.
+# If unset the build environment won't be kept if building fails.
+# DEB_KEEP_BUILD_ENV=true

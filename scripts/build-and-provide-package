@@ -19,6 +19,11 @@ checks_and_defaults() {
     . /etc/jenkins/debian_glue
   fi
 
+  # make sure cowbuilder/pbuilder has access to the variable
+  if [ -n "${DEB_KEEP_BUILD_ENV:-}" ] ; then
+    export DEB_KEEP_BUILD_ENV
+  fi
+
   if [ -z "${JOB_NAME:-}" ] ; then
     echo "Error: No JOB_NAME defined, please run it in jenkins." >&2
     exit 1
@@ -309,7 +314,7 @@ cowbuilder_run() {
   echo "*** cowbuilder build phase for arch $architecture ***"
   mkdir -p "$WORKSPACE"/binaries/ /tmp/adt-$$ /tmp/apt-$$
 
-  local BINDMOUNTS="/tmp/adt-$$ /tmp/apt-$$"
+  local BINDMOUNTS="/tmp/adt-$$ /tmp/apt-$$ /var/cache/pbuilder/build"
 
   # make sure we build arch specific packages only when necessary
   identify_build_type

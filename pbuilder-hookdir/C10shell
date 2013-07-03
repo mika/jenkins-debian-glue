@@ -1,0 +1,66 @@
+#!/bin/sh
+# Copyright 2013 Michael Prokop <mika@debian.org>
+# Licensed under the terms of the MIT License.
+
+cat <<EOF
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  FTBFS - problem with building Debian package                                │
+  └──────────────────────────────────────────────────────────────────────────────┘
+EOF
+
+if [ "$DEB_KEEP_BUILD_ENV" = "true" ] ; then
+  cat <<EOF
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  DEB_KEEP_BUILD_ENV is set to 'true', keeping build environment              │
+  └──────────────────────────────────────────────────────────────────────────────┘
+EOF
+else
+  cat <<EOF
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  DEB_KEEP_BUILD_ENV is not set to 'true', not keeping build environment      │
+  └──────────────────────────────────────────────────────────────────────────────┘
+EOF
+  exit 0
+fi
+
+if ! [ -d /var/cache/pbuilder/build/ ] ; then
+  cat >&2 <<EOF
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  Error: could not access /var/cache/pbuilder/build/ - missing in bindmount?  │
+  └──────────────────────────────────────────────────────────────────────────────┘
+EOF
+  exit 1
+fi
+
+cd /tmp/buildd/*/debian/..
+ID="$(basename $PWD)"
+
+touch /testfile.$$
+BUILD=/var/cache/pbuilder/build/*/testfile.$$
+BUILD=$(dirname $BUILD)
+
+cat <<EOF
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  FTBFS - copying build environment, this might take a while                  │
+  └──────────────────────────────────────────────────────────────────────────────┘
+EOF
+
+rm /testfile.$$
+rm -rf "/var/cache/pbuilder/build/debug.$ID"
+cp -ax "$BUILD" "/var/cache/pbuilder/build/debug.$ID"
+
+cat <<EOF
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  FTBFS - execute the following commands to debug this issue:                 │
+  └──────────────────────────────────────────────────────────────────────────────┘
+  │
+  │  chroot /var/cache/pbuilder/build/debug.$ID
+  │  su - pbuilder
+  │  bash
+  │  cd /tmp/buildd/*/debian/..
+  │  env PATH="/usr/sbin:/usr/bin:/sbin:/bin" dpkg-buildpackage -us -uc -nc -rfakeroot
+  │
+  ┌──────────────────────────────────────────────────────────────────────────────┐
+  │  To invoke any hook use /tmp/hooks/NAMEOFHOOK                                │
+  └──────────────────────────────────────────────────────────────────────────────┘
+EOF
