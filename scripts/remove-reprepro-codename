@@ -11,6 +11,10 @@ if [ -z "${REPOSITORY:-}" ] ; then
   REPOSITORY='/srv/repository'
 fi
 
+if [ -z "${REPREPRO_OPTS:-}" ]  ; then
+  REPREPRO_OPTS='--waitforlock 1000 -v'
+fi
+
 if [ "$#" -lt 1 ] ; then
   echo "Usage: $0 <codename>" >&2
   exit 1
@@ -23,10 +27,15 @@ if ! [ -r "${REPOSITORY}/conf/distributions" ] ; then
   exit 1
 fi
 
+if ! grep -q "^Codename: ${codename}$" "${REPOSITORY}/conf/distributions" ; then
+  echo "*** Codename $codename does not exist in ${REPOSITORY}/conf/distributions - nothing to do."
+  exit 0
+fi
+
 echo "*** Removing codename $codename from reprepro configuration in $REPOSITORY ***"
 perl -i -00 -pe "if (!\$done && m|$codename|) { \$_=q(); \$done++}" "${REPOSITORY}/conf/distributions"
 
 echo "*** Removing vanished data from reprepro ***"
-reprepro --waitforlock 1000 -b "$REPOSITORY" --delete clearvanished
+reprepro $REPREPRO_OPTS -b "$REPOSITORY" --delete clearvanished
 
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
