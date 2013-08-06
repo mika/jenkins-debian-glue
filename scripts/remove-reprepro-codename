@@ -18,6 +18,11 @@ fi
 
 codename="$1"
 
+if ! [ -r "${REPOSITORY}/conf/distributions" ] ; then
+  echo "*** Error: could not read ${REPOSITORY}/conf/distributions" >&2
+  exit 1
+fi
+
 echo "*** Removing codename $codename from reprepro configuration in $REPOSITORY ***"
 perl -i -00 -pe "if (!\$done && m|$codename|) { \$_=q(); \$done++}" "${REPOSITORY}/conf/distributions"
 
