@@ -22,6 +22,6 @@ echo "*** Removing codename $codename from reprepro configuration in $REPOSITORY
 perl -i -00 -pe "if (!\$done && m|$codename|) { \$_=q(); \$done++}" "${REPOSITORY}/conf/distributions"
 
 echo "*** Removing vanished data from reprepro ***"
-reprepro --waitforlock 1000 -b "$REPOSITORY" clearvanished
+reprepro --waitforlock 1000 -b "$REPOSITORY" --delete clearvanished
 
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
