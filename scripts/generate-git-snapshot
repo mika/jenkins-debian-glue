@@ -45,7 +45,7 @@ gbp_opts() {
 
 version_information() {
   # retrieve and adjust information
-  ORIG_VERSION=$(dpkg-parsechangelog --count 1 | awk '/Version/ {print $2}')
+  ORIG_VERSION=$(dpkg-parsechangelog --count 1 | awk '/^Version/ {print $2}')
   INCREASED_VERSION=$(increase-version-number $ORIG_VERSION)
   DISTRIBUTION=$(dpkg-parsechangelog --count 1 | awk '/^Distribution/ {print $2}')
 
