@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -x
+set -e
+
+if [ -r /etc/jenkins/debian_glue ] ; then
+  . /etc/jenkins/debian_glue
+fi
+
+if [ -z "${REPOSITORY:-}" ] ; then
+  REPOSITORY='/srv/repository'
+fi
+
+if [ "$#" -lt 1 ] ; then
+  echo "Usage: $0 <codename>" >&2
+  exit 1
+fi
+
+codename="$1"
+
+echo "*** Removing codename $codename from reprepro configuration in $REPOSITORY ***"
+perl -i -00 -pe "if (!\$done && m|$codename|) { \$_=q(); \$done++}" "${REPOSITORY}/conf/distributions"
+
+echo "*** Removing vanished data from reprepro ***"
+reprepro --waitforlock 1000 -b "$REPOSITORY" clearvanished
+
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
