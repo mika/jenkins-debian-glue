@@ -22,6 +22,11 @@
 # Default:
 # PBUILDER_HOOKDIR=/usr/share/jenkins-debian-glue/pbuilder-hookdir/
 
+# To enable a pbuilder configuration file for usage as documented
+# in man pbuilder(8) under --configfile set this option.
+# By default no user specific pbuilder configuration file is used.
+# PBUILDER_CONFIG=/etc/jenkins/pbuilderrc
+
 # Base directory for reprepro repositories
 # Default:
 # REPOSITORY='/srv/repository'
