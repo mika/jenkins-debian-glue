@@ -59,9 +59,14 @@ create_base_tgz() {
 
   tmpdir=$(mktemp -d)
 
+  if [ -n "${DEBOOTSTRAP_OPTIONS:-}" ] ; then
+    echo "*** DEBOOTSTRAP_OPTIONS is set [$DEBOOTSTRAP_OPTIONS], using for debootstrapping ***"
+  fi
+
   debootstrap --variant=minbase \
               --components="$components" \
               --arch="$architecture" \
+              ${DEBOOTSTRAP_OPTIONS:-} \
               "$distribution" \
               "$tmpdir" \
               "$MIRROR"
