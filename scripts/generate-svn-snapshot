@@ -162,14 +162,9 @@ if [ "${debian_only:-}" = "1" ] ; then
      --svn-ignore-new -rfakeroot
   )
 else
-  if ! [ -z "${PRE_SOURCE_HOOK:-}" ] ; then
-    if ! [ -s "${PRE_SOURCE_HOOK:-}" ]; then
-      echo "Error: Could not find hook: ${PRE_SOURCE_HOOK:-}" >&2
-      exit 1
-    else
+  if [ -n "${PRE_SOURCE_HOOK:-}" ] ; then
       echo "*** Found environment variable PRE_SOURCE_HOOK, set to ${PRE_SOURCE_HOOK:-} ***"
       sh "${PRE_SOURCE_HOOK:-}"
-    fi
   fi
 
   dpkg-source --tar-ignore=\.svn -b source/${branch:-}
