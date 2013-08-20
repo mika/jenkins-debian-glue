@@ -1,1 +1,0 @@
-Please head over to [[http://jenkins-debian-glue.org/][jenkins-debian-glue.org]] for setup instructions and documentation.
