@@ -66,8 +66,8 @@ def usage
   exit(1)
 end
 
-file = ARGV[0]
-usage if file.nil?
+files = ARGV
+usage if files.empty?
 ### }}}
 
 ### make sure lintian is available {{{
@@ -82,7 +82,7 @@ start = Time.now.to_f
 
 lintian_options << "--info" unless options[:disablenotes]
 
-$output = IO.popen(['lintian'] + lintian_options + ['--', file]) do |io|
+$output = IO.popen(['lintian'] + lintian_options + ['--'] + files) do |io|
   io.read
 end
 
