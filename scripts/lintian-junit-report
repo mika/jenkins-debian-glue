@@ -10,8 +10,6 @@
 #   git://github.com/jenkinsci/violations-plugin.git
 ################################################################################
 
-# make sure we're rewrite ", ', <, > and & accordingly
-require "rexml/document"
 require 'shellwords'
 
 ### cmdline parsing {{{
@@ -97,79 +95,75 @@ end
 
 ### }}}
 
-### helper functions {{{
+class JUnitOutput
+  require 'rexml/formatters/transitive'
+  require 'rexml/document'
 
-# Short alias for escaping text to XML
-$e = REXML::Text::method(:normalize)
-
-def success_message
-  puts %Q[<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="lintian" tests="1" time="#{$duration}" failures="0" errors="0" skipped="0" assertions="0">
-  <testcase name="lintian" time="#{$duration}" assertions="0">
-  </testcase>
-  <system-out>
-#{$e[$output]}  </system-out>
-  <system-err>
-  </system-err>
-</testsuite>]
-end
-
-def error_header
-  puts %Q[<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="lintian" tests="#{$lintian_count}" time="#{$duration}" failures="#{$lintian_count}" errors="0" skipped="0" assertions="0">]
-end
-
-def tc_head(package, note, report_line)
-  package = $e[package]
-  note = $e[note]
-  puts %Q[  <testcase name="#{note}" classname="lintian.#{package}" time="#{$duration}" assertions="0">
-    <failure type="#{note}">
-#{$e[report_line]}
-    </failure>]
-end
-
-def tc_tail(info)
-  puts %Q[    <system-out>
-#{$e[info]}    </system-out>
-  </testcase>]
-end
-
-def error_footer
-  puts %Q[</testsuite>]
-end
-### }}}
-
-### count lintian errors/warnings {{{
-$lintian_count=0
-
-$output.each_line do |line|
-  if /^E:.*/.match(line) then
-    $lintian_count += 1
+  def initialize(duration)
+    @duration = duration
+    @document = REXML::Document::new
+    @document << REXML::XMLDecl::new
+    @failures = 0
+    @skipped = 0
+    @suite = @document.add_element 'testsuite', {'time' => duration}
   end
-  if options[:warnings] then
-    if /^W:.*/.match(line) then
-      $lintian_count += 1
-    end
+
+  def add_case(package, tag)
+    tc = @suite.add_element 'testcase'
+    tc.attributes['name'] = "#{tag}"
+    tc.attributes['classname'] = "lintian.#{package}"
+    tc.attributes['assertions'] = 0
+    @last_tag = tag
+    @last_package = package
+  end
+
+  def mark(kind, message)
+    tc = @suite[-1]
+    e = tc.add_element kind
+    e.attributes['type'] = @last_tag
+    e.attributes['message'] = message
+  end
+
+  def mark_skipped(message = '')
+    @skipped += 1
+    mark('skipped', message)
+  end
+
+  def mark_failure(message = '')
+    @failures += 1
+    mark('failure', message)
+  end
+
+  def append_stdout(s)
+     stdout = @suite[-1].get_elements('system-out')[0]
+     stdout ||= @suite[-1].add_element 'system-out'
+     stdout.add_text(s)
+  end
+
+  def add_success
+    self.add_case('<all>', 'lintian-checks')
+  end
+
+  def finish
+    self.add_success unless @suite.has_elements?
+    tc_time = @duration / @suite.size
+    @suite.each { |tc| tc.attributes['time'] = tc_time }
+    @suite.attributes['tests'] = @suite.size
+    @suite.attributes['failures'] = @failures
+    @suite.attributes['skipped'] = @skipped
+    @suite.attributes['errors'] = 0
+    @suite.attributes['assertions'] = 0
+  end
+
+  def write
+    self.finish
+    formatter = REXML::Formatters::Transitive::new
+    formatter.write(@document, $stdout)
   end
 end
-# }}}
 
-### no output from lintian? good! :) {{{
-if $lintian_count == 0 || $output.empty? then
-  success_message
-  exit(0)
-end
-# }}}
+junit_output = JUnitOutput::new($duration)
 
-### write output {{{
-error_header
-
-# As Jenkins shows the total time as the sum of time taken for each test case,
-# blame each case for the time spent evenly
-$duration /= $lintian_count
-
-# For collecting lintian tag descriptions, which are returned only once per
-# issued tag
 infos = Hash.new { |hash, key| hash[key] = "" }
 last_tag = nil
 tc_open = false
@@ -180,12 +174,13 @@ $output.each_line do |line|
     kind, package, note = $~.captures
 
     if tc_open then
-      tc_tail(infos[last_tag])
+      junit_output.append_stdout(infos[last_tag])
       tc_open = false
     end
 
     if kind == 'E' || options[:warnings] then
-      tc_head(package, note, $&)
+      junit_output.add_case(package, note)
+      junit_output.mark_failure($&)
       tc_open = true
     end
 
@@ -198,8 +193,8 @@ $output.each_line do |line|
   end
 end
 
-tc_tail(infos[last_tag]) if tc_open
-error_footer
+junit_output.append_stdout(infos[last_tag]) if tc_open
+junit_output.write
 ### }}}
 
 ## END OF FILE #################################################################
