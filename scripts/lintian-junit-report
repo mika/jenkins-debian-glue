@@ -95,18 +95,20 @@ if ! options[:disablenotes] then
   File.open(lintian_file, 'w') {|f| f.write($output) }
 end
 
-# adjust encoding *after* storing output to plaintext file
-$output = REXML::Text.new($output, false, nil, false, ['s']).to_s
 ### }}}
 
 ### helper functions {{{
+
+# Short alias for escaping text to XML
+$e = REXML::Text::method(:normalize)
+
 def success_message
   puts %Q[<?xml version="1.0" encoding="UTF-8"?>
 <testsuite name="lintian" tests="1" time="#{$duration}" failures="0" errors="0" skipped="0" assertions="0">
   <testcase name="lintian" time="#{$duration}" assertions="0">
   </testcase>
   <system-out>
-#{$output}  </system-out>
+#{$e[$output]}  </system-out>
   <system-err>
   </system-err>
 </testsuite>]
@@ -118,6 +120,8 @@ def error_header
 end
 
 def error_message(package, note)
+  package = $e[package]
+  note = $e[note]
   puts %Q[  <testcase name="#{package}" time="#{$duration}" assertions="0">
     <failure type="#{note}" message="#{note}">
 #{package}: #{note}
@@ -127,7 +131,7 @@ end
 
 def error_footer
   puts %Q[  <system-out>
-#{$output}  </system-out>
+#{$e[$output]}  </system-out>
   <system-err>
   </system-err>
 </testsuite>]
