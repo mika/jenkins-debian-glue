@@ -122,7 +122,7 @@ end
 def error_message(package, note)
   package = $e[package]
   note = $e[note]
-  puts %Q[  <testcase name="#{package}" time="#{$duration}" assertions="0">
+  puts %Q[  <testcase name="#{note}" classname="lintian.#{package}" time="#{$duration}" assertions="0">
     <failure type="#{note}" message="#{note}">
 #{package}: #{note}
     </failure>
