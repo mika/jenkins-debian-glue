@@ -164,19 +164,10 @@ end
 error_header
 
 $output.each_line do |line|
-  if /^E:\s([^:]*):\s(.*)/.match(line) then
-    package = Regexp.last_match(1)
-    note = Regexp.last_match(2)
-    error_message(package, note)
-  end
-
-  # enable warnings only if requested:
-  if options[:warnings] then
-    if /^W:\s([^:]*):\s(.*)/.match(line) then
-      package = Regexp.last_match(1)
-      note = Regexp.last_match(2)
-      error_message(package, note)
-    end
+  case line
+  when /^([EW]):\s([^:]*):\s(.*)/
+    kind, package, note = $~.captures
+    error_message(package, note) if kind == "E" || options[:warnings]
   end
 end
 
