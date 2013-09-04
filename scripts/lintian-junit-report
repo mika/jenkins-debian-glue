@@ -116,7 +116,7 @@ end
 
 def error_header
   puts %Q[<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="lintian" tests="#{$lintian_count}" time="1" failures="#{$lintian_count}" errors="0" skipped="0" assertions="0">]
+<testsuite name="lintian" tests="#{$lintian_count}" time="#{$duration}" failures="#{$lintian_count}" errors="0" skipped="0" assertions="0">]
 end
 
 def tc_head(package, note, report_line)
@@ -163,6 +163,10 @@ end
 
 ### write output {{{
 error_header
+
+# As Jenkins shows the total time as the sum of time taken for each test case,
+# blame each case for the time spent evenly
+$duration /= $lintian_count
 
 # For collecting lintian tag descriptions, which are returned only once per
 # issued tag
