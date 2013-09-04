@@ -101,36 +101,36 @@ $output = REXML::Text.new($output, false, nil, false, ['s']).to_s
 
 ### helper functions {{{
 def success_message
-  puts "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<testsuite name=\"lintian\" tests=\"1\" time=\"#{$duration}\" failures=\"0\" errors=\"0\" skipped=\"0\" assertions=\"0\">
-  <testcase name=\"lintian\" time=\"#{$duration}\" assertions=\"0\">
+  puts %Q[<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="lintian" tests="1" time="#{$duration}" failures="0" errors="0" skipped="0" assertions="0">
+  <testcase name="lintian" time="#{$duration}" assertions="0">
   </testcase>
   <system-out>
 #{$output}  </system-out>
   <system-err>
   </system-err>
-</testsuite>"
+</testsuite>]
 end
 
 def error_header
-  puts "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<testsuite name=\"lintian\" tests=\"#{$lintian_count}\" time=\"1\" failures=\"#{$lintian_count}\" errors=\"0\" skipped=\"0\" assertions=\"0\">"
+  puts %Q[<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="lintian" tests="#{$lintian_count}" time="1" failures="#{$lintian_count}" errors="0" skipped="0" assertions="0">]
 end
 
 def error_message(package, note)
-  puts "  <testcase name=\"#{package}\" time=\"#{$duration}\" assertions=\"0\">
-    <failure type=\"#{note}\" message=\"#{note}\">
+  puts %Q[  <testcase name="#{package}" time="#{$duration}" assertions="0">
+    <failure type="#{note}" message="#{note}">
 #{package}: #{note}
     </failure>
-  </testcase>"
+  </testcase>]
 end
 
 def error_footer
-  puts "  <system-out>
+  puts %Q[  <system-out>
 #{$output}  </system-out>
   <system-err>
   </system-err>
-</testsuite>"
+</testsuite>]
 end
 ### }}}
 
