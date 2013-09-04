@@ -674,6 +674,11 @@ fi
 binaries_to_workspace
 autopkgtest_results
 
+if [ -n "${POST_BUILD_HOOK:-}" ] ; then
+  echo "*** Found environment variable POST_BUILD_HOOK, set to ${POST_BUILD_HOOK:-} ***"
+  sh ${POST_BUILD_HOOK:-}
+fi
+
 bailout 0
 
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
