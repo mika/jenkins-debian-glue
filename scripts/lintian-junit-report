@@ -12,6 +12,7 @@
 
 # make sure we're rewrite ", ', <, > and & accordingly
 require "rexml/document"
+require 'shellwords'
 
 ### cmdline parsing {{{
 require 'optparse'
@@ -82,7 +83,9 @@ start = Time.now.to_f
 
 lintian_options << "--info" unless options[:disablenotes]
 
-$output = IO.popen(['lintian'] + lintian_options + ['--'] + files) do |io|
+# Ruby 1.8's IO.popen expects a string instead of an array :(
+lintian_cmd = (['lintian'] + lintian_options + ['--'] + files).collect { |v| Shellwords.escape(v) }.join(" ")
+$output = IO.popen(lintian_cmd) do |io|
   io.read
 end
 
