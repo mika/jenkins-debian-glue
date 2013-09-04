@@ -46,6 +46,16 @@ o = OptionParser.new do|opts|
     lintian_options << lo
   end
 
+  opts.on('--mark-warnings-skipped',
+          'Mark warnings as skipped test cases.') do
+    options[:markwarningsskipped] = true
+  end
+
+  opts.on('--mark-as-skipped=tag1,tag2,...', Array,
+          'Mark selected tags as skipped.') do |l|
+    options[:markasskipped] = l
+  end
+
   opts.on( '-h', '--help', 'Display this screen' ) do
     puts opts
     exit
@@ -178,13 +188,20 @@ $output.each_line do |line|
       tc_open = false
     end
 
+    tag = note.match('^[^\s]*')[0]
+
     if kind == 'E' || options[:warnings] then
       junit_output.add_case(package, note)
-      junit_output.mark_failure($&)
+      if (kind == 'W' && options[:markwarningsskipped]) ||
+          (options[:markasskipped] && options[:markasskipped].include?(tag))
+        junit_output.mark_skipped(line.rstrip)
+      else
+        junit_output.mark_failure(line.rstrip)
+      end
       tc_open = true
     end
 
-    last_tag = note.match('^[^\s]*')[0]
+    last_tag = tag
 
   # Tag descriptions are prefixed with four spaces, which differentiates them
   # from debug messages
