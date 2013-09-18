@@ -332,7 +332,7 @@ cowbuilder_run() {
   echo "*** cowbuilder build phase for arch $architecture ***"
   mkdir -p "$WORKSPACE"/binaries/ /tmp/adt-$$ /tmp/apt-$$
 
-  local BINDMOUNTS="/tmp/adt-$$ /tmp/apt-$$ /var/cache/pbuilder/build"
+  local BINDMOUNTS="/tmp/adt-$$ /tmp/apt-$$ /var/cache/pbuilder/build ${USER_BINDMOUNTS:-}"
 
   # make sure we build arch specific packages only when necessary
   identify_build_type
