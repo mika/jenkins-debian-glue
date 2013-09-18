@@ -354,8 +354,8 @@ cowbuilder_run() {
     if [ -d "$REPOSITORY" ]; then
       BINDMOUNTS="$BINDMOUNTS $REPOSITORY"
       cat > /tmp/apt-$$/release.list <<EOF
-deb file://${REPOSITORY} ${release} main
-deb-src file://${REPOSITORY} ${release} main
+deb [trusted=yes] file://${REPOSITORY} ${release} main
+deb-src [trusted=yes] file://${REPOSITORY} ${release} main
 EOF
     fi
   fi
