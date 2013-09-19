@@ -95,18 +95,20 @@ if ! options[:disablenotes] then
   File.open(lintian_file, 'w') {|f| f.write($output) }
 end
 
-# adjust encoding *after* storing output to plaintext file
-$output = REXML::Text.new($output, false, nil, false, ['s']).to_s
 ### }}}
 
 ### helper functions {{{
+
+# Short alias for escaping text to XML
+$e = REXML::Text::method(:normalize)
+
 def success_message
   puts %Q[<?xml version="1.0" encoding="UTF-8"?>
 <testsuite name="lintian" tests="1" time="#{$duration}" failures="0" errors="0" skipped="0" assertions="0">
   <testcase name="lintian" time="#{$duration}" assertions="0">
   </testcase>
   <system-out>
-#{$output}  </system-out>
+#{$e[$output]}  </system-out>
   <system-err>
   </system-err>
 </testsuite>]
@@ -114,23 +116,26 @@ end
 
 def error_header
   puts %Q[<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="lintian" tests="#{$lintian_count}" time="1" failures="#{$lintian_count}" errors="0" skipped="0" assertions="0">]
+<testsuite name="lintian" tests="#{$lintian_count}" time="#{$duration}" failures="#{$lintian_count}" errors="0" skipped="0" assertions="0">]
 end
 
-def error_message(package, note)
-  puts %Q[  <testcase name="#{package}" time="#{$duration}" assertions="0">
-    <failure type="#{note}" message="#{note}">
-#{package}: #{note}
-    </failure>
+def tc_head(package, note, report_line)
+  package = $e[package]
+  note = $e[note]
+  puts %Q[  <testcase name="#{note}" classname="lintian.#{package}" time="#{$duration}" assertions="0">
+    <failure type="#{note}">
+#{$e[report_line]}
+    </failure>]
+end
+
+def tc_tail(info)
+  puts %Q[    <system-out>
+#{$e[info]}    </system-out>
   </testcase>]
 end
 
 def error_footer
-  puts %Q[  <system-out>
-#{$output}  </system-out>
-  <system-err>
-  </system-err>
-</testsuite>]
+  puts %Q[</testsuite>]
 end
 ### }}}
 
@@ -159,23 +164,41 @@ end
 ### write output {{{
 error_header
 
-$output.each_line do |line|
-  if /^E:\s([^:]*):\s(.*)/.match(line) then
-    package = Regexp.last_match(1)
-    note = Regexp.last_match(2)
-    error_message(package, note)
-  end
+# As Jenkins shows the total time as the sum of time taken for each test case,
+# blame each case for the time spent evenly
+$duration /= $lintian_count
 
-  # enable warnings only if requested:
-  if options[:warnings] then
-    if /^W:\s([^:]*):\s(.*)/.match(line) then
-      package = Regexp.last_match(1)
-      note = Regexp.last_match(2)
-      error_message(package, note)
+# For collecting lintian tag descriptions, which are returned only once per
+# issued tag
+infos = Hash.new { |hash, key| hash[key] = "" }
+last_tag = nil
+tc_open = false
+
+$output.each_line do |line|
+  case line
+  when /^([EW]):\s([^:]*):\s(.*)/
+    kind, package, note = $~.captures
+
+    if tc_open then
+      tc_tail(infos[last_tag])
+      tc_open = false
     end
+
+    if kind == 'E' || options[:warnings] then
+      tc_head(package, note, $&)
+      tc_open = true
+    end
+
+    last_tag = note.match('^[^\s]*')[0]
+
+  # Tag descriptions are prefixed with four spaces, which differentiates them
+  # from debug messages
+  when /^N:\s{4}/
+    infos[last_tag] << line if last_tag
   end
 end
 
+tc_tail(infos[last_tag]) if tc_open
 error_footer
 ### }}}
 
