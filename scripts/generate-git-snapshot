@@ -227,6 +227,30 @@ changelog_generation() {
   fi
 }
 
+git_cleanup() {
+  if [ -n "${SKIP_GIT_CLEANUP:-}" ] ; then
+    echo "*** Skipping git_cleanup as requested via SKIP_QUILT_CLEANUP ***"
+    return 0
+  fi
+
+  echo "*** Cleaning git repository to make sure there are no modified files ***"
+  echo "*** Note: You can skip this step by setting SKIP_GIT_CLEANUP=true ***"
+  git clean -fxd
+  git reset --hard HEAD
+}
+
+quilt_cleanup() {
+  if [ -n "${SKIP_QUILT_CLEANUP:-}" ] ; then
+    echo "*** Skipping quilt_cleanup as requested via SKIP_QUILT_CLEANUP ***"
+    return 0
+  fi
+
+  echo "*** Unapplying all possibly applied quilt patches and removing quilt directory ***"
+  echo "*** Note: You can skip this step by setting SKIP_QUILT_CLEANUP=true ***"
+  quilt pop -a || true
+  rm -rf .pc
+}
+
 # main execution
 echo "*** source package build phase ***"
 rm -f ./* || true
@@ -237,6 +261,8 @@ if [ -n "${PRE_SOURCE_HOOK:-}" ] ; then
 fi
 
 cd "$SOURCE_DIRECTORY"
+
+git_cleanup
 
 # make sure common branches are available for git-buildpackage
 create_local_branch upstream
@@ -264,9 +290,11 @@ else
   git-buildpackage ${GBP_OPTS}
 fi
 
+quilt_cleanup
+
 # build source package, run before switching back to previous branch
 # to get the actual requested version
-( cd "$WORKSPACE" ; dpkg-source -i -I -b "$SOURCE_DIRECTORY" )
+dpkg-buildpackage -uc -us -nc -d -S -i -I --source-option=--unapply-patches
 
 # revert to original debian/changelog to avoid merge conflicts
 git checkout -- $(readlink -f debian/changelog)

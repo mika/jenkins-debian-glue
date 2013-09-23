@@ -14,6 +14,7 @@ Architecture: all
 Depends: cowbuilder,
          devscripts,
          dpkg-dev,
+         quilt,
          reprepro,
          sudo | sudo-ldap,
          ${misc:Depends}
