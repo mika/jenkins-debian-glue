@@ -290,24 +290,18 @@ identify_build_type() {
   local TMPDIR=$(mktemp -d)
   local old_dir=$(pwd)
   cd "$TMPDIR"
-  for file in  ${BASE_PATH}/${SOURCE_PACKAGE}_*.tar.* ; do
-    if tar atf "$file" 2>/dev/null | egrep -q '^[^/]+/debian/control$' ; then
-      # might be source/debian/control - so let's identify the path to debian/control
-      local control_file=$(tar atf "$file" 2>/dev/null | egrep '^[^/]+/debian/control$')
-      tar axf "$file" "$control_file" || bailout 1 "Error while looking at debian/control in source archive."
-
-      if grep -q '^Architecture: all' "$control_file" ; then
-        if grep -q '^Architecture: any' "$control_file" ; then
-          echo "*** Package provides arch 'all' + 'any', enabling -B buildoption for this architecture. ***"
-          # -B -> binary-only build, limited to architecture dependent packages
-          DEBBUILDOPTS="-B"
-          break
-        else
-          # only "Architecture: all", so no arch specific packages since
-          # we aren't building for $MAIN_ARCHITECTURE
-          SKIP_ARCH_BUILD=true
-          break
-        fi
+  for file in  ${BASE_PATH}/${SOURCE_PACKAGE}*.dsc ; do
+    if grep -q '^Architecture: all' "$file" ; then
+      if grep -q '^Architecture: any' "$file" ; then
+        echo "*** Package provides arch 'all' + 'any', enabling -B buildoption for this architecture. ***"
+        # -B -> binary-only build, limited to architecture dependent packages
+        DEBBUILDOPTS="-B"
+        break
+      else
+        # only "Architecture: all", so no arch specific packages since
+        # we aren't building for $MAIN_ARCHITECTURE
+        SKIP_ARCH_BUILD=true
+        break
       fi
     fi
   done
