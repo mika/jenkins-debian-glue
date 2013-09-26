@@ -291,9 +291,9 @@ identify_build_type() {
   local old_dir=$(pwd)
   cd "$TMPDIR"
   for file in  ${BASE_PATH}/${SOURCE_PACKAGE}_*.tar.* ; do
-    if tar atf "$file" 2>/dev/null | grep -q debian/control ; then
+    if tar atf "$file" 2>/dev/null | egrep -q '^[^/]+/debian/control$' ; then
       # might be source/debian/control - so let's identify the path to debian/control
-      local control_file=$(tar atf "$file" 2>/dev/null | grep 'debian/control$')
+      local control_file=$(tar atf "$file" 2>/dev/null | egrep '^[^/]+/debian/control$')
       tar axf "$file" "$control_file" || bailout 1 "Error while looking at debian/control in source archive."
 
       if grep -q '^Architecture: all' "$control_file" ; then
