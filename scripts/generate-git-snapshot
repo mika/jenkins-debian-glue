@@ -296,6 +296,10 @@ quilt_cleanup
 # to get the actual requested version
 dpkg-buildpackage -uc -us -nc -d -S -i -I --source-option=--unapply-patches
 
+# get rid of the *_source.changes files generate by dpkg-buildpackage
+# to avoid failures in a later stage when copying all files around
+rm -f ../*_source.changes
+
 # revert to original debian/changelog to avoid merge conflicts
 git checkout -- $(readlink -f debian/changelog)
 
