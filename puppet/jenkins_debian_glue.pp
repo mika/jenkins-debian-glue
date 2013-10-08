@@ -1,6 +1,6 @@
 # jenkins::plugin::install is based on rtyler's
-# https://github.com/rtyler/puppet-jenkins/blob/master/manifests/plugin/install.pp
-define jenkins::plugin::install($version=0) {
+# https://github.com/jenkinsci/puppet-jenkins/blob/master/manifests/plugin.pp
+define jenkins::plugin::install($version=0, $force=0) {
   $plugin = "${name}.hpi"
   $plugin_parent_dir = '/var/lib/jenkins'
   $plugin_dir = '/var/lib/jenkins/plugins'
@@ -20,15 +20,27 @@ define jenkins::plugin::install($version=0) {
     }
   }
 
-  exec { "download-${name}" :
-    command => "wget --no-check-certificate ${base_url}${plugin}",
-    cwd     => $plugin_dir,
-    require => File[$plugin_dir],
-    path    => ['/usr/bin', '/usr/sbin',],
-    user    => 'jenkins',
-    unless  => "test -f ${plugin_dir}/${plugin}",
-    notify  => Service['jenkins'],
+  if ($force != 0) {
+    exec { "download-${name}" :
+      command => "touch $plugin_dir/${name}.jpi.pinned; wget --no-check-certificate -O $plugin_dir/${name}.jpi ${base_url}${plugin}",
+      cwd     => $plugin_dir,
+      require => File[$plugin_dir],
+      path    => ['/usr/bin', '/usr/sbin',],
+      user    => 'jenkins',
+      notify  => Service['jenkins'],
+    }
+  } else {
+    exec { "download-${name}" :
+      command => "wget --no-check-certificate ${base_url}${plugin}",
+      cwd     => $plugin_dir,
+      require => File[$plugin_dir],
+      path    => ['/usr/bin', '/usr/sbin',],
+      user    => 'jenkins',
+      unless  => "test -f ${plugin_dir}/${plugin}",
+      notify  => Service['jenkins'],
+    }
   }
+
 }
 
 exec { 'apt-get_update':
@@ -118,12 +130,22 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
+  # required for recent versions of ssh-agent
+  jenkins::plugin::install { 'credentials':
+    force   => '1', # see https://issues.jenkins-ci.org/browse/JENKINS-19927
+    require => Package['jenkins'],
+  }
+
   jenkins::plugin::install { 'git-client':
-    version => '1.1.2', # see https://issues.jenkins-ci.org/browse/JENKINS-19927
     require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'git':
+    require => Package['jenkins'],
+  }
+
+  # required for recent versions of git-client
+  jenkins::plugin::install { 'ssh-agent':
     require => Package['jenkins'],
   }
 
