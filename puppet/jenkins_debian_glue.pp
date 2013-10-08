@@ -119,6 +119,7 @@ class jenkins::software {
   }
 
   jenkins::plugin::install { 'git-client':
+    version => '1.1.2', # see https://issues.jenkins-ci.org/browse/JENKINS-19927
     require => Package['jenkins'],
   }
 
