@@ -6,7 +6,7 @@ if [ "$#" -lt 1 ] ; then
 fi
 
 # This script nowadays (that's why it exists as such simple and
-# short script at all) just appends "+0" to the specified
+# short script at all) just appends "-0" to the specified
 # <version_number> on the command line.
 #
 # This turned out to be the most reliable way to get:
@@ -31,6 +31,8 @@ fi
 # $snapshot_version will be older than $existing_old_version
 # until it's 1.2.4, 1.3, etc.
 
-echo "${1}+0"
+# change version number to use '-0' which will make s3 happy with the 
+# package name
+echo "${1}-0"
 
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
