@@ -16,6 +16,7 @@ export DEBEMAIL
 
 if [ ! -d source ] ; then
   echo "Please run the script in the jenkins workspace." >&2
+  echo 'NOTE: Make sure to set the "Local module directory (optional)" option in the Subversion configuration to "source"' >&2
   exit 1
 fi
 
