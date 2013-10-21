@@ -108,6 +108,6 @@ piuparts \
   ${warn_on_leftovers_after_purge_option:-} \
   ${skip_logrotatefiles_test_option:-} \
   --log-file='piuparts.txt' \
-  ${scriptsdir:-} \
+  "${scriptsdir:-}" \
   ${basetgz:-} \
   "$@"
