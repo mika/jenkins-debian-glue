@@ -28,8 +28,14 @@ if [ -n "${SCRIPTSDIR:-}" ] ; then
   echo "*** SCRIPTSDIR variable is set to $SCRIPTSDIR - using for piuparts run ***"
   scriptsdir="--scriptsdir=$SCRIPTSDIR"
 else
-  echo "*** SCRIPTSDIR variable is NOT set - using default [/etc/piuparts/scripts/] for piuparts run ***"
-  scriptsdir="--scriptsdir=/etc/piuparts/scripts/"
+  scriptsdir_path="/etc/piuparts/scripts/"
+  if [ -d "${scriptsdir_path}" ]; then
+    echo "*** SCRIPTSDIR variable is NOT set - using default [/etc/piuparts/scripts/] for piuparts run ***"
+    scriptsdir="--scriptsdir=${scriptsdir_path}"
+  else
+    # Some old piuparts do not ship a scripts dir
+    scriptsdir=""
+  fi
 fi
 
 create_base_tgz() {
