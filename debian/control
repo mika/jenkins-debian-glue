@@ -11,12 +11,7 @@ Vcs-Browser: https://github.com/mika/jenkins-debian-glue
 
 Package: jenkins-debian-glue
 Architecture: all
-Depends: cowbuilder,
-         devscripts,
-         dpkg-dev,
-         quilt,
-         reprepro,
-         sudo | sudo-ldap,
+Depends:  sudo | sudo-ldap,
          ${misc:Depends}
 Description: glue scripts for building Debian packages inside Jenkins
  This package provides scripts which should make building Debian
@@ -25,11 +20,31 @@ Description: glue scripts for building Debian packages inside Jenkins
  It's meant to make Q/A builds of Debian packages inside Jenkins
  as manageable and homogeneous as possible.
 
+Package: jenkins-debian-glue-repoenv
+Architecture: all
+Depends: jenkins-debian-glue,
+         reprepro | freight,
+         ${misc:Depends}
+Description: Virtual package for repository only hosts.
+ This virtual package depends on the software packages required
+ for using jenkins-debian-glue for repo only jobs (PROVIDE_ONLY set).
+
+Package: jenkins-debian-glue-buildenv
+Architecture: all
+Depends: cowbuilder,
+         devscripts,
+         dpkg-dev,
+         quilt,
+         jenkins-debian-glue,
+Description: Virtual package to be used on build slaves.
+ This virtual package depends on the software packages required
+ for using jenkins-debian-glue as build environment.
+
 Package: jenkins-debian-glue-buildenv-git
 Architecture: all
 Depends: build-essential,
          git-buildpackage,
-         jenkins-debian-glue,
+         jenkins-debian-glue-buildenv,
          pristine-tar,
          ${misc:Depends}
 Description: virtual package for Git build environment of jenkins-debian-glue
@@ -40,7 +55,7 @@ Description: virtual package for Git build environment of jenkins-debian-glue
 Package: jenkins-debian-glue-buildenv-svn
 Architecture: all
 Depends: build-essential,
-         jenkins-debian-glue,
+         jenkins-debian-glue-buildenv,
          subversion-tools (<= 1.6.18dfsg-1) | svn2cl,
          xsltproc,
          ${misc:Depends}
@@ -52,7 +67,7 @@ Description: virtual package for Subversion build environment of jenkins-debian-
 Package: jenkins-debian-glue-buildenv-slave
 Architecture: all
 Depends: build-essential,
-         jenkins-debian-glue,
+         jenkins-debian-glue-buildenv,
          openjdk-6-jre-headless | sun-java6-jre | java-runtime-headless,
          rsync,
          ${misc:Depends}
