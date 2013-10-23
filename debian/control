@@ -26,7 +26,7 @@ Architecture: all
 Depends: jenkins-debian-glue,
          reprepro | freight,
          ${misc:Depends}
-Description: Virtual package for repository only hosts.
+Description: Virtual package for repository only hosts
  This virtual package depends on the software packages required
  for using jenkins-debian-glue for repo only jobs (PROVIDE_ONLY set).
 
@@ -37,7 +37,7 @@ Depends: cowbuilder,
          dpkg-dev,
          jenkins-debian-glue,
          quilt
-Description: Virtual package to be used on build slaves.
+Description: Virtual package to be used on build slaves
  This virtual package depends on the software packages required
  for using jenkins-debian-glue as build environment.
 
