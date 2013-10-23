@@ -144,6 +144,11 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
+  # required for recent versions of git
+  jenkins::plugin::install { 'scm-api':
+    require => Package['jenkins'],
+  }
+
   # required for recent versions of git-client
   jenkins::plugin::install { 'ssh-agent':
     require => Package['jenkins'],
