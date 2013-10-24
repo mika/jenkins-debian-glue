@@ -11,24 +11,15 @@ Vcs-Browser: https://github.com/mika/jenkins-debian-glue
 
 Package: jenkins-debian-glue
 Architecture: all
-Depends: sudo | sudo-ldap,
+Depends: reprepro | freight,
+         sudo | sudo-ldap,
          ${misc:Depends}
-Recommends: jenkins-debian-glue-repoenv
 Description: glue scripts for building Debian packages inside Jenkins
  This package provides scripts which should make building Debian
  package inside Jenkins (a Continuous Integration suite) easier.
  .
  It's meant to make Q/A builds of Debian packages inside Jenkins
  as manageable and homogeneous as possible.
-
-Package: jenkins-debian-glue-repoenv
-Architecture: all
-Depends: jenkins-debian-glue,
-         reprepro | freight,
-         ${misc:Depends}
-Description: Virtual package for repository only hosts
- This virtual package depends on the software packages required
- for using jenkins-debian-glue for repo only jobs (PROVIDE_ONLY set).
 
 Package: jenkins-debian-glue-buildenv
 Architecture: all
