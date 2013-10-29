@@ -51,8 +51,7 @@ fi
 if [ -z "${KEY_ID:-}" ] ; then
   echo "*** WARNING: No KEY_ID found, can not sign repository. ***"
   echo "***          Generate a key executing 'gpg --gen-key' as user root"
-  echo "***          and then set up /etc/jenkins/debian_glue, see"
-  echo "***          /usr/share/jenkins-debian-glue/examples/debian_glue"
+  echo "***          and then adjust /etc/jenkins/debian_glue."
 fi
 
 if grep -q "^Codename: ${REPOS}$" "${REPOSITORY}"/conf/distributions ; then
