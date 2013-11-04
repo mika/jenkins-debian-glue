@@ -590,6 +590,11 @@ release_repos() {
 
   REPOSITORY=$REPOSITORY generate-reprepro-codename "${release}"
 
+  # lock access to file to avoid duplicate entries when two build-and-provide-package
+  # runs happen at the very same time with regard to conf/incoming setup
+  (
+  flock --timeout 5 9 || bailout 1 "Error: could not lock file ${REPOSITORY}/conf/incoming, giving up."
+
   if ! grep -q "^Name: $release$" "${REPOSITORY}/conf/incoming" 2>/dev/null ; then
     cat >> "${REPOSITORY}/conf/incoming" << EOF
 
@@ -603,6 +608,7 @@ Cleanup: unused_files on_deny on_error
 
 EOF
   fi
+  ) 9>/var/lock/jdg-build-and-provide-incoming."$(id -un)" || bailout 1 "Error while setting up incoming repository."
 
   local old_dir=$(pwd)
   cd "${REPOSITORY}/incoming/${release}"
