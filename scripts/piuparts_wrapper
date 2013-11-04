@@ -26,12 +26,12 @@ fi
 
 if [ -n "${SCRIPTSDIR:-}" ] ; then
   echo "*** SCRIPTSDIR variable is set to $SCRIPTSDIR - using for piuparts run ***"
-  scriptsdir="--scriptsdir=$SCRIPTSDIR"
+  scriptsdir="$SCRIPTSDIR"
 else
   scriptsdir_path="/etc/piuparts/scripts/"
   if [ -d "${scriptsdir_path}" ]; then
     echo "*** SCRIPTSDIR variable is NOT set - using default [/etc/piuparts/scripts/] for piuparts run ***"
-    scriptsdir="--scriptsdir=${scriptsdir_path}"
+    scriptsdir="${scriptsdir_path}"
   else
     # Some old piuparts do not ship a scripts dir
     scriptsdir=""
@@ -114,6 +114,6 @@ piuparts \
   ${warn_on_leftovers_after_purge_option:-} \
   ${skip_logrotatefiles_test_option:-} \
   --log-file='piuparts.txt' \
-  "${scriptsdir:-}" \
+  ${scriptsdir:+--scriptsdir "$scriptsdir"} \
   ${basetgz:-} \
   "$@"
