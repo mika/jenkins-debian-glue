@@ -398,6 +398,26 @@ EOF
   [ -n "${pbuilderrc:-}" ] && rm -f "$pbuilderrc"
 }
 
+# replacement for dcmd, sadly available only in the devscripts package
+list_deb_files() {
+  if [ "$#" -lt 1 ] ; then
+    echo "Error: list_deb_files function needs a file name as argument." >&2
+    return 1
+  fi
+
+  local files
+
+  for arg in "$@" ; do
+    if ! [ -r "$arg" ] ; then
+      echo "Error: could not read $arg" >&2
+      continue
+    fi
+
+    # cmdline based on usage in dcmd, we're interested only in .deb files though
+    sed --regexp-extended -n 's,^ [0-9a-f]{32} [0-9]+ ((([a-zA-Z0-9_.-]+/)?[a-zA-Z0-9_.-]+|-) ([a-zA-Z]+|-) )?(.*.deb)$,\5,p' "$arg"
+  done
+}
+
 remove_packages() {
   if [ -n "${SKIP_REMOVAL:-}" ] ; then
     echo "*** Skipping removal of existing packages as requested via SKIP_REMOVAL ***"
@@ -408,7 +428,7 @@ remove_packages() {
   ${SUDO_CMD:-} reprepro -v -A source -b "${REPOSITORY}" --waitforlock 1000 remove "${REPOS}" "${SOURCE_PACKAGE}"
 
   echo "*** Removing previous binary package versions from repository ***"
-  for p in $(dcmd "${WORKSPACE}/binaries/"*"${newest_version}_${arch}.changes" | grep '\.deb$') ; do
+  for p in $(list_deb_files "${WORKSPACE}/binaries/"*"${newest_version}_${arch}.changes") ; do
     file="$(basename $p)"
     binpackage="${file%%_*}"
     binary_list="${binary_list:-} ${binpackage}"
