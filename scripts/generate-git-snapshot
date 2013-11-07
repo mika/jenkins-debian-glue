@@ -93,6 +93,43 @@ dch_opts() {
   fi
 }
 
+# support overrides from gbp.conf
+gbp_opts() {
+  # List of config files in order
+  gbp_conf_files=(
+  /etc/git-buildpackage/gbp.conf
+  ~/.gbp.conf
+  .gbp.conf
+  debian/gbp.conf
+  .git/gbp.conf
+  )
+
+  # Defaults
+  UPSTREAM_BRANCH="upstream"
+  DEBIAN_BRANCH="debian"
+  PRISTINE_TAR="false"
+
+  for gbp_conf_file in "${gbp_conf_files[@]}"; do
+    if [ -f ${gbp_conf_file} ]; then
+      local value;
+      value=$(git config --file ${gbp_conf_file} --get DEFAULT.upstream-branch 2>&-)
+      if [ $? = 0 ]; then
+        UPSTREAM_BRANCH=${value}
+      fi
+
+      value=$(git config --file ${gbp_conf_file} --get DEFAULT.debian-branch 2>&-)
+      if  [ $? = 0 ]; then
+        DEBIAN_BRANCH=${value}
+      fi
+
+      value=$(git config --file ${gbp_conf_file} --bool --get DEFAULT.pristine-tar 2>&-)
+      if  [ $? = 0 ]; then
+        PRISTINE_TAR=${value}
+      fi
+    fi
+  done
+}
+
 create_local_branch() {
   [ -n "${1:-}" ] || return 1
 
@@ -265,10 +302,14 @@ cd "$SOURCE_DIRECTORY"
 
 git_cleanup
 
+gbp_opts
+
 # make sure common branches are available for git-buildpackage
-create_local_branch upstream
-create_local_branch debian
-create_local_branch pristine-tar
+create_local_branch ${UPSTREAM_BRANCH}
+create_local_branch ${DEBIAN_BRANCH}
+if [ ${PRISTINE_TAR} = 'true' ]; then
+  create_local_branch pristine-tar
+fi
 
 # check out the according branch/tag with help of $random_branch
 branch_checkout
