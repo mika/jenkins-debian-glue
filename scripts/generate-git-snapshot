@@ -94,7 +94,13 @@ dch_opts() {
 }
 
 # support overrides from gbp.conf
-gbp_opts() {
+gbp_conf() {
+
+  if [ "${IGNORE_GBP_CONF:-}" = "true" ] ; then
+    echo "Skipping gbp_conf execution as requested via IGNORE_GBP_CONF ***"
+    return 0
+  fi
+
   # List of config files in order
   gbp_conf_files=(
   /etc/git-buildpackage/gbp.conf
@@ -112,18 +118,18 @@ gbp_opts() {
   for gbp_conf_file in "${gbp_conf_files[@]}"; do
     if [ -f ${gbp_conf_file} ]; then
       local value;
-      value=$(git config --file ${gbp_conf_file} --get DEFAULT.upstream-branch 2>&-)
-      if [ $? = 0 ]; then
+      value=$(git config --file ${gbp_conf_file} --get DEFAULT.upstream-branch 2>&- || true)
+      if [ -n "${value:-}" ]; then
         UPSTREAM_BRANCH=${value}
       fi
 
-      value=$(git config --file ${gbp_conf_file} --get DEFAULT.debian-branch 2>&-)
-      if  [ $? = 0 ]; then
+      value=$(git config --file ${gbp_conf_file} --get DEFAULT.debian-branch 2>&- || true)
+      if [ -n "${value:-}" ]; then
         DEBIAN_BRANCH=${value}
       fi
 
-      value=$(git config --file ${gbp_conf_file} --bool --get DEFAULT.pristine-tar 2>&-)
-      if  [ $? = 0 ]; then
+      value=$(git config --file ${gbp_conf_file} --bool --get DEFAULT.pristine-tar 2>&- || true)
+      if [ -n "${value:-}" ]; then
         PRISTINE_TAR=${value}
       fi
     fi
@@ -302,7 +308,8 @@ cd "$SOURCE_DIRECTORY"
 
 git_cleanup
 
-gbp_opts
+# gbp.conf handling
+gbp_conf
 
 # make sure common branches are available for git-buildpackage
 create_local_branch ${UPSTREAM_BRANCH}
@@ -329,7 +336,7 @@ gbp_opts
 if [ "${IGNORE_GIT_BUILDPACKAGE:-}" = "true" ] ; then
   echo "Skipping git-buildpackage execution as requested via IGNORE_GIT_BUILDPACKAGE ***"
 else
-  git-buildpackage ${GBP_OPTS}
+  git-buildpackage ${GBP_OPTS:-}
 fi
 
 quilt_cleanup
