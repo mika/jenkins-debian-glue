@@ -1,0 +1,54 @@
+README for jjb directory in jenkins-debian-glue
+-----------------------------------------------
+
+Jenkins Job Builder (JJB) takes simple descriptions of Jenkins
+jobs in YAML format and uses them to configure Jenkins.
+This directory provides some sample configuration for usage of
+jenkins-debian-glue with Jenkins Job Builder.
+
+Usage instructions:
+
+1) Install jenkins-job-builder, available as Debian package
+   in Debian jessie and newer and in Ubuntu [universe]
+   raring, saucy, trusty and newer, or from upstream at
+   https://github.com/openstack-infra/jenkins-job-builder
+   Find upstream documentation for jenkins-job-builder at
+   http://ci.openstack.org/jenkins-job-builder
+
+2) Create /etc/jenkins_jobs/jenkins_jobs.ini, like (adjust user,
+   password and url settings as needed for your environment):
+
+   [jenkins]
+   user=jenkins-job-builder
+   password=jenkins-job-builder
+   url=http://localhost:8080/
+
+3) Execute e.g. 'jenkins-jobs update jjb/jdg-reprepro.yaml' to
+   generate Jenkins jobs in the specified Jenkins environment (see
+   point 2) as defined in file jdg-reprepro.yaml, currently being
+   jobs jenkins-debian-glue-source, jenkins-debian-glue-binaries
+   and jenkins-debian-glue-piuparts.
+
+   The jjb/jdg-freight.yaml file configures Jenkins jobs
+   jdg-freight-source and jdg-freight-binaries, which provide
+   a similar setup as jenkins-debian-glue-* but using the
+   freight repository software [https://github.com/rcrowley/freight/]
+   instead of using reprepro [http://mirrorer.alioth.debian.org/].
+
+   Hint: by running "mkdir /tmp/jdg; jenkins-jobs test jjb/ -o /tmp/jdg'
+   you can get a test configuration of your jobs without
+   directly deploying them into the Jenkins system.
+
+Notes:
+
+* the yaml files assume amd64 as default architecture,
+  if you don't have an amd64 system please adjust the
+  references to "amd64" in the files with "i386" (or so)
+* you need to adjust the KEY_ID setting in jjb/jdg-freight.yaml
+  before executing the jdg-freight-* Jenkins jobs (and if you
+  don't have a GPG key for the user which runs the job yet you
+  also have to create a key running 'gpg --gen-key')
+* junit's "keep-long-stdio: false" setting requires
+  jenkins-job-builder >0.5.0 (available as of git commit 2faa91e2).
+* the TAP test result files feature requires
+  jenkins-job-builder >0.5.0 (available as of git commit 624fd659).

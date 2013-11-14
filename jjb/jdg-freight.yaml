@@ -1,0 +1,95 @@
+# This jenkins-job-build configuration sets up Jenkins jobs
+# for building Debian packages of jenkins-debian-glue
+# which are provided using the repository software called freight
+# [https://github.com/rcrowley/freight/] then.
+
+- project:
+    name: jdg-freight
+    repos: git://github.com/mika/jenkins-debian-glue.git
+    jobs:
+      - '{name}-source'
+      - '{name}-binaries'
+
+- job-template:
+      name: '{name}-source'
+      project-type: freestyle
+      description: 'Build Debian source package of {name}.<br />Do not edit this job through the web, it is generated via jenkins-job-builder!'
+      disabled: false
+      scm:
+        - git:
+            url: '{repos}'
+            name: origin
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            basedir: source
+            branches:
+              - master
+            wipe-workspace: false
+      builders:
+        - shell: 'rm -f ./* || true'
+        - shell: '/usr/bin/generate-git-snapshot'
+        - shell: |
+            mkdir -p report
+            /usr/bin/lintian-junit-report *.dsc > report/lintian.xml
+      publishers:
+        - archive:
+            artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes,lintian.txt'
+        - trigger:
+            project: '{name}-binaries'
+        - junit:
+            results: '**/lintian.xml'
+            keep-long-stdio: false
+        - fingerprint:
+            record-artifacts: true
+      wrappers:
+        - timestamps
+
+- job-template:
+      name: '{name}-binaries'
+      project-type: matrix
+      description: |
+          <p>Build Debian binary packages of {name}.<br />Do not edit this job through the web, it is generated via jenkins-job-builder!</p>
+          <h2>Usage instructions how to remotely access and use the repository:</h2>
+          <p>Install apache webserver:</p>
+          <pre>
+            sudo apt-get install apache2
+            sudo ln -s /var/cache/freight /var/www/debian
+          </pre>
+          <p>Then access to this repository is available using the following sources.list entry:</p>
+          <pre>
+            deb     http://$jenkins_server/debian/ {name} main
+            deb-src http://$jenkins_server/debian/ {name} main
+          </pre>
+      execution-strategy:
+        sequential: true
+      axes:
+        - axis:
+            type: user-defined
+            name: architecture
+            values:
+             - amd64
+      builders:
+        - copyartifact:
+            project: '{name}-source'
+            filter: '*'
+            which-build: upstream-build
+            fallback-to-last-successful: true
+        - shell: |
+            export USE_FREIGHT=true
+            export SUDO_CMD=sudo
+            export KEY_ID=DEADBEEF # please adjust, or edit /etc/freight.conf
+            /usr/bin/build-and-provide-package
+        - shell: |
+            mkdir -p report
+            /usr/bin/lintian-junit-report *.dsc > report/lintian.xml
+      publishers:
+        - archive:
+            artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes,lintian.txt'
+        - junit:
+            results: '**/lintian.xml'
+            keep-long-stdio: false
+        - fingerprint:
+            record-artifacts: true
+        - workspace-cleanup:
+            dirmatch: false
+      wrappers:
+        - timestamps

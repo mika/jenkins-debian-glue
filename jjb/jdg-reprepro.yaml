@@ -1,0 +1,131 @@
+# This jenkins-job-build configuration sets up Jenkins jobs
+# for building Debian packages of jenkins-debian-glue
+# which are provided using the repository software called reprepro
+# [http://mirrorer.alioth.debian.org/] then.
+
+- project:
+    name: jenkins-debian-glue
+    repos: git://github.com/mika/jenkins-debian-glue.git
+    jobs:
+      - '{name}-source'
+      - '{name}-binaries'
+      - '{name}-piuparts'
+
+- job-template:
+      name: '{name}-source'
+      project-type: freestyle
+      description: 'Build Debian source package of {name}.<br />Do not edit this job through the web, it is generated via jenkins-job-builder!'
+      disabled: false
+      scm:
+        - git:
+            url: '{repos}'
+            name: origin
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            basedir: source
+            branches:
+              - master
+            wipe-workspace: false
+      builders:
+        - shell: 'rm -f ./* || true'
+        - shell: '/usr/bin/generate-git-snapshot'
+        - shell: |
+            mkdir -p report
+            /usr/bin/lintian-junit-report *.dsc > report/lintian.xml
+      publishers:
+        - archive:
+            artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes,lintian.txt'
+        - trigger:
+            project: '{name}-binaries'
+        - junit:
+            results: '**/lintian.xml'
+            keep-long-stdio: false
+        - fingerprint:
+            record-artifacts: true
+      wrappers:
+        - timestamps
+
+- job-template:
+      name: '{name}-binaries'
+      project-type: matrix
+      description: |
+          <p>Build Debian binary packages of {name}.<br />Do not edit this job through the web, it is generated via jenkins-job-builder!</p>
+          <h2>Usage instructions how to remotely access and use the repository:</h2>
+          <p>Install apache webserver:</p>
+          <pre>
+            sudo apt-get install apache2
+            sudo ln -s /srv/repository /var/www/debian
+          </pre>
+          <p>Then access to this repository is available using the following sources.list entry:</p>
+          <pre>
+            deb     http://$jenkins_server/debian/ {name} main
+            deb-src http://$jenkins_server/debian/ {name} main
+          </pre>
+      execution-strategy:
+        sequential: true
+      axes:
+        - axis:
+            type: user-defined
+            name: architecture
+            values:
+             - amd64
+      builders:
+        - copyartifact:
+            project: '{name}-source'
+            filter: '*'
+            which-build: upstream-build
+            fallback-to-last-successful: true
+        - shell: "/usr/bin/build-and-provide-package"
+        - shell: |
+            echo "Listing packages inside the {name} repository:"
+            /usr/bin/repository_checker --list-repos jenkins-debian-glue
+        - shell: |
+            mkdir -p report
+            /usr/bin/lintian-junit-report *.dsc > report/lintian.xml
+      publishers:
+        - archive:
+            artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes,lintian.txt'
+        - junit:
+            results: '**/lintian.xml'
+            keep-long-stdio: false
+        - fingerprint:
+            record-artifacts: true
+        - trigger:
+            project: '{name}-piuparts'
+        - workspace-cleanup:
+            dirmatch: false
+      wrappers:
+        - timestamps
+
+- job-template:
+      name: '{name}-piuparts'
+      project-type: freestyle
+      description: 'Installation and upgrade tests for {name} Debian packages.<br />Do not edit this job through the web, it is generated via jenkins-job-builder!'
+      disabled: false
+      parameters:
+        - string:
+            name: architecture
+            default: amd64
+            description: "Architecture that should be used."
+      builders:
+        - copyartifact:
+            project: '{name}-binaries/architecture=$architecture'
+            filter: '*.deb'
+            which-build: upstream-build
+            fallback-to-last-successful: true
+            flatten: true
+            target: 'artifacts/'
+        - shell: |
+            # sadly piuparts always returns with exit code 1 :((
+            sudo piuparts_wrapper $PWD/artifacts/*.deb || true
+        - shell: 'piuparts_tap piuparts.txt > piuparts.tap'
+      publishers:
+        - tap:
+            results: 'piuparts.tap'
+        - archive:
+            artifacts: 'piuparts.*'
+        - fingerprint:
+            record-artifacts: true
+        - workspace-cleanup:
+            dirmatch: false
+      wrappers:
+        - timestamps
