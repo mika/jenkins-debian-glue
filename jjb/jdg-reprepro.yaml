@@ -77,10 +77,10 @@
         - shell: "/usr/bin/build-and-provide-package"
         - shell: |
             echo "Listing packages inside the {name} repository:"
-            /usr/bin/repository_checker --list-repos jenkins-debian-glue
+            /usr/bin/repository_checker --list-repos {name}
         - shell: |
             mkdir -p report
-            /usr/bin/lintian-junit-report *.dsc > report/lintian.xml
+            /usr/bin/lintian-junit-report *.changes > report/lintian.xml
       publishers:
         - archive:
             artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes,lintian.txt'

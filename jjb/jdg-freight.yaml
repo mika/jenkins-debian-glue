@@ -80,7 +80,7 @@
             /usr/bin/build-and-provide-package
         - shell: |
             mkdir -p report
-            /usr/bin/lintian-junit-report *.dsc > report/lintian.xml
+            /usr/bin/lintian-junit-report *.changes > report/lintian.xml
       publishers:
         - archive:
             artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes,lintian.txt'
