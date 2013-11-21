@@ -11,7 +11,8 @@ Vcs-Browser: https://github.com/mika/jenkins-debian-glue
 
 Package: jenkins-debian-glue
 Architecture: all
-Depends: reprepro | freight,
+Depends: fakeroot,
+         reprepro | freight,
          sudo | sudo-ldap,
          ${misc:Depends}
 Recommends: jenkins-debian-glue-buildenv-git
