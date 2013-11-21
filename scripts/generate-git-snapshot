@@ -45,6 +45,12 @@ gbp_opts() {
 }
 
 version_information() {
+  # required for dpkg-parsechangelog
+  if ! [ -r debian/changelog ] ; then
+    echo "Error: debian/changelog could not be read. Is this really a Debian package?" >&2
+    return 1
+  fi
+
   # retrieve and adjust information
   ORIG_VERSION=$(dpkg-parsechangelog --count 1 | awk '/^Version/ {print $2}')
   INCREASED_VERSION=$(increase-version-number $ORIG_VERSION)

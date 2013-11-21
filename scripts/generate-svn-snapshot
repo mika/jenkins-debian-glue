@@ -68,6 +68,12 @@ if [ -z "${SINCE_REVISION:-}" ] ; then
   exit 1
 fi
 
+# required for dpkg-parsechangelog
+if ! [ -r debian/changelog ] ; then
+  echo "Error: debian/changelog could not be read. Is this really a Debian package?" >&2
+  exit 1
+fi
+
 # package name
 PACKAGE=$(dpkg-parsechangelog --count 1 | awk '/^Source: / {print $2}')
 
