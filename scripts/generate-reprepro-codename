@@ -54,7 +54,7 @@ if [ -z "${KEY_ID:-}" ] ; then
   echo "***          and then adjust /etc/jenkins/debian_glue."
 fi
 
-if grep -q "^Codename: ${REPOS}$" "${REPOSITORY}"/conf/distributions ; then
+if grep -q "^\(Codename\|Suite\): ${REPOS}$" "${REPOSITORY}"/conf/distributions ; then
   echo "Codename/repository $REPOS exists already, ignoring request to add again."
   exit 0
 fi
