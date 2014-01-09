@@ -27,7 +27,7 @@ if ! [ -r "${REPOSITORY}/conf/distributions" ] ; then
   exit 1
 fi
 
-if ! grep -q "^Codename: ${codename}$" "${REPOSITORY}/conf/distributions" ; then
+if ! grep -q "^\(Codename\|Suite\): ${codename}$" "${REPOSITORY}/conf/distributions" ; then
   echo "*** Codename $codename does not exist in ${REPOSITORY}/conf/distributions - nothing to do."
   exit 0
 fi
