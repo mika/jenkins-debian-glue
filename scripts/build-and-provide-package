@@ -351,11 +351,13 @@ cowbuilder_run() {
       local REPOSITORY="${REPOSITORY}/release/${release}"
     fi;
 
-    if [ -d "$REPOSITORY" ]; then
+    if [ -d "${REPOSITORY}/dists/${release}" ]; then
       BINDMOUNTS="$BINDMOUNTS $REPOSITORY"
+      local components="$(awk -F': ' '/^Components:/ { print $2 }' \
+        "${REPOSITORY}/dists/${release}/Release")"
       cat > /tmp/apt-$$/release.list <<EOF
-deb [trusted=yes] file://${REPOSITORY} ${release} main
-deb-src [trusted=yes] file://${REPOSITORY} ${release} main
+deb [trusted=yes] file://${REPOSITORY} ${release} ${components}
+deb-src [trusted=yes] file://${REPOSITORY} ${release} ${components}
 EOF
     fi
   fi
