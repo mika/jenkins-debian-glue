@@ -166,6 +166,14 @@ class jenkins::software {
     ensure  => present,
   }
 
+  # fix java headless issue, might also require
+  #  sudo java -jar /usr/lib/jvm/java-6-openjdk-common/jre/lib/compilefontconfig.jar \
+  #    /etc/java-6-openjdk/fontconfig.properties \
+  #    /usr/lib/jvm/java-6-openjdk-common/jre/lib/fontconfig.bfc
+  package { 'ttf-dejavu':
+    ensure  => present,
+  }
+
   package { 'jenkins':
     ensure  => present,
     require => [
