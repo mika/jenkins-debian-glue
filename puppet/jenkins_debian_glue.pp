@@ -158,6 +158,10 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
+  jenkins::plugin::install { 'timestamper':
+    require => Package['jenkins'],
+  }
+
   jenkins::plugin::install { 'ws-cleanup':
     require => Package['jenkins'],
   }
