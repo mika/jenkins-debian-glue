@@ -2,6 +2,9 @@
 # Install this file as /etc/jenkins/debian_glue to enable it.
 
 # Set GnuPG ID that should be used for signing the reprepro repository.
+# If you build packages for Squeeze your reprepro repositories *MUST* be
+# signed and the keyring that holds the public key (REPOSITORY_KEYRING)
+# must be set.
 # Expected format: DEADBEEF
 # KEY_ID=
 
@@ -30,6 +33,14 @@
 # Base directory for reprepro repositories
 # Default:
 # REPOSITORY='/srv/repository'
+
+# By default reprepro repositories are not verified but assumed to be
+# trustworthy.
+# Please note that if you build packages for Squeeze, the reprepro
+# repositories *MUST* be signed and verifiable. I.e. you need to set
+# KEY_ID and the corresponding keyring in REPOSITORY_KEYRING that
+# holds the public key portion for that KEY_ID.
+# REPOSITORY_KEYRING=/etc/apt/trusted.gpg.d/my-custom-keyring.gpg
 
 # If $release is set then "${REPOSITORY}/release/${release}"
 # is used as release repository. If you want to use a different

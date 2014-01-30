@@ -355,9 +355,22 @@ cowbuilder_run() {
       BINDMOUNTS="$BINDMOUNTS $REPOSITORY"
       local components="$(awk -F': ' '/^Components:/ { print $2 }' \
         "${REPOSITORY}/dists/${release}/Release")"
+      # Check if keyring is provided so the repository can be verified.
+      if [ -n "${REPOSITORY_KEYRING:-}" ]; then
+        local trusted=
+      else
+        # If no keyring is provided, just assume that the repository is
+        # trustworthy. This option appeared in apt 0.8.16~exp3 which is not
+        # available in Squeeze.
+        local trusted="[trusted=yes]"
+      fi
       cat > /tmp/apt-$$/release.list <<EOF
-deb [trusted=yes] file://${REPOSITORY} ${release} ${components}
+deb ${trusted} file://${REPOSITORY} ${release} ${components}
 EOF
+    fi
+
+    if [ -n "${REPOSITORY_KEYRING:-}" ]; then
+      cp -a "${REPOSITORY_KEYRING}" /tmp/apt-$$/keyring.gpg
     fi
   fi
 
