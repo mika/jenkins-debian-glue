@@ -1,3 +1,49 @@
+jenkins-debian-glue (0.8.0) unstable; urgency=medium
+
+  The "happy fosdem" release.
+
+  [ Michael Prokop ]
+  * [68f0960] generate-reprepro-codename: refer to
+    /etc/jenkins/debian_glue
+  * [14f3559] Lock access to conf/incoming file
+  * [003fe99] build-and-provide-package: get rid of dependency on dcmd
+  * [f618f4d] Rework new gbp.conf handling
+  * [cbe7f6f] Provide yaml setup files for usage with jenkins-job-builder
+  * [e19a25e] freight: support sudo for creating directories/conffile,
+    extend config, quote all variables
+  * [a68c8c8] jjb: adjust lintian call for binary job + make
+    repository_checker dynamic
+  * [21a4d4c] Provide simple gateway service between GitHub + (internal)
+    Jenkins system
+  * [ced37f6] Add fakeroot to Depends
+  * [a7e01d3] generate-*-snapshot: provide user friendly error message if
+    debian/changelog is missing
+  * [b231c3e] generate-reprepro-codename: lock access to
+    conf/distributions
+  * [534e761] puppet: install ttf-dejavu package to fix java headless
+    issue
+  * [8da4508] puppet: install timestamper plugin
+  * [649c708] build-and-provide-package: use -b for package builds that
+    shouldn't include sources
+  * [c98acbf] Bump Standards-Version to 3.9.5
+
+  [ Antoine Musso ]
+  * [6bf804a] piuparts_wrapper: only expand scriptsdir when it is set
+
+  [ Carl Fürstenberg ]
+  * [9d5366f] Allow debian-glue to read gbp.conf
+
+  [ Lukas Anzinger ]
+  * [be40e3c] Don't include sources in sources.list, they're not needed
+    for building
+  * [4fa841e] The given $REPOS variable may also point to a suite, not
+    only a codename
+  * [4ab1301] Dynamically parse list of components from Release file
+  * [b1e42c1] Make it possible to verify our own reprepro repositories by
+    providing a pubkey
+
+ -- Michael Prokop <prokop@grml-solutions.com>  Mon, 03 Feb 2014 14:51:01 +0100
+
 jenkins-debian-glue (0.7.1) unstable; urgency=low
 
   * [80057b0] Drop jenkins-debian-glue-repoenv package + add dependency on
