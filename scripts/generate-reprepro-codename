@@ -18,8 +18,33 @@ if [ "${BUILD_ONLY:-}" = "true" ] ; then
   exit 0
 fi
 
+ARCHITECTURES="${ARCHITECTURES:-amd64 i386 source}"
+COMPONENTS="${COMPONENTS:-main}"
+UDEB_COMPONENTS="${UDEB_COMPONENTS:-main}"
+
+while [ "$#" -gt 1 ]; do
+    case "$1" in
+      --architectures)
+        ARCHITECTURES="$2"
+        shift 2
+      ;;
+      --components)
+        COMPONENTS="$2"
+        shift 2
+      ;;
+      --udeb-components)
+        UDEB_COMPONENTS="$2"
+        shift 2
+      ;;
+    esac
+done
+
 if [ "$#" -lt 1 ] ; then
-  echo "Usage: $0 <codename>" >&2
+  echo "Usage: $0" \
+       "[ --architectures <architectures> ]" \
+       "[ --components <components> ]" \
+       "[ --udeb-components <udeb components> ]" \
+       "<codename>" >&2
   exit 1
 fi
 
@@ -73,15 +98,19 @@ fi
 cat >> "${REPOSITORY}"/conf/distributions << EOF
 
 Codename: ${REPOS}
-Architectures: amd64 i386 source
-Components: main
-UDebComponents: main
-Tracking: minimal
+Architectures: ${ARCHITECTURES}
+Components: ${COMPONENTS}
 EOF
+
+if [ -n "${UDEB_COMPONENTS:-}" ]; then
+  printf "UDebComponents: ${UDEB_COMPONENTS}\n" >> "${REPOSITORY}"/conf/distributions
+fi
+
+printf "Tracking: minimal\n" >> "${REPOSITORY}"/conf/distributions
 
 if [ -n "${KEY_ID:-}" ] ; then
   echo "*** Signing repository with Key ID $KEY_ID ***"
-  printf "SignWith: ${KEY_ID}\n\n" >> "${REPOSITORY}"/conf/distributions
+  printf "SignWith: ${KEY_ID}\n" >> "${REPOSITORY}"/conf/distributions
 fi
 
 echo "Added $REPOS as new codename/repos to the reprepro configuration."
