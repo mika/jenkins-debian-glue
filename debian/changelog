@@ -1,3 +1,11 @@
+jenkins-debian-glue (0.8.1) unstable; urgency=medium
+
+  * [01b8a46] Revert "build-and-provide-package: use -b for package builds
+    that shouldn't include sources" [Closes: #88] Thanks to Christoph Berg
+    <christoph.berg@credativ.de> for feedback
+
+ -- Michael Prokop <prokop@grml-solutions.com>  Fri, 14 Feb 2014 10:58:19 +0100
+
 jenkins-debian-glue (0.8.0) unstable; urgency=medium
 
   The "happy fosdem" release.
