@@ -273,8 +273,8 @@ identify_build_type() {
     else
       echo "*** MAIN_ARCHITECTURE is unset. ***"
       echo "*** Host architecture [$(dpkg-architecture -qDEB_HOST_ARCH)] does not match \$architecture [${architecture:-}] ... ***"
-      echo "*** ... setting binary only build (without source files) and continuing with identify_build_type ***"
-      DEBBUILDOPTS="-b"
+      echo "*** ... setting binary only build and continuing with identify_build_type ***"
+      DEBBUILDOPTS="-B"
     fi
   else
     if [ "${MAIN_ARCHITECTURE:-}" = "${architecture:-}" ] ;then
@@ -282,8 +282,8 @@ identify_build_type() {
       echo "*** MAIN_ARCHITECTURE matches \$architecture [${architecture:-}], using default ${DEBBUILDOPTS:-} buildoption ***"
       return 0
     else
-      echo "*** MAIN_ARCHITECTURE [${MAIN_ARCHITECTURE:-}] does not match \$architecture [${architecture:-}], setting binary only build (without source files) and continuing with identify_build_type ***"
-      DEBBUILDOPTS="-b"
+      echo "*** MAIN_ARCHITECTURE [${MAIN_ARCHITECTURE:-}] does not match \$architecture [${architecture:-}], setting binary only build and continuing with identify_build_type ***"
+      DEBBUILDOPTS="-B"
     fi
   fi
 
