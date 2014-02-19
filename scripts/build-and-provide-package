@@ -239,14 +239,14 @@ cowbuilder_init() {
 
   if [ ! -d "${COWBUILDER_BASE}" ]; then
     echo "*** Creating cowbuilder base $COWBUILDER_BASE for arch $arch and distribution $COWBUILDER_DIST ***"
-    sudo cowbuilder --create --basepath "${COWBUILDER_BASE}" --distribution "${COWBUILDER_DIST}" \
+    sudo DIST=${distribution} ARCH=${architecture} cowbuilder --create --basepath "${COWBUILDER_BASE}" --distribution "${COWBUILDER_DIST}" \
          --debootstrapopts --arch --debootstrapopts "$arch" \
          --debootstrapopts --variant=buildd --configfile="${pbuilderrc}" \
          --hookdir "${PBUILDER_HOOKDIR}"
     [ $? -eq 0 ] || bailout 1 "Error: Failed to create cowbuilder base ${COWBUILDER_BASE}."
   else
     echo "*** Updating cowbuilder cow base ***"
-    sudo cowbuilder --update --basepath "${COWBUILDER_BASE}" --configfile="${pbuilderrc}"
+    sudo DIST=${distribution} ARCH=${architecture} cowbuilder --update --basepath "${COWBUILDER_BASE}" --configfile="${pbuilderrc}"
     [ $? -eq 0 ] || bailout 1 "Error: Failed to update cowbuilder base ${COWBUILDER_BASE}."
   fi
 
