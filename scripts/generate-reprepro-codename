@@ -10,6 +10,7 @@ bailout() {
 }
 
 if [ -r /etc/jenkins/debian_glue ] ; then
+  echo "*** Sourcing /etc/jenkins/debian_glue ***"
   . /etc/jenkins/debian_glue
 fi
 
@@ -72,11 +73,6 @@ if ! ${SUDO_CMD:-} chown $(id -un) "${REPOSITORY}"/conf ; then
   echo "*** Please fix the underlying problem if you depend on according permissions. ***"
 fi
 touch "${REPOSITORY}"/conf/distributions
-
-if [ -r /etc/jenkins/debian_glue ] ; then
-  echo "*** Sourcing /etc/jenkins/debian_glue ***"
-  . /etc/jenkins/debian_glue
-fi
 
 # support setting key id
 if [ -z "${KEY_ID:-}" ] ; then
