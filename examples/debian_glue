@@ -32,7 +32,7 @@
 
 # Base directory for reprepro repositories
 # Default:
-# REPOSITORY='/srv/repository'
+DEFAULT_REPOSITORY='/srv/repository'
 
 # By default reprepro repositories are not verified but assumed to be
 # trustworthy.
