@@ -8,7 +8,7 @@ if [ -r /etc/jenkins/debian_glue ] ; then
 fi
 
 if [ -z "${REPOSITORY:-}" ] ; then
-  REPOSITORY='/srv/repository'
+  REPOSITORY=${DEFAULT_REPOSITORY}
 fi
 
 if [ -z "${REPREPRO_OPTS:-}" ]  ; then
