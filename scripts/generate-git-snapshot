@@ -327,6 +327,11 @@ fi
 # check out the according branch/tag with help of $random_branch
 branch_checkout
 
+if [ -n "${PRE_DCH_HOOK:-}" ] ; then
+  echo "*** Found environment variable PRE_DCH_HOOK, set to ${PRE_DCH_HOOK:-} ***"
+  sh ${PRE_DCH_HOOK:-}
+fi
+
 # retrieve version information *after* checking out the according branch/tag,
 # otherwise version number might result in something different than expected
 version_information
