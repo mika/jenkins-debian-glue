@@ -37,6 +37,14 @@ while [ "$#" -gt 1 ]; do
         UDEB_COMPONENTS="$2"
         shift 2
       ;;
+      --origin)
+        ORIGIN="$2"
+        shift 2
+      ;;
+      --suite)
+        SUITE="$2"
+        shift 2
+      ;;
     esac
 done
 
@@ -45,6 +53,8 @@ if [ "$#" -lt 1 ] ; then
        "[ --architectures <architectures> ]" \
        "[ --components <components> ]" \
        "[ --udeb-components <udeb components> ]" \
+       "[ --origin <origin> ]" \
+       "[ --suite <suite> ]" \
        "<codename>" >&2
   exit 1
 fi
@@ -97,6 +107,14 @@ Codename: ${REPOS}
 Architectures: ${ARCHITECTURES}
 Components: ${COMPONENTS}
 EOF
+
+if [ -n "${SUITE:-}" ]; then
+  printf "Suite: ${SUITE}\n" >> "${REPOSITORY}"/conf/distributions
+fi
+
+if [ -n "${ORIGIN:-}" ]; then
+  printf "Origin: ${ORIGIN}\n" >> "${REPOSITORY}"/conf/distributions
+fi
 
 if [ -n "${UDEB_COMPONENTS:-}" ]; then
   printf "UDebComponents: ${UDEB_COMPONENTS}\n" >> "${REPOSITORY}"/conf/distributions
