@@ -39,7 +39,7 @@ gbp_opts() {
   if [ -n "${GBP_OPTS:-}" ] ; then
     echo "Found environment variable GBP_OPTS, set to ${GBP_OPTS}"
   else
-    GBP_OPTS=" -nc --git-force-create --git-ignore-new --git-ignore-branch -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true "
+    GBP_OPTS=" -nc --git-force-create --git-ignore-new --git-ignore-branch -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true --git-export-dir= "
     echo "Using git-buildpackage default options provided by jenkins-debian-glue"
   fi
 }
