@@ -3,6 +3,11 @@
 # Copyright 2012 Christoph Berg <myon@debian.org>
 # Licensed under the terms of the MIT License.
 
+if [ "${ADT:-}" = "skip" ]; then
+  echo "Skipping autopkgtests as requested (ADT is set to 'skip')"
+  exit 0
+fi
+
 set -ex
 
 cd /tmp/buildd/*/debian/..

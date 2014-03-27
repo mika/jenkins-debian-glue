@@ -216,7 +216,7 @@ class jenkins::software {
 
 # Make sure DEB_* options reach cowbuilder, like e.g.:
 #  export DEB_BUILD_OPTIONS="parallel=8" /usr/bin/build-and-provide-package
-Defaults  env_keep+="DEB_* DIST ARCH"
+Defaults  env_keep+="DEB_* DIST ARCH ADT"
 
 # for *-binaries job
 jenkins ALL=NOPASSWD: /usr/sbin/cowbuilder, /usr/sbin/chroot
