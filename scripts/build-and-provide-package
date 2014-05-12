@@ -320,7 +320,7 @@ identify_build_type() {
 
 autopkgtest_results() {
   if [ -n "${SKIP_AUTOPKGTEST_RESULTS:-}" ] ; then
-    echo "** Skipping autopkgtest_results as requested via SKIP_AUTOPKGTEST_RESULTS ***"
+    echo "*** Skipping autopkgtest_results as requested via SKIP_AUTOPKGTEST_RESULTS ***"
     return 0
   fi
 
@@ -328,6 +328,29 @@ autopkgtest_results() {
   rm -rf adt
   ${SUDO_CMD:-} chmod -R go+rX /tmp/adt-$$
   cp -a /tmp/adt-$$ adt
+}
+
+custom_test_results() {
+  if [ -n "${SKIP_CUSTOMTEST_RESULTS:-}" ] ; then
+    echo "** Skipping custom_test_results as requested via SKIP_CUSTOMTEST_RESULTS ***"
+    return 0
+  fi
+
+  if [ -n "${TEST_RESULTS_DIR:-}" ] ; then
+    echo "*** TEST_RESULTS_DIR is set, considering $TEST_RESULTS_DIR as test result directory ***"
+  else
+    TEST_RESULTS_DIR=test_results
+    echo "*** No TEST_RESULTS_DIR directory is unset, defaulting to test_results ***"
+  fi
+
+  # copy test results from /tmp
+  if ! [ -d "/tmp/${TEST_RESULTS_DIR}" ] ; then
+    echo "*** Directory /tmp/${TEST_RESULTS_DIR} doesn't exist, assuming there are no custom test results ***"
+  else
+    echo "*** Found test result directory /tmp/${TEST_RESULTS_DIR} - copying to workspace directory"
+    ${SUDO_CMD:-} chmod -R go+rX "/tmp/${TEST_RESULTS_DIR}"
+    cp -a "/tmp/${TEST_RESULTS_DIR}" .
+  fi
 }
 
 cowbuilder_run() {
@@ -340,6 +363,7 @@ cowbuilder_run() {
   identify_build_type
 
   if $SKIP_ARCH_BUILD ; then
+    custom_test_results
     autopkgtest_results
     bailout 0 "Nothing to do, architecture all binary packages only for non-primary architecture."
   fi
@@ -725,6 +749,7 @@ else
 fi
 
 binaries_to_workspace
+custom_test_results
 autopkgtest_results
 
 if [ -n "${POST_BUILD_HOOK:-}" ] ; then
