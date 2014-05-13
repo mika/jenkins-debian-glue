@@ -63,3 +63,15 @@
 # quite some disk space, so do not forget to remove them.
 # If unset the build environment won't be kept if building fails.
 # DEB_KEEP_BUILD_ENV=true
+
+# List of string with extra repos for resolving dependencies. Comma
+# is delimiter. For example:
+# REPOSITORY_EXTRA='deb http://security.debian.org/ wheezy/updates main,deb-src http://security.debian.org/ wheezy/updates main'
+# Default:
+# REPOSITORY_EXTRA=
+
+# List of urls with keys for extra repos. Comma is delimiter.
+# For example:
+# REPOSITORY_EXTRA_KEYS='http://foorepo.domain.com/key1.gpg,http://barrepo.domain.com/key2.gpg'
+# Default:
+# REPOSITORY_EXTRA_KEYS=
