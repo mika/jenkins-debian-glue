@@ -92,7 +92,7 @@ start = Time.now.to_f
 lintian_options << "--info" unless options[:disablenotes]
 
 # Ruby 1.8's IO.popen expects a string instead of an array :(
-lintian_cmd = (['lintian'] + lintian_options + ['--'] + files).collect { |v| Shellwords.escape(v) }.join(" ")
+lintian_cmd = (['lintian'] + lintian_options + files).collect { |v| Shellwords.escape(v) }.join(" ")
 $output = IO.popen(lintian_cmd) do |io|
   io.read
 end
