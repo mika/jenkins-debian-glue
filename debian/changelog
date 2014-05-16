@@ -1,3 +1,45 @@
+jenkins-debian-glue (0.9.0) unstable; urgency=medium
+
+  The "lunch break" release
+
+  [ Patrick Schoenfeld ]
+  * [08248d6] Pass DIST and ARCH to cowbuilder call
+
+  [ Edwin Fine ]
+  * [29611c6] Empty 'distribution' and 'architecture' env vars now do not
+    break script when calling cowbuilder.
+
+  [ Michael Prokop ]
+  * [e116dbb] puppet: allow DIST + ARCH in sudo configuration
+  * [dbdea39] generate-git-snapshot: Support PRE_DCH_HOOK variable for
+    custom scripts. Thanks to Rudolph Bott <bott@sipgate.de> for the patch
+  * [811aef7] debian/copyright: fix Upstream-Name header
+  * [36cca60] Support skipping adt tests by setting ADT=skip. Thanks to
+    Christoph Berg
+  * [4020157] lintian-junit-report: do not use "--" as option separator
+  * [757c0cc] Adjust Recommends for REPOSITORY_EXTRA feature + minor style
+    improvements
+  * [578bb8d] puppet: Enable "Raw HTML" option and move systemMessage into
+    View
+  * [ac5dd5b] Bump Dependency on openjdk-6-jre-headless to openjdk-7-jre-
+    headless
+
+  [ Jean Baptiste Favre ]
+  * [a9ab5cc] No need to source /etc/jenkins/debian-glue twice in the same
+    script
+
+  [ Lukas Anzinger ]
+  * [b37d310] generate-reprepro-codename: Accept origin and suite as
+    command line arguments.
+
+  [ Mathieu Parent ]
+  * [4c329b3] Don't use --git-export-dir
+
+  [ Andrey Elmanov ]
+  * [0a4191c] Allow adding extra repositories for resolving dependencies
+
+ -- Michael Prokop <prokop@grml-solutions.com>  Fri, 16 May 2014 12:56:48 +0200
+
 jenkins-debian-glue (0.8.1) unstable; urgency=medium
 
   * [01b8a46] Revert "build-and-provide-package: use -b for package builds
