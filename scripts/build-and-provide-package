@@ -376,21 +376,20 @@ EOF
     fi
   fi
 
-  # Adding extra perository for resolving dependencies
+  # Adding extra repository for resolving dependencies
   if [ -n "${REPOSITORY_EXTRA:-}" ]; then
     echo ${REPOSITORY_EXTRA} | tr ',' '\n' > /tmp/apt-$$/extra.list
   fi
-  
+
   if [ -n "${REPOSITORY_EXTRA_KEYS:-}" ]; then
-    OIFS=$IFS
+    OIFS="$IFS"
     IFS=',' read -a array <<< "${REPOSITORY_EXTRA_KEYS}"
-    for key in "${array[@]}"
-    do
+    for key in "${array[@]}" ; do
       curl -O "${key}"
       gpg --no-default-keyring --keyring /tmp/apt-$$/keyring.gpg --import "${key##*/}"
     done
     unset key
-    IFS=$OIFS
+    IFS="$OIFS"
   fi
 
   local pbuilderrc=$(mktemp)

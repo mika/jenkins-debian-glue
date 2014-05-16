@@ -15,7 +15,9 @@ Depends: fakeroot,
          reprepro | freight,
          sudo | sudo-ldap,
          ${misc:Depends}
-Recommends: jenkins-debian-glue-buildenv-git
+Recommends: curl,
+            gnupg,
+            jenkins-debian-glue-buildenv-git
 Description: glue scripts for building Debian packages inside Jenkins
  This package provides scripts which should make building Debian
  package inside Jenkins (a Continuous Integration suite) easier.
