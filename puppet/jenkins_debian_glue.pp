@@ -561,7 +561,19 @@ sudo piuparts_wrapper \${PWD}/artifacts/*.deb || true</command>
     <disableSignup>true</disableSignup>
     <enableCaptcha>false</enableCaptcha>
   </securityRealm>
-  <systemMessage>&lt;h1&gt;&lt;a href=&quot;http://jenkins-debian-glue.org/&quot;&gt;jenkins-debian-glue&lt;/a&gt; Continuous Integration labs&lt;/h1&gt;</systemMessage>
+  <markupFormatter class='hudson.markup.RawHtmlMarkupFormatter' plugin='antisamy-markup-formatter@1.0'>
+    <disableSyntaxHighlighting>false</disableSyntaxHighlighting>
+  </markupFormatter>
+  <views>
+    <hudson.model.AllView>
+      <owner class='hudson' reference='../../..'/>
+      <name>All</name>
+      <description>&lt;h1&gt;&lt;a href=&quot;http://jenkins-debian-glue.org/&quot;&gt;jenkins-debian-glue&lt;/a&gt; Continuous Integration labs&lt;/h1&gt;</description>
+      <filterQueue>false</filterQueue>
+      <properties class='hudson.model.View$PropertyList'/>
+    </hudson.model.AllView>
+  </views>
+  <primaryView>All</primaryView>
 </hudson>
 "
   }
