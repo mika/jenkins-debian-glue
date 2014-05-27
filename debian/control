@@ -91,14 +91,18 @@ Depends: devscripts,
          libperl-critic-perl,
          ruby,
          ${misc:Depends}
+Recommends: devscripts,
+            file,
+            pep8,
+            perlcritic
 Description: taptools integration in Jenkins
- This package provides scripts to check shell and perl source code
- for common errors, using checkbashism and perlcritic to
- generate according TAP reports for usage inside Jenkins.
+ This package provides scripts to check shell, perl and python
+ source code for common errors, using checkbashism and perlcritic
+ to generate according TAP reports for usage inside Jenkins.
  .
  The provided tap_tool_dispatcher script can be used to automatically
- detect according shell scripts and perl scripts to execute
- checkbashism_tap and perlcritic_tap accordingly.
+ detect according shell scripts, perl and python scripts to execute
+ checkbashism_tap, perlcritic_tap and pep8_tap accordingly.
 
 Package: jenkins-debian-glue-buildenv-piuparts
 Architecture: all

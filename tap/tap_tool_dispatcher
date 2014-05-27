@@ -20,6 +20,7 @@ fi
 rm -rf "${REPORTS_DIRECTORY}"
 mkdir -p "${REPORTS_DIRECTORY}"/perl
 mkdir -p "${REPORTS_DIRECTORY}"/shell
+mkdir -p "${REPORTS_DIRECTORY}"/python
 
 # run perlcritic_tap
 echo "*** perlcritic_tap ***"
@@ -30,6 +31,11 @@ find source -type f ! -path '*.svn*' ! -path '*.git/*' -prune -exec \
 echo "*** checkbashism_tap ***"
 find source -type f ! -path '*.svn*' ! -path '*.git/*' -prune -exec \
   sh -c 'input="$1"; output=$(echo $input | sed -e s,/,_,g); /usr/bin/checkbashism_tap "$input" > "${REPORTS_DIRECTORY}/shell/${output}".tap' '{}' '{}' ';'
+
+# run pep8_tap
+echo "*** pep8_tap ***"
+find source -type f ! -path '*.svn*' ! -path '*.git/*' -prune -exec \
+  sh -c 'file "$1" | grep -q "Python script" && input="$1" && output=$(echo $input | sed -e s,/,_,g) && /usr/bin/pep8_tap "$input" > "${REPORTS_DIRECTORY}/python/${output}".tap' '{}' '{}' ';'
 
 # get rid of empty files
 find "${REPORTS_DIRECTORY}" -type f -empty -exec rm {} +

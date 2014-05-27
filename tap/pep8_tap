@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+if ARGV[0].nil?
+  $stderr.puts "Usage: #{File.basename $0} <file>"
+  exit 1
+end
+
+if not system "which pep8 >/dev/null 2>&1"
+  $stderr.puts "Error: program pep8 does not exist (install pep8 package)."
+  exit 1
+end
+
+file = ARGV[0]
+
+if not File.exists? file
+  $stderr.puts "Error: file #{file} could not be read."
+  exit 1
+end
+
+output = %x{pep8 --first --select E,W --format '%(code)s in line %(row)d: %(text)s' #{file} 2>&1}
+
+num_lines = output.lines.count
+exit 0 if num_lines == 0
+counter = 1
+
+# output result in TAP format
+puts "1..#{num_lines}"
+output.each_line do |critic|
+  puts "not ok #{counter}           #{critic}"
+  counter += 1
+end
