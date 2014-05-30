@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require 'yaml'
 
 if ARGV[0].nil?
   $stderr.puts "Usage: #{File.basename $0} <file>"
@@ -17,15 +18,60 @@ if not File.exists? file
   exit 1
 end
 
-output = %x{pep8 --first --select E,W --format '%(code)s in line %(row)d: %(text)s' #{file} 2>&1}
+ISSUE_PREFIX = 'ISSUE:'
 
-num_lines = output.lines.count
-exit 0 if num_lines == 0
+output = %x{pep8 -r --show-source --select E,W --format 'ISSUE:%(path)s:%(row)d:%(col)d: %(code)s %(text)s' #{file} 2>&1}
+
+def is_issue_line(l)
+  l.start_with?(ISSUE_PREFIX)
+end
+
+class Issue
+  def initialize(firstline, file)
+    @firstline = firstline.sub(ISSUE_PREFIX, '')
+    @file = file
+    @source = []
+    @code = @firstline.split(': ', 3)[1]
+    @severity = case @code[0]
+      when 'E'
+        'error'
+      when 'W'
+        'warning'
+      end
+  end
+
+  def add_source(line)
+    @source << line
+  end
+
+  def format(counter)
+    body = YAML.dump({
+      'message' => @firstline,
+      'severity' => @severity,
+      'code' => @code,
+      'source' => @source.join("\n"),
+      'file' => @file
+    }) + '---'  # end of yaml
+    return ("not ok #{counter} #{@firstline}\n  " + body.gsub("\n","\n  "))
+  end
+end
+
+issues = []
+
+output.each_line do |l|
+  l = l.rstrip()
+  if is_issue_line(l)
+    issues << Issue.new(l, file)
+  else
+    issues.last.add_source(l) unless issues.last.nil?
+  end
+end
+exit 0 if issues.length == 0
 counter = 1
 
 # output result in TAP format
-puts "1..#{num_lines}"
-output.each_line do |critic|
-  puts "not ok #{counter}           #{critic}"
-  counter += 1
+puts "TAP version 13"
+puts "1..#{issues.length}"
+issues.each do |issue|
+  puts issue.format(counter)
 end
