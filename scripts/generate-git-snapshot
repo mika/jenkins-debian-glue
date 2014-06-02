@@ -37,6 +37,11 @@ fi
 if [ -n "${DIST:-}" -a -z "${KEEP_SOURCE_CHANGES:-}" ]; then
   echo "*** Warning: DIST is set but KEEP_SOURCE_CHANGES is not, this doesn't make sense. ***"
   echo "*** Please consider setting KEEP_SOURCE_CHANGES=true when setting DIST. ***"
+
+  if ! git-dch --help 2>&1 | grep -q -- --distribution ; then
+    echo "Error: git-dch doesn't support the --distribution option. Upgrade git-buildpackage to version 0.6.7 or newer." >&2
+    exit 1
+  fi
 fi
 
 gbp_opts() {
