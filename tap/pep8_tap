@@ -67,11 +67,10 @@ output.each_line do |l|
   end
 end
 exit 0 if issues.length == 0
-counter = 1
 
 # output result in TAP format
 puts "TAP version 13"
 puts "1..#{issues.length}"
-issues.each do |issue|
-  puts issue.format(counter)
+issues.each_index do |idx|
+  puts issues[idx].format(idx+1)
 end
