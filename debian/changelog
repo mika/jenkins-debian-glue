@@ -1,3 +1,33 @@
+jenkins-debian-glue (0.10.0) unstable; urgency=medium
+
+   The "have fun with pep8 checks" release
+
+  [ Michael Prokop ]
+  * [ed2b47a] New script pep8_tap to check python code via pep8
+  * [f9cfb58] Recommends pep8 >= 1.4.6~ as we depend on its '--format'
+    option
+  * [e4172ea] generate-git-snapshot: fail if git-dch doesn't support
+    --distribution but $DIST is set
+  * [99353c1] jenkins-debian-glue-buildenv-taptools: it's libperl-critic-
+    perl, not perlcritic
+  * [0767dd5] pep8_tap: adjust Encoding handling for ruby1.8
+  * [a1f0576] Fix script name of pep8_tap
+  * [cea1830] pep8_tap: further fix for encoding issue with ruby1.8
+  * [b756c64] Clarify Depends/Recommends of jenkins-debian-glue-buildenv-
+    taptools
+
+  [ Christian Hofstaedtler ]
+  * [cfdec26] Allow overriding the source package dist
+  * [22ac5fa] Install pep8_tap tool
+  * [1f796f0] pep8_tap: improve formatting
+  * [325f1dd] pep8_tap: fix counter
+  * [5dc4fe0] pep8_tap: Fix crash with invalid encoded source data
+  * [870f61a] pep8_tap: ignore non-Python files
+  * [f9a139d] tap_tool_dispatcher: run all tools in parallel
+  * [5d33d21] pep8_tap: don't re-enable default-disabled checkers
+
+ -- Michael Prokop <prokop@grml-solutions.com>  Wed, 04 Jun 2014 16:56:34 +0200
+
 jenkins-debian-glue (0.9.0) unstable; urgency=medium
 
   The "lunch break" release
