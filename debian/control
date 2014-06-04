@@ -89,6 +89,7 @@ Package: jenkins-debian-glue-buildenv-taptools
 Architecture: all
 Depends: devscripts,
          libperl-critic-perl,
+         parallel,
          ruby,
          ${misc:Depends}
 Recommends: devscripts,
