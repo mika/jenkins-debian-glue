@@ -23,6 +23,14 @@ if not File.exists? file
   exit 1
 end
 
+# Make sure we're looking at Python code.
+mimetype = `file -b -i --keep-going #{file}`.gsub(/\n/,"")
+if not /.*x-python/i.match(mimetype)
+  $stderr.puts "File #{file} doesn't look like Python [#{mimetype}]. Ignoring."
+  exit 0
+end
+
+
 ISSUE_PREFIX = 'ISSUE:'
 
 output = %x{pep8 -r --show-source --select E,W --format 'ISSUE:%(path)s:%(row)d:%(col)d: %(code)s %(text)s' #{file} 2>&1}
