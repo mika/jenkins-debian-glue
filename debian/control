@@ -88,22 +88,23 @@ Description: lintian integration in Jenkins
 Package: jenkins-debian-glue-buildenv-taptools
 Architecture: all
 Depends: devscripts,
+         file,
          libperl-critic-perl,
          parallel,
          ruby,
          ${misc:Depends}
-Recommends: devscripts,
-            file,
-            libperl-critic-perl,
-            pep8 (>= 1.4.6~)
+Recommends: pep8 (>= 1.4.6~)
 Description: taptools integration in Jenkins
- This package provides scripts to check shell, perl and python
+ This package provides scripts to check Shell, Perl and Python
  source code for common errors, using checkbashism and perlcritic
  to generate according TAP reports for usage inside Jenkins.
  .
  The provided tap_tool_dispatcher script can be used to automatically
- detect according shell scripts, perl and python scripts to execute
+ detect according Shell scripts, Perl and Python scripts to execute
  checkbashism_tap, perlcritic_tap and pep8_tap accordingly.
+ .
+ Please notice that pep8 isn't a hard dependency because it's not yet
+ available in the required version in Debian/wheezy.
 
 Package: jenkins-debian-glue-buildenv-piuparts
 Architecture: all
