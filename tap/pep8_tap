@@ -1,8 +1,11 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
-output_encoding = Encoding.default_external
-Encoding.default_external = 'BINARY'
+# ruby1.8 doesn't provide Encoding, so make sure it's defined
+if defined? Encoding
+  output_encoding = Encoding.default_external
+  Encoding.default_external = 'BINARY'
+end
 
 require 'yaml'
 
