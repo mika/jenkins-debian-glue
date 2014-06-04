@@ -1,4 +1,9 @@
 #!/usr/bin/env ruby
+# encoding: utf-8
+
+output_encoding = Encoding.default_external
+Encoding.default_external = 'BINARY'
+
 require 'yaml'
 
 if ARGV[0].nil?
@@ -59,7 +64,7 @@ end
 issues = []
 
 output.each_line do |l|
-  l = l.rstrip()
+  l = l.rstrip().encode(output_encoding, {:invalid => :replace, :undef => :replace})
   if is_issue_line(l)
     issues << Issue.new(l, file)
   else
