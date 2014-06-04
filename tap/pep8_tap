@@ -75,7 +75,11 @@ end
 issues = []
 
 output.each_line do |l|
-  l = l.rstrip().encode(output_encoding, {:invalid => :replace, :undef => :replace})
+  if defined? Encoding
+    l = l.rstrip().encode(output_encoding, {:invalid => :replace, :undef => :replace})
+  else
+    l = l.rstrip()
+  end
   if is_issue_line(l)
     issues << Issue.new(l, file)
   else
