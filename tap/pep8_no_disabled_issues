@@ -36,7 +36,7 @@ end
 
 ISSUE_PREFIX = 'ISSUE:'
 
-output = %x{pep8 -r --show-source --select E,W --format 'ISSUE:%(path)s:%(row)d:%(col)d: %(code)s %(text)s' #{file} 2>&1}
+output = %x{pep8 -r --show-source --format 'ISSUE:%(path)s:%(row)d:%(col)d: %(code)s %(text)s' #{file} 2>&1}
 
 def is_issue_line(l)
   l.start_with?(ISSUE_PREFIX)
