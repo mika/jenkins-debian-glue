@@ -17,6 +17,14 @@ if not File.exists? file
   exit 1
 end
 
+# Make sure we're looking at sh code.
+mimetype = `file -b -i --keep-going #{file}`.gsub(/\n/,"")
+if not /.*x-shellscript/i.match(mimetype)
+  $stderr.puts "File #{file} doesn't look like sh code [#{mimetype}]. Ignoring."
+  exit 0
+end
+
+
 output = %x{checkbashisms --posix #{file} 2>&1}
 
 num_lines = output.lines.count / 2 # checkbasims has one line message and one line code
