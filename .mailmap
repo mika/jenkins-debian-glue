@@ -1,8 +1,13 @@
+# Useful for `git shortlog` and generating AUTHORS file via `git log --format='%aN <%aE>' | sort -uf`
+
 # Michael Prokop's multiple personalities
-<mika@grml.org> <github@michael-prokop.at>
-<mika@grml.org> <mika@debian.org>
-<mika@grml.org> <mprokop@sipwise.com>
-<mika@grml.org> <prokop@grml-solutions.com>
+<mika@jenkins-debian-glue.org> <mika@grml.org>
+<mika@jenkins-debian-glue.org> <github@michael-prokop.at>
+<mika@jenkins-debian-glue.org> <mika@debian.org>
+<mika@jenkins-debian-glue.org> <mprokop@sipwise.com>
+<mika@jenkins-debian-glue.org> <prokop@grml-solutions.com>
 
 Sławomir Bocheński <lkslawek@gmail.com>
 Alexander Wirt <formorer@debian.org> <formorer@grml.org>
+Christian Hofstaedtler <christian@hofstaedtler.name> <ch@zeha.at>
+Lukas Anzinger <lukas@lukasanzinger.at> <lukas.anzinger@xatronic.at>
