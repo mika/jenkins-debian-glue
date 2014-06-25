@@ -79,8 +79,13 @@ bailout() {
   [ -n "${1:-}" ] && EXIT="${1}" || EXIT=0
   [ -n "${2:-}" ] && echo "$2" >&2
 
-  echo "*** Getting rid of files in $WORKSPACE/binaries/ to avoid problems in next run. ***"
-  rm -f "$WORKSPACE"/binaries/*
+  if [ -n "${SKIP_BINARY_REMOVAL:-}" = "true" ] ; then
+    echo "*** Skipping binary removal as requested via SKIP_BINARY_REMOVAL=true. ***"
+  else
+    echo "*** Getting rid of files in $WORKSPACE/binaries/ to avoid problems in next run. ***"
+    rm -f "$WORKSPACE"/binaries/*
+  fi
+
   ${SUDO_CMD:-} rm -rf /tmp/adt-$$ /tmp/apt-$$
 
   [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
