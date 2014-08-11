@@ -219,14 +219,28 @@ branch_checkout() {
   # commit, so instead create a temporary branch to work on
   random_branch="jenkins-debian-glue-buildbranch$RANDOM"
 
-  # skip branch building if the branch we received was triggered via gerrit
-  if [ -n "${GERRIT_REFSPEC:-}" ] ; then
-    echo "*** Setting SKIP_BRANCH_AND_TAG_HANDLING=true because we seem to be building for Gerrit ***"
-    SKIP_BRANCH_AND_TAG_HANDLING=true
-  fi
-
   if [ "${SKIP_BRANCH_AND_TAG_HANDLING:-}" = "true" ] ; then
     echo "*** Skipping branch/tag handling as requested via SKIP_BRANCH_AND_TAG_HANDLING ***"
+
+    echo "Making sure that random_branch $random_branch does not exist"
+    git branch -D "$random_branch" || true
+
+    echo "Checking out branch $random_branch based on git commit $GIT_COMMIT"
+    git checkout -b "$random_branch" "$GIT_COMMIT"
+  elif [ -z "${GERRIT_EVENT_TYPE:-}" ] && [ -n "${GERRIT_PATCHSET_REVISION:-}" ] ; then
+    echo "*** We seem to be building for Gerrit but didn't receive the Gerrit event type ***"
+
+    echo "Making sure that random_branch $random_branch does not exist"
+    git branch -D "$random_branch" || true
+
+    echo "*** Fetching Gerrit patchsets/commits from ${GIT_URL} ***"
+    git fetch --tags --progress ${GIT_URL} +refs/changes/*:refs/remotes/origin/*
+
+    echo "Checking out branch $random_branch based on Gerrit patchset revision ${GERRIT_PATCHSET_REVISION} ***"
+    git checkout -b "$random_branch" "$GERRIT_PATCHSET_REVISION"
+  elif [ -n "${GERRIT_REFSPEC:-}" ] ; then
+    echo "*** We seem to building for Gerrit, skipping branch/tag handling ***"
+
     echo "Making sure that random_branch $random_branch does not exist"
     git branch -D "$random_branch" || true
 
