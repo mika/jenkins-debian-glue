@@ -77,7 +77,13 @@ IP=$(facter ec2_public_ipv4 2>/dev/null) # curl http://169.254.169.254/latest/me
 if [ -z "$IP" ] ; then
   IP=$(wget --quiet --tries=3 --timeout=3 -O - http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null)
 fi
-# not using EC2? fallback then
+
+# try Google Compute Engine
+if [ -z "$IP" ] ; then
+  IP=$(wget --quiet --tries=3 --timeout=3 -O - "http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip" --header "X-Google-Metadata-Request: True" 2>/dev/null)
+fi
+
+# neither using EC2 nor GCE? use a fallback then
 if [ -z "$IP" ] ; then
   IP=$(ip addr show dev $(route -n | awk '/^0\.0\.0\.0/{print $NF}') | awk '/inet / {print $2}' | head -1 |sed "s;/.*;;")
 fi
