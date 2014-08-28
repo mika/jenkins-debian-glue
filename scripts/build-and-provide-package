@@ -140,7 +140,7 @@ identify_sourcefile() {
   fi
 
   echo "*** Identifying newest package version ***"
-  newest_version="0"
+  newest_version=''
 
   for file in "${BASE_PATH}/"*.dsc ; do
     SOURCE_PACKAGE="$(awk '/^Source: / {print $2}' $file)"
@@ -149,7 +149,7 @@ identify_sourcefile() {
       bailout 1 "Error: No source package found (forgot to configure source files deployment?)"
     fi
     cur_version="${p#*_}"
-    if dpkg --compare-versions "${cur_version}" gt "${newest_version}" ; then
+    if [ -z "${newest_version}" ] || dpkg --compare-versions "${cur_version}" gt "${newest_version}" ; then
       newest_version="${cur_version}"
     else
       base_version="${cur_version}"
