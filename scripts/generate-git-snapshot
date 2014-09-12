@@ -227,8 +227,8 @@ branch_checkout() {
 
     echo "Checking out branch $random_branch based on git commit $GIT_COMMIT"
     git checkout -b "$random_branch" "$GIT_COMMIT"
-  elif [ -z "${GERRIT_EVENT_TYPE:-}" ] && [ -n "${GERRIT_PATCHSET_REVISION:-}" ] ; then
-    echo "*** We seem to be building for Gerrit but didn't receive the Gerrit event type ***"
+  elif [ -n "${GERRIT_PATCHSET_REVISION:-}" ] ; then
+    echo "*** We seem to be building for Gerrit ***"
 
     echo "Making sure that random_branch $random_branch does not exist"
     git branch -D "$random_branch" || true
@@ -238,14 +238,6 @@ branch_checkout() {
 
     echo "Checking out branch $random_branch based on Gerrit patchset revision ${GERRIT_PATCHSET_REVISION} ***"
     git checkout -b "$random_branch" "$GERRIT_PATCHSET_REVISION"
-  elif [ -n "${GERRIT_REFSPEC:-}" ] ; then
-    echo "*** We seem to building for Gerrit, skipping branch/tag handling ***"
-
-    echo "Making sure that random_branch $random_branch does not exist"
-    git branch -D "$random_branch" || true
-
-    echo "Checking out branch $random_branch based on git commit $GIT_COMMIT"
-    git checkout -b "$random_branch" "$GIT_COMMIT"
   elif [ -n "${tag:-}" ] && [ "${tag:-}" != "none" ] ; then
     echo "Making sure that random_branch $random_branch does not exist"
     git branch -D "$random_branch" || true
