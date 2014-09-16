@@ -151,8 +151,6 @@ identify_sourcefile() {
     cur_version="${p#*_}"
     if [ -z "${newest_version}" ] || dpkg --compare-versions "${cur_version}" gt "${newest_version}" ; then
       newest_version="${cur_version}"
-    else
-      base_version="${cur_version}"
     fi
   done
 
