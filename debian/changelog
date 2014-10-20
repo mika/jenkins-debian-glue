@@ -1,3 +1,32 @@
+jenkins-debian-glue (0.11.0) unstable; urgency=medium
+
+  [ Christian Hofstaedtler ]
+  * [73593ab] checkbashism_tap: ignore non-shell-script files
+
+  [ Michael Prokop ]
+  * [98632ac] Bring .mailmap up2date, incl. usage instructions
+  * [6b282e0] build-and-provide-package: support skipping binary removal
+    via SKIP_BINARY_REMOVAL=true
+  * [ad174b4] build-and-provide-package: fix broken SKIP_BINARY_REMOVAL
+    test. Thanks to Christian Hofstaedtler <christian@hofstaedtler.name>
+    for the bug report
+  * [017756f] generate-git-snapshot: support $SKIP_BRANCH_AND_TAG_HANDLING
+    and detect Gerrit pushes
+  * [b0acd6c] Support Gerrit integration without direct connection to
+    Gerrit events
+  * [4c5d644] puppet: support Google Computer Engine
+  * [30fd6bb] Gerrit support: assume *-source job gets triggered with full
+    gerrit params
+  * [bad7831] build-and-provide-package: drop unused base_version handling
+  * [f9b9c84] build-and-provide-package: support setting custom reprepro
+    options via REPREPRO_OPTS
+  * [4404d28] Bump Standards-Version to 3.9.6
+
+  [ Mathieu Parent ]
+  * [2934b08] Ensure correct version comparison
+
+ -- Michael Prokop <prokop@grml-solutions.com>  Mon, 20 Oct 2014 10:13:18 +0200
+
 jenkins-debian-glue (0.10.0) unstable; urgency=medium
 
    The "have fun with pep8 checks" release
