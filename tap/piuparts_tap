@@ -5,6 +5,35 @@ if RUBY_VERSION =~ /1.9/
   Encoding.default_internal = Encoding::UTF_8
 end
 
+require 'optparse'
+options = {}
+
+o = OptionParser.new do|opts|
+  opts.banner = "Usage: #{File.basename $0} [<options>] <piuparts_logfile>"
+
+  options[:ignorebrokensymlinks] = false
+  opts.on('--ignore-broken-symlinks', 'Do not report broken symlinks as errors' ) do
+    options[:ignorebrokensymlinks] = true
+  end
+
+  options[:ignoreinstallationerrors] = false
+  opts.on('--ignore-installation-errors', 'Do not report failed package installations as errors' ) do
+    options[:ignoreinstallationerrors] = true
+  end
+
+  opts.on( '-h', '--help', 'Display this screen' ) do
+    puts opts
+    exit
+  end
+end
+
+begin o.parse! ARGV
+  rescue OptionParser::InvalidOption => e
+  puts e
+  puts o
+  exit(1)
+end
+
 if ARGV[0].nil?
   $stderr.puts "Usage: #{File.basename $0} <piuparts_logfile>"
   exit 1
@@ -15,10 +44,10 @@ counter = 1
 found_error = 0
 
 begin
-	output = File.open("#{file}", "r").read
+  output = File.open("#{file}", "r").read
 rescue
-	$stderr.puts "Error: can't read file #{file}"
-	exit 1
+  $stderr.puts "Error: can't read file #{file}"
+  exit 1
 end
 
 # is the number of lines the piuparts logfile contains
@@ -29,21 +58,37 @@ num_lines = output.lines.count
 
 puts "1..#{num_lines}"
 output.gsub(/:\n/, ':').each_line do |critic|
-	if critic =~ /.*Command ok:.*/
-		cmd = /(.*)? (DEBUG: Command ok: )(.*)?/.match(critic)[3]
-		puts "ok #{counter}           #{cmd}"
-		counter += 1
+        if critic =~ /.*Command ok:.*/
+                cmd = /(.*)? (DEBUG: Command ok: )(.*)?/.match(critic)[3]
+                puts "ok #{counter}           #{cmd}"
+                counter += 1
         elsif critic =~ /.*DEBUG: Command failed \(status=1\), but ignoring error:.*/
                 cmd = /(.*)? (DEBUG: Command failed \(status=1\), but ignoring error:) (.*)?/.match(critic)[3]
-		puts "ok #{counter}           #{cmd} # skip Ignoring failed command"
-		counter += 1
+                puts "ok #{counter}           #{cmd} # skip Ignoring failed command"
+                counter += 1
         elsif critic =~ /.*ERROR: Command failed \(status=100\):.*/
                 cmd = /(.*)? (ERROR: Command failed \(status=100\):) (.*)?/.match(critic)[3]
-		puts "not ok #{counter}           #{cmd}"
-		counter += 1
-	elsif critic =~ /.*ERROR: FAIL.*/
-		cmd = /(.*)? (ERROR: FAIL: )(.*)?/.match(critic)[3]
-		puts "not ok #{counter}           #{cmd}"
-		counter += 1
-	end
+                puts "not ok #{counter}           #{cmd}"
+                counter += 1
+        elsif critic =~ /.*ERROR: Installation of .* failed/
+                cmd = /(.*)? (ERROR: )(.*)?/.match(critic)[3]
+                if options[:ignoreinstallationerrors] then
+                        puts "ok #{counter}           #{cmd} # skip due to --disable-installation-errors"
+                else
+                        puts "not ok #{counter}           #{cmd} (see piuparts.txt for more details)"
+                end
+                counter += 1
+        elsif critic =~ /.*ERROR: WARN: Broken symlinks/
+                cmd = /(.*)? (ERROR: )(.*)?/.match(critic)[3]
+                counter += 1
+                if options[:ignorebrokensymlinks] then
+                        puts "ok #{counter}           #{cmd} # skip due to --disable-broken-symlinks"
+                else
+                        puts "not ok #{counter}           #{cmd}"
+                end
+        elsif critic =~ /.*ERROR: FAIL.*/
+                cmd = /(.*)? (ERROR: FAIL: )(.*)?/.match(critic)[3]
+                puts "not ok #{counter}           #{cmd}"
+                counter += 1
+        end
 end
