@@ -23,6 +23,17 @@ ARCHITECTURES="${ARCHITECTURES:-amd64 i386 source}"
 COMPONENTS="${COMPONENTS:-main}"
 UDEB_COMPONENTS="${UDEB_COMPONENTS:-main}"
 
+usage() {
+  echo "Usage: $0" \
+       "[ --architectures <architectures> ]" \
+       "[ --components <components> ]" \
+       "[ --udeb-components <udeb components> ]" \
+       "[ --origin <origin> ]" \
+       "[ --suite <suite> ]" \
+       "<codename>"
+}
+
+
 while [ "$#" -gt 1 ]; do
     case "$1" in
       --architectures)
@@ -45,17 +56,19 @@ while [ "$#" -gt 1 ]; do
         SUITE="$2"
         shift 2
       ;;
+      --)
+        shift; break
+      ;;
+      *)
+        echo "Usage error." >&2
+        usage >&2
+        exit 1
+      ;;
     esac
 done
 
 if [ "$#" -lt 1 ] ; then
-  echo "Usage: $0" \
-       "[ --architectures <architectures> ]" \
-       "[ --components <components> ]" \
-       "[ --udeb-components <udeb components> ]" \
-       "[ --origin <origin> ]" \
-       "[ --suite <suite> ]" \
-       "<codename>" >&2
+  usage >&2
   exit 1
 fi
 
