@@ -27,9 +27,14 @@ puts "1..#{num_lines}"
 output.gsub(/:\n/, ':').each_line do |critic|
 	if critic =~ /.*PASS.*/
 		cmd = /(.*)? (PASS)$/.match(critic)[1]
-		puts "ok #{counter}           #{cmd}"
+		puts "ok #{counter}           #{cmd} passed"
 		counter += 1
-	elsif critic =~ /.*FAIL status.*/
+	elsif critic =~ /.*FAIL.*status.*/ # versions >= 2.2.3+nmu1 of autopkgtest
+		test = /(.*)? (FAIL non-zero exit status )(.*)?/.match(critic)[1]
+		status = /(.*)? (FAIL non-zero exit status )(.*)?/.match(critic)[3]
+		puts "not ok #{counter}           #{test} - exit status #{status}"
+		counter += 1
+	elsif critic =~ /.*FAIL status.*/ # older versions of autopkgtest
 		test = /(.*)? (FAIL status:)(.*)?/.match(critic)[1]
 		cmd = /(.*)? (FAIL status:)(.*)?/.match(critic)[3]
 		puts "not ok #{counter}           #{test} #{cmd}"

@@ -40,6 +40,6 @@ binaries=$(awk '/\.deb / { print "--binary ../" $1 }' debian/files)
 adt-run --tmp-dir $TMPADT/out --summary $TMPADT/summary \
   $binaries --built-tree $PWD --- adt-virt-null || EXIT=$?
 
-# 4 means some test failed, exit 0 here and let adtsummary2junit report the failure
+# 4 means some test failed, exit 0 here and let adtsummary_tap report the failure
 [ ${EXIT:-0} = 4 ] && exit 0
 exit ${EXIT:-0}
