@@ -315,7 +315,7 @@ changelog_generation() {
 
 git_cleanup() {
   if [ -n "${SKIP_GIT_CLEANUP:-}" ] ; then
-    echo "*** Skipping git_cleanup as requested via SKIP_QUILT_CLEANUP ***"
+    echo "*** Skipping git_cleanup as requested via SKIP_GIT_CLEANUP ***"
     return 0
   fi
 
