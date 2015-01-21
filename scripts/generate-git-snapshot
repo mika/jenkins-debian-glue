@@ -99,6 +99,7 @@ dch_opts() {
     DCH_OPTS="-S --multimaint-merge --ignore-branch"
     echo "Using default git-dch options (${DCH_OPTS})"
   fi
+  DCH_COMBINED_OPTS="${DCH_OPTS}"
 
   # support overriding extra options for git-dch
   if [ -n "${DCH_EXTRA_OPTS:-}" ] ; then
@@ -109,6 +110,12 @@ dch_opts() {
       DCH_EXTRA_OPTS="${DCH_EXTRA_OPTS} --distribution ${DIST} --force-distribution"
     fi
     echo "Using extra git-dch options (${DCH_EXTRA_OPTS})"
+  fi
+  DCH_COMBINED_OPTS="${DCH_COMBINED_OPTS} ${DCH_EXTRA_OPTS}"
+
+  if [ -n "${DCH_LOG_RESTRICTION:-}" ] ; then
+    echo "Found environment variable DCH_LOG_RESTRICTION, set to ${DCH_LOG_RESTRICTION}"
+    DCH_COMBINED_OPTS="${DCH_COMBINED_OPTS} ${DCH_LOG_RESTRICTION}"
   fi
 }
 
@@ -174,7 +181,7 @@ git_dch_auto() {
     dch -b --distribution=UNRELEASED --newversion=$VERSION_STRING -- \
       "SNAPSHOT autobuild for unreleased $ORIG_VERSION via jenkins-debian-glue."
   else
-    git-dch --auto $DCH_OPTS $DCH_EXTRA_OPTS
+    git-dch --auto $DCH_COMBINED_OPTS
   fi
 }
 
@@ -199,7 +206,7 @@ identify_latest_change() {
   fi
 
   echo "Latest tag [${last_tag:-}] / merge [${last_merge:-}] seems to be $since"
-  git-dch -s "${since}" $DCH_OPTS $DCH_EXTRA_OPTS
+  git-dch -s "${since}" $DCH_COMBINED_OPTS
 
   local NEW_VERSION=$(dpkg-parsechangelog | awk '/^Version: / {print $2}')
 
@@ -315,7 +322,7 @@ changelog_generation() {
 
 git_cleanup() {
   if [ -n "${SKIP_GIT_CLEANUP:-}" ] ; then
-    echo "*** Skipping git_cleanup as requested via SKIP_QUILT_CLEANUP ***"
+    echo "*** Skipping git_cleanup as requested via SKIP_GIT_CLEANUP ***"
     return 0
   fi
 
