@@ -112,6 +112,11 @@ dch_opts() {
     echo "Using extra git-dch options (${DCH_EXTRA_OPTS})"
   fi
   DCH_COMBINED_OPTS="${DCH_COMBINED_OPTS} ${DCH_EXTRA_OPTS}"
+
+  if [ -n "${DCH_LOG_RESTRICTION:-}" ] ; then
+    echo "Found environment variable DCH_LOG_RESTRICTION, set to ${DCH_LOG_RESTRICTION}"
+    DCH_COMBINED_OPTS="${DCH_COMBINED_OPTS} ${DCH_LOG_RESTRICTION}"
+  fi
 }
 
 # support overrides from gbp.conf
