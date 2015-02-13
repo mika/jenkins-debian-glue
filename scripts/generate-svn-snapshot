@@ -61,6 +61,11 @@ if ! [ -r debian/changelog ] ; then
   exit 1
 fi
 
+# Force the upgrade. Otherwise, if the system has been upgraded, the 'svn info'
+# will fail with an unhelpful error message
+echo "*** Executing 'svn upgrade' to make sure svn is up2date ***"
+svn upgrade
+
 SINCE_REVISION=$(svn info debian/changelog 2>/dev/null | awk '/Last Changed Rev:/ {print $4}')
 
 if [ -z "${SINCE_REVISION:-}" ] ; then
