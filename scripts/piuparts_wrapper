@@ -38,6 +38,11 @@ else
   fi
 fi
 
+if [ -n "${PIUPARTS_TMPDIR:-}" ] ; then
+  echo "*** PIUPARTS_TMPDIR is set to $PIUPARTS_TMPDIR - using for piuparts run ***"
+  piuparts_tmpdir="$PIUPARTS_TMPDIR"
+fi
+
 create_base_tgz() {
   [ -r /var/cache/pbuilder/base-${distribution}-${architecture}.tgz ] && return 0
 
@@ -115,5 +120,6 @@ piuparts \
   ${skip_logrotatefiles_test_option:-} \
   --log-file='piuparts.txt' \
   ${scriptsdir:+--scriptsdir "$scriptsdir"} \
+  ${piuparts_tmpdir:+--tmpdir="$piuparts_tmpdir"} \
   ${basetgz:-} \
   "$@"
