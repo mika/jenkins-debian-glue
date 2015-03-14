@@ -575,6 +575,24 @@ reprepro_wrapper() {
   [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
 }
 
+dput_wrapper() {
+  command -v dput || bailout 1 "Error: dput not found."
+
+  remove_packages
+  remove_missing_binary_packages
+
+  archall=false
+  case $architecture in
+    all) archall=true
+      architecture='*' # support as file expansion in cmdline
+      ;;
+  esac
+
+  echo "*** Including packages in repository $REPOS ***"
+  ${SUDO_CMD:-} dput -U -u "${DPUT_HOST:-}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
+  [ $? -eq 0 ] || bailout 1 "Error: Failed to upload binary package to $DPUT_HOST dput host."
+}
+
 freight_ensure_repo() {
   echo "*** Creating freight directory structure ***"
   ${SUDO_CMD:-} mkdir -p "${FREIGHT_VARCACHE}" "${FREIGHT_VARLIB}"
@@ -698,6 +716,10 @@ deploy_to_releases() {
     freight_wrapper
     # Freight is currently not able to manage release or trunk release repos,
     # so this is the stage where we exit in that case.
+    return 0
+  fi
+  if [ -n "${USE_DPUT:-}" ] ; then
+    dput_wrapper
     return 0
   fi
 
