@@ -187,7 +187,7 @@ dist_and_arch_settings() {
     # default to the currently running distribution to avoid hardcoding
     # a distribution which might not be supported by the running system
     local distribution=$(lsb_release --short --codename 2>/dev/null)
-    [ -n "${distribution}" ] || distribution="sid"  # fallback to "sid" iff lsb_release fails
+    [ -n "${distribution}" ] || distribution="sid"  # fallback to "sid" if lsb_release fails
     local DIST="$distribution"
   fi
 
