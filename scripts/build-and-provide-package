@@ -205,6 +205,14 @@ dist_and_arch_settings() {
     COWBUILDER_BASE="/var/cache/pbuilder/base-${COWBUILDER_DIST}-${arch}.cow"
     echo "*** No COWBUILDER_BASE set, using $COWBUILDER_BASE as cowbuilder base.cow ***"
   fi
+
+  if [ "${DIST}" = "wheezy" ] || [ "${DIST}" = "jessie" ] || [ "${DIST}" = "sid" ] ; then
+    COWBUILDER_MIRROR="http://http.us.debian.org/debian/"
+    COWBUILDER_KEYRING="/usr/share/keyrings/debian-archive-keyring.gpg"
+  else
+    COWBUILDER_MIRROR="http://mirrors.kernel.org/ubuntu/"
+    COWBUILDER_KEYRING="/usr/share/keyrings/ubuntu-archive-keyring.gpg"
+  fi
 }
 
 cowbuilder_init() {
@@ -249,6 +257,7 @@ cowbuilder_init() {
     echo "*** Creating cowbuilder base $COWBUILDER_BASE for arch $arch and distribution $COWBUILDER_DIST ***"
     sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
       cowbuilder --create --basepath "${COWBUILDER_BASE}" --distribution "${COWBUILDER_DIST}" \
+         --mirror "${COWBUILDER_MIRROR}" --debootstrapopts --keyring="${COWBUILDER_KEYRING:-}" \
          --debootstrapopts --arch --debootstrapopts "$arch" \
          --debootstrapopts --variant=buildd --configfile="${pbuilderrc}" \
          --hookdir "${PBUILDER_HOOKDIR}"
