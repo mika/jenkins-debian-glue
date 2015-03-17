@@ -231,17 +231,6 @@ cowbuilder_init() {
     echo "COMPONENTS=\"${COMPONENTS}\"" >> "$pbuilderrc"
   fi
 
-  # workaround for Ubuntu problem, as cowdancer is available only in universe :(
-  # https://bugs.launchpad.net/ubuntu/+source/cowdancer/+bug/237591
-  # https://bugs.launchpad.net/ubuntu/+source/cowdancer/+bug/747053
-  if lsb_release --id 2>/dev/null | grep -q Ubuntu ; then
-    if [ -z "${COMPONENTS:-}" ] ; then
-      echo "*** Ubuntu detected, enabling universe repository component to work around cowdancer issue ***"
-      echo "# Ubuntu detected, enabling universe repository component to work around cowdancer issue:" >> "$pbuilderrc"
-      echo 'COMPONENTS="main universe"' >> "$pbuilderrc"
-    fi
-  fi
-
   echo "*** Listing pbuilder configuration file as reference: ***"
   cat "$pbuilderrc"
 
@@ -709,6 +698,7 @@ EOF
 }
 
 deploy_to_releases() {
+  sed -i "s/Distribution: .*/Distribution: ${distribution}/" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
   if [ -n "${USE_FREIGHT:-}" ] ; then
     freight_wrapper
     # Freight is currently not able to manage release or trunk release repos,
