@@ -182,6 +182,17 @@ else
   dpkg-source --tar-ignore=\.svn -b source/${branch:-}
 fi
 
+if [ -n "${KEY_ID:-}" ] ; then
+  echo "*** Found environment variable KEY_ID, set to ${KEY_ID:-}, signing source package ***"
+
+  if ! [ -x "$(which debsign)" ] ; then
+    echo "Error: debsign not available, please make sure the devscripts package is installed." >&2
+    exit 1
+  fi
+
+  debsign -k"${KEY_ID:-}" *_source.changes
+fi
+
 # revert to original debian/changelog to avoid highly increasing version numbers with each build
 ( cd source/${branch:-} ; svn revert debian/changelog )
 

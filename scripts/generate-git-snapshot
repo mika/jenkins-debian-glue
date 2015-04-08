@@ -399,6 +399,17 @@ quilt_cleanup
 # to get the actual requested version
 dpkg-buildpackage -uc -us -nc -d -S -i -I --source-option=--unapply-patches
 
+if [ -n "${KEY_ID:-}" ] ; then
+  echo "*** Found environment variable KEY_ID, set to ${KEY_ID:-}, signing source package ***"
+
+  if ! [ -x "$(which debsign)" ] ; then
+    echo "Error: debsign not available, please make sure the devscripts package is installed." >&2
+    exit 1
+  fi
+
+  debsign -k"${KEY_ID:-}" ../*_source.changes
+fi
+
 if [ -n "${KEEP_SOURCE_CHANGES:-}" ]; then
   echo "*** Not removing ../*_source.changes because KEEP_SOURCE_CHANGES is set ***"
 else
