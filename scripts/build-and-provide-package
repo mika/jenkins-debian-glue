@@ -187,7 +187,7 @@ dist_and_arch_settings() {
     # default to the currently running distribution to avoid hardcoding
     # a distribution which might not be supported by the running system
     local distribution=$(lsb_release --short --codename 2>/dev/null)
-    [ -n "${distribution}" ] || distribution="sid"  # fallback to "sid" iff lsb_release fails
+    [ -n "${distribution}" ] || distribution="sid"  # fallback to "sid" if lsb_release fails
     local DIST="$distribution"
   fi
 
@@ -229,17 +229,6 @@ cowbuilder_init() {
     echo "*** COMPONENTS is set [$COMPONENTS], using for pbuilder configuration ***"
     echo "# COMPONENTS set by jenkins-debian-glue:" >> "$pbuilderrc"
     echo "COMPONENTS=\"${COMPONENTS}\"" >> "$pbuilderrc"
-  fi
-
-  # workaround for Ubuntu problem, as cowdancer is available only in universe :(
-  # https://bugs.launchpad.net/ubuntu/+source/cowdancer/+bug/237591
-  # https://bugs.launchpad.net/ubuntu/+source/cowdancer/+bug/747053
-  if lsb_release --id 2>/dev/null | grep -q Ubuntu ; then
-    if [ -z "${COMPONENTS:-}" ] ; then
-      echo "*** Ubuntu detected, enabling universe repository component to work around cowdancer issue ***"
-      echo "# Ubuntu detected, enabling universe repository component to work around cowdancer issue:" >> "$pbuilderrc"
-      echo 'COMPONENTS="main universe"' >> "$pbuilderrc"
-    fi
   fi
 
   echo "*** Listing pbuilder configuration file as reference: ***"
@@ -710,6 +699,7 @@ EOF
 }
 
 deploy_to_releases() {
+  sed -i "s/Distribution: .*/Distribution: ${distribution}/" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
   if [ -n "${USE_FREIGHT:-}" ] ; then
     freight_wrapper
     # Freight is currently not able to manage release or trunk release repos,
