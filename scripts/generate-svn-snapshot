@@ -165,6 +165,17 @@ cd $ORIG_DIR
 debian_only="$(svn propget mergeWithUpstream source/${branch:-}/debian)"
 
 if [ "${debian_only:-}" = "1" ] ; then
+  if [ -n "${KEY_ID:-}" ] ; then
+  (
+    cd "source/${branch:-}"
+    echo "Signing sources with key id ${KEY_ID}"
+    echo "mergeWithUpstream detected, using svn-buildpackage to create source package"
+    svn-buildpackage --svn-download-orig -S \
+     --svn-builder 'dpkg-buildpackage' -d \ 
+     --svn-move-to="${ORIG_DIR}" --svn-dont-purge --force-sign -k${KEY_ID} \
+     --svn-ignore-new -rfakeroot 
+  )  
+  else
   (
     cd "source/${branch:-}"
     echo "mergeWithUpstream detected, using svn-buildpackage to create source package"
@@ -173,6 +184,7 @@ if [ "${debian_only:-}" = "1" ] ; then
      --svn-move-to="${ORIG_DIR}" --svn-dont-purge -uc -us \
      --svn-ignore-new -rfakeroot
   )
+  fi
 else
   if [ -n "${PRE_SOURCE_HOOK:-}" ] ; then
     echo "*** Found environment variable PRE_SOURCE_HOOK, set to ${PRE_SOURCE_HOOK:-} ***"

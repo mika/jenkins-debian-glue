@@ -6,6 +6,9 @@ set -u
 # make sure cowbuilder/pbuilder/... are available
 PATH='/bin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin'
 
+# make sure qemu doesn't give us the "out of memory issue" when compiling
+export QEMU_RESERVED_VA=0x0
+
 echo "*** Starting $0 at $(date) ***"
 start_seconds=$(cut -d . -f 1 /proc/uptime)
 
@@ -33,6 +36,11 @@ checks_and_defaults() {
     echo "*** No architecture defined. Consider running it with matrix configuration. ***"
     architecture="$(dpkg-architecture -qDEB_HOST_ARCH)"
     echo "*** Falling back to default, using host architecture ${architecture}. ***"
+  fi
+
+  DEBOOTSTRAP="debootstrap"
+  if [ "${architecture:-}" != $(dpkg-architecture -qDEB_HOST_ARCH) ] ; then
+    DEBOOTSTRAP="qemu-debootstrap"
   fi
 
   if [ -z "${REPREPRO_OPTS:-}" ] ; then
@@ -249,6 +257,7 @@ cowbuilder_init() {
     echo "*** Creating cowbuilder base $COWBUILDER_BASE for arch $arch and distribution $COWBUILDER_DIST ***"
     sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
       cowbuilder --create --basepath "${COWBUILDER_BASE}" --distribution "${COWBUILDER_DIST}" \
+         --debootstrap "${DEBOOTSTRAP}" \
          --debootstrapopts --arch --debootstrapopts "$arch" \
          --debootstrapopts --variant=buildd --configfile="${pbuilderrc}" \
          --hookdir "${PBUILDER_HOOKDIR}"
@@ -268,6 +277,26 @@ identify_build_type() {
   # defaults
   DEBBUILDOPTS="-sa"
   SKIP_ARCH_BUILD=false
+
+  echo "** CHECK FOR FORCE_BINARY **"
+  if [ -n "${FORCE_BINARY_ONLY:-}" ] && [ -n "${label:-}" ] ; then
+    case "$label" in
+      all)
+          echo "** FORCE_BINARY_ONLY active, building for all with -A **"
+          DEBBUILDOPTS="-A"
+        ;;
+      *)
+          echo "** FORCE_BINARY_ONLY active, building for $label with -B **"
+          DEBBUILDOPTS="-B"
+        ;;
+    esac
+    SKIP_ARCH_BUILD=false
+    echo "** skipping other methods to detect build_type as forced **"
+    return 0
+  else
+    echo "** FORCE_BINARY_ONLY is false, continue to check for build types... **"
+  fi
+
 
   if [ "${architecture:-}" = "all" ] ; then
     echo "*** \$architecture is set to 'all', skipping further identify_build_type checks. ***"
@@ -322,7 +351,6 @@ identify_build_type() {
     fi
   done
   cd "$old_dir"
-
   rm -rf "${TMPDIR}"
 }
 
