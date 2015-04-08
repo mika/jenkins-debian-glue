@@ -578,12 +578,10 @@ reprepro_wrapper() {
 dput_wrapper() {
   command -v dput || bailout 1 "Error: dput not found."
 
-  remove_packages
-  remove_missing_binary_packages
-
   archall=false
   case $architecture in
-    all) archall=true
+    all)
+      archall=true
       architecture='*' # support as file expansion in cmdline
       ;;
   esac
