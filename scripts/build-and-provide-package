@@ -17,6 +17,42 @@ if [ -n "${JENKINS_DEBIAN_GLUE_VERSION:-}" ] ; then
   echo "*** Running jenkins-debian-glue version $JENKINS_DEBIAN_GLUE_VERSION ***"
 fi
 
+HOST_ARCH="$(dpkg-architecture -qDEB_HOST_ARCH)"
+if [ -n "${HOST_ARCH:-}" ] ; then
+  echo "*** Identified host architecture ${HOST_ARCH} ***"
+fi
+
+set_debootstrap() {
+  if [ -n "${DEBOOTSTRAP:-}" ] ; then
+    echo "*** Using provided ${DEBOOTSTRAP} as DEBOOTSTRAP ***"
+    return 0
+  fi
+
+  if [ "${architecture:-}" = "${HOST_ARCH:-}" ] || \
+     [ "${architecture:-}" = "all" ] ; then
+    DEBOOTSTRAP="debootstrap"
+    return 0
+  fi
+
+  # we can compile i386 packages on amd64, so don't use qemu-debootstrap there
+  case "$HOST_ARCH" in
+    amd64)
+      if [ "${architecture:-}" = "i386" ] ; then
+        DEBOOTSTRAP="debootstrap"
+        return 0
+      fi
+      ;;
+  esac
+
+  # otherwise assume we're building for a foreign architecture
+  if [ -x "$(which qemu-debootstrap)" ] ; then
+    DEBOOTSTRAP="qemu-debootstrap"
+  else
+    echo "Error: qemu-debootstrap not available, please install qemu-user-static." >&2
+    exit 1
+  fi
+}
+
 checks_and_defaults() {
   if [ -r /etc/jenkins/debian_glue ] ; then
     . /etc/jenkins/debian_glue
@@ -34,14 +70,11 @@ checks_and_defaults() {
 
   if [ -z "${architecture:-}" ] ; then
     echo "*** No architecture defined. Consider running it with matrix configuration. ***"
-    architecture="$(dpkg-architecture -qDEB_HOST_ARCH)"
+    architecture="${HOST_ARCH}"
     echo "*** Falling back to default, using host architecture ${architecture}. ***"
   fi
 
-  DEBOOTSTRAP="debootstrap"
-  if [ "${architecture:-}" != $(dpkg-architecture -qDEB_HOST_ARCH) ] ; then
-    DEBOOTSTRAP="qemu-debootstrap"
-  fi
+  set_debootstrap
 
   if [ -z "${REPREPRO_OPTS:-}" ] ; then
     REPREPRO_OPTS='-v --waitforlock 1000'
@@ -176,7 +209,7 @@ identify_sourcefile() {
 
 dist_and_arch_settings() {
   if [ -z "${architecture:-}" ] || [ "${architecture:-}" = "all" ] ; then
-    arch="$(dpkg-architecture -qDEB_HOST_ARCH)"
+    arch="${HOST_ARCH}"
     echo "*** No architecture set or architecture set to 'all', using system arch ${arch} ***"
   else
     arch="${architecture}"
@@ -257,7 +290,7 @@ cowbuilder_init() {
     echo "*** Creating cowbuilder base $COWBUILDER_BASE for arch $arch and distribution $COWBUILDER_DIST ***"
     sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
       cowbuilder --create --basepath "${COWBUILDER_BASE}" --distribution "${COWBUILDER_DIST}" \
-         --debootstrap "${DEBOOTSTRAP}" \
+         --debootstrap "${DEBOOTSTRAP}" --architecture "${architecture:-}" \
          --debootstrapopts --arch --debootstrapopts "$arch" \
          --debootstrapopts --variant=buildd --configfile="${pbuilderrc}" \
          --hookdir "${PBUILDER_HOOKDIR}"
@@ -305,13 +338,13 @@ identify_build_type() {
   fi
 
   if [ -z "${MAIN_ARCHITECTURE:-}" ] ; then
-    if [ "$(dpkg-architecture -qDEB_HOST_ARCH)" = "${architecture:-}" ] ; then
+    if [ "${HOST_ARCH}" = "${architecture:-}" ] ; then
       echo "*** MAIN_ARCHITECTURE is unset. ***"
-      echo "*** Host architecture [$(dpkg-architecture -qDEB_HOST_ARCH)] matches \$architecture [${architecture:-}], using default ${DEBBUILDOPTS:-} buildoption ***"
+      echo "*** Host architecture [${HOST_ARCH}] matches \$architecture [${architecture:-}], using default ${DEBBUILDOPTS:-} buildoption ***"
       return 0
     else
       echo "*** MAIN_ARCHITECTURE is unset. ***"
-      echo "*** Host architecture [$(dpkg-architecture -qDEB_HOST_ARCH)] does not match \$architecture [${architecture:-}] ... ***"
+      echo "*** Host architecture [${HOST_ARCH}] does not match \$architecture [${architecture:-}] ... ***"
       echo "*** ... setting binary only build and continuing with identify_build_type ***"
       DEBBUILDOPTS="-B"
     fi

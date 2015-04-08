@@ -17,7 +17,8 @@ Depends: fakeroot,
          ${misc:Depends}
 Recommends: curl,
             gnupg,
-            jenkins-debian-glue-buildenv-git
+            jenkins-debian-glue-buildenv-git,
+            qemu-user-static
 Description: glue scripts for building Debian packages inside Jenkins
  This package provides scripts which should make building Debian
  package inside Jenkins (a Continuous Integration suite) easier.
