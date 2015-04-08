@@ -307,29 +307,36 @@ cowbuilder_init() {
 
 
 identify_build_type() {
+  if [ -n "${DEBBUILDOPTS:-}" ] ; then
+    echo "*** Using provided ${DEBBUILDOPTS} as DEBBUILDOPTS ***"
+    echo "*** Please don't forget to set SKIP_ARCH_BUILD={true,false} as needed ***"
+    return 0
+  fi
+
+  # also support 'export FORCE_BINARY_ONLY=$label' use case with builds
+  if [ -z "${FORCE_BINARY_ONLY:-}" ] ; then
+    echo "*** FORCE_BINARY_ONLY is unset, continuing with checks for build type ***"
+  else
+    echo "*** FORCE_BINARY_ONLY is set to ${FORCE_BINARY_ONLY} ***"
+    case "${FORCE_BINARY_ONLY}" in
+      all)
+        DEBBUILDOPTS="-A"
+        echo "*** FORCE_BINARY_ONLY set to 'all', building with DEBBUILDOPTS=${DEBBUILDOPTS} ***"
+        ;;
+      *)
+        DEBBUILDOPTS="-B"
+        echo "*** FORCE_BINARY_ONLY is NOT set to 'all', building with DEBBUILDOPTS=${DEBBUILDOPTS} ***"
+        ;;
+    esac
+
+    SKIP_ARCH_BUILD=false
+    echo "*** Setting SKIP_ARCH_BUILD=$SKIP_ARCH_BUILD to skip further arch builds. ***"
+    return 0
+  fi
+
   # defaults
   DEBBUILDOPTS="-sa"
   SKIP_ARCH_BUILD=false
-
-  echo "** CHECK FOR FORCE_BINARY **"
-  if [ -n "${FORCE_BINARY_ONLY:-}" ] && [ -n "${label:-}" ] ; then
-    case "$label" in
-      all)
-          echo "** FORCE_BINARY_ONLY active, building for all with -A **"
-          DEBBUILDOPTS="-A"
-        ;;
-      *)
-          echo "** FORCE_BINARY_ONLY active, building for $label with -B **"
-          DEBBUILDOPTS="-B"
-        ;;
-    esac
-    SKIP_ARCH_BUILD=false
-    echo "** skipping other methods to detect build_type as forced **"
-    return 0
-  else
-    echo "** FORCE_BINARY_ONLY is false, continue to check for build types... **"
-  fi
-
 
   if [ "${architecture:-}" = "all" ] ; then
     echo "*** \$architecture is set to 'all', skipping further identify_build_type checks. ***"
