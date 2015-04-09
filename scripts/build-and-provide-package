@@ -270,16 +270,32 @@ cowbuilder_init() {
     echo "*** COMPONENTS is set [$COMPONENTS], using for pbuilder configuration ***"
     echo "# COMPONENTS set by jenkins-debian-glue:" >> "$pbuilderrc"
     echo "COMPONENTS=\"${COMPONENTS}\"" >> "$pbuilderrc"
-  fi
+  else
+    # workaround for Ubuntu problem, as cowdancer is available only in universe :(
+    # https://bugs.launchpad.net/ubuntu/+source/cowdancer/+bug/237591
+    # https://bugs.launchpad.net/ubuntu/+source/cowdancer/+bug/747053
+    echo "*** COMPONENTS is not set, checking whether we need to enable Ubuntu workaround ***"
 
-  # workaround for Ubuntu problem, as cowdancer is available only in universe :(
-  # https://bugs.launchpad.net/ubuntu/+source/cowdancer/+bug/237591
-  # https://bugs.launchpad.net/ubuntu/+source/cowdancer/+bug/747053
-  if lsb_release --id 2>/dev/null | grep -q Ubuntu ; then
-    if [ -z "${COMPONENTS:-}" ] ; then
-      echo "*** Ubuntu detected, enabling universe repository component to work around cowdancer issue ***"
-      echo "# Ubuntu detected, enabling universe repository component to work around cowdancer issue:" >> "$pbuilderrc"
-      echo 'COMPONENTS="main universe"' >> "$pbuilderrc"
+    if [ -n "${PBUILDER_CONFIG:-}" ] ; then
+      echo "*** PBUILDER_CONFIG is set, not overwriting COMPONENTS for Ubuntu workaround ***"
+      echo "*** NOTE: If you want to build for Ubuntu make sure COMPONENTS also includes 'universe' ***"
+    else
+      echo "*** PBUILDER_CONFIG is not set, continuing with checks for Ubuntu workaround ***"
+
+      if ! [ -r "/usr/share/debootstrap/scripts/${COWBUILDER_DIST}" ] ; then
+        echo "*** Warning: distribution ${COWBUILDER_DIST} not supported by debootstrap, not considering Ubuntu workaround ***"
+      else
+        # debootstrap scripts for recent versions of Ubuntu are all pointing to gutsy, use that
+        # to identify Ubuntu as the distribution we want to build instead of hardcoding all
+        # the Ubuntu release names here
+        if [ "$(readlink -f /usr/share/debootstrap/scripts/${COWBUILDER_DIST})" != '/usr/share/debootstrap/scripts/gutsy' ] ; then
+          echo "*** Doesn't look like we're building for Ubuntu, not considering Ubuntu workaround ***"
+        else
+          echo "*** Building for Ubuntu detected, enabling universe repository component to work around cowdancer issue ***"
+          echo "# Building for Ubuntu detected, enabling universe repository component to work around cowdancer issue:" >> "$pbuilderrc"
+          echo 'COMPONENTS="main universe"' >> "$pbuilderrc"
+        fi
+      fi
     fi
   fi
 
