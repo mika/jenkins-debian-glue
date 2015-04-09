@@ -1,3 +1,44 @@
+jenkins-debian-glue (0.12.0) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [9eb6edb] piuparts_tap: check for broken symlinks + installation
+    errors, provide options to skip checks
+  * [e2ec2ec] generate-reprepro-codename: avoid endless loop on wrong usage
+  * [e4e2f7b] adtsummary_tap: support output of recent versions of
+    autopkgtest
+  * [b52fc1a] piuparts_wrapper: support setting tmpdir directory
+  * [ef89da8] Do not remove packages when running through dput wrapper.
+    Thanks to Yurii Vlasenko <yuriy@fastvisual.com>
+  * [f3381b5] Improve and finalize foreign arch build support via qemu-
+    debootstrap
+  * [3dd4a13] Support overwriting DEBBUILDOPTS + new variable
+    FORCE_BINARY_ONLY. Thanks to Franco Lanza <nextime@nexlab.it> for the
+    initial patch in PR #114
+  * [74712ff] Support signing source packages via $KEY_ID. Thanks to
+    Franco Lanza <nextime@nexlab.it> for the inspiration in PR #114
+  * [6ef2570] Enable COMPONENTS workaround for Ubuntu cowdancer issue only
+    when building *for* (not *on*) Ubuntu. Thanks to Yurii Vlasenko for
+    reporting and feedback (gh #113)
+  * [d9cc2bc] Support ADJUST_DISTRIBUTION_ONTHEFLY to set distribution in
+    binary builds. Thanks to Yurii Vlasenko for reporting and feedback
+
+  [ Bernhard Miklautz ]
+  * [1f8d499] generate-git-snapshot: fix typo
+  * [7e2484a] generate-git-snapshot: combine dch opts
+  * [c300281] generate-git-snapshot: add DCH_LOG_RESTRICTION
+
+  [ Sylvestre Ledru ]
+  * [3498d6c] generate-svn-snapshot: always call svn upgrade
+
+  [ Yurii Vlasenko ]
+  * [fa728cf] added support for uploading using dput
+
+  [ Franco Lanza ]
+  * [060e227] Added support for binary only build and qemu foreign arch
+    build
+
+ -- Michael Prokop <prokop@grml-solutions.com>  Thu, 09 Apr 2015 12:02:23 +0200
+
 jenkins-debian-glue (0.11.0) unstable; urgency=medium
 
   [ Christian Hofstaedtler ]
