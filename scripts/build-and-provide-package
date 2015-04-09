@@ -794,6 +794,13 @@ EOF
 }
 
 deploy_to_releases() {
+
+  # support usage of same source package to build binaries for different distributions
+  if [ -n "${ADJUST_DISTRIBUTION_ONTHEFLY:-}" ] ; then
+    echo "*** ADJUST_DISTRIBUTION_ONTHEFLY is set, setting Distribution in changes file as requested to ${distribution} ***"
+    sed -i "s/Distribution: .*/Distribution: ${distribution}/" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
+  fi
+
   if [ -n "${USE_FREIGHT:-}" ] ; then
     freight_wrapper
     # Freight is currently not able to manage release or trunk release repos,
