@@ -85,7 +85,7 @@ version_information() {
 
   if [ -n "${distribution:-}" ] ; then
     echo "Distribution variable found. Adding distribution specific version."
-    VERSION_STRING="${VERSION_STRING}+${distribution}"
+    VERSION_STRING="${VERSION_STRING}+${distribution//-/_}"
   fi
 
   echo "*** Version string set to $VERSION_STRING ***"
