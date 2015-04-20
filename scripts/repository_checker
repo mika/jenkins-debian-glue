@@ -105,14 +105,14 @@ validate-source-bin-versions() {
 
   for repository in $(awk '/^Codename: / {print $2}' "${REPOSITORY}"/conf/distributions 2>"${LOGFILE}") ; do
     for sourcepackage in $(reprepro $REPREPRO_OPTS -A source -b "${REPOSITORY}" --list-format='${package}\n' list $repository 2>"${LOGFILE}") ; do
-      if _opt_validate_skip_package && _skip_package "${SKIP_PACKAGE}" "$sourcepackage" ; then
+      if $_opt_validate_skip_package && _skip_package "${SKIP_PACKAGE}" "$sourcepackage" ; then
         echo "skipping: $sourcepackage"
         continue
       fi
       sourceversion=$(reprepro $REPREPRO_OPTS -A source -b "${REPOSITORY}" --list-format='${version}\n' list $repository $sourcepackage 2>"${LOGFILE}")
       for binarypackage in $(reprepro $REPREPRO_OPTS -b "${REPOSITORY}" --list-format='${package}\n' -T deb listfilter "$repository" "\$Source (==$sourcepackage)" 2>"${LOGFILE}") ; do
 
-        if _opt_validate_skip_package && _skip_package "${SKIP_PACKAGE}" "$binarypackage" ; then
+        if $_opt_validate_skip_package && _skip_package "${SKIP_PACKAGE}" "$binarypackage" ; then
           echo "skipping: $binarypackage"
           continue
         fi
