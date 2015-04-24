@@ -183,7 +183,11 @@ else
     sh ${PRE_SOURCE_HOOK:-}
   fi
 
-  dpkg-source --tar-ignore=\.svn -b source/${branch:-}
+  dpkg-source --tar-ignore=\.svn -b "source/${branch:-}"
+  (
+    cd "source/${branch:-}"
+    dpkg-genchanges -S -u"${ORIG_DIR}" > "${ORIG_DIR}/${PACKAGE}_${SNAPSHOT_VERSION}_source.changes"
+  )
 fi
 
 if [ -n "${KEY_ID:-}" ] ; then
