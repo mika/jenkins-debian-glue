@@ -61,10 +61,14 @@ if ! [ -r debian/changelog ] ; then
   exit 1
 fi
 
-# Force the upgrade. Otherwise, if the system has been upgraded, the 'svn info'
+# Force the upgrade if subversion 1.7 (which introduced the upgrade command) or
+# later is available. Otherwise, if the system has been upgraded, the 'svn info'
 # will fail with an unhelpful error message
-echo "*** Executing 'svn upgrade' to make sure svn is up2date ***"
-svn upgrade
+SVN_VERSION="$(svn --version | awk '/, version / {print $3}')"
+if dpkg --compare-versions "$SVN_VERSION" ge 1.7 ; then
+  echo "*** Executing 'svn upgrade' to make sure svn is up2date ***"
+  svn upgrade
+fi
 
 SINCE_REVISION=$(svn info debian/changelog 2>/dev/null | awk '/Last Changed Rev:/ {print $4}')
 
