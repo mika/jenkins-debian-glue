@@ -168,14 +168,18 @@ cd $ORIG_DIR
 
 debian_only="$(svn propget mergeWithUpstream source/${branch:-}/debian)"
 
+if [ -n "${SBP_OPTS:-}" ] ; then
+  echo "*** Found environment variable SBP_OPTS, set to ${SBP_OPTS} ***"
+else
+  echo "*** Using svn-buildpackage default options provided by jenkins-debian-glue ***"
+  SBP_OPTS="-nc --svn-download-orig -S --svn-builder dpkg-buildpackage -d --svn-move-to=${ORIG_DIR} --svn-dont-purge -uc -us --svn-ignore-new -rfakeroot"
+fi
+
 if [ "${debian_only:-}" = "1" ] ; then
   (
     cd "source/${branch:-}"
     echo "mergeWithUpstream detected, using svn-buildpackage to create source package"
-    svn-buildpackage --svn-download-orig -S \
-     --svn-builder 'dpkg-buildpackage' -d \
-     --svn-move-to="${ORIG_DIR}" --svn-dont-purge -uc -us \
-     --svn-ignore-new -rfakeroot
+    svn-buildpackage ${SBP_OPTS:-}
   )
 else
   if [ -n "${PRE_SOURCE_HOOK:-}" ] ; then
