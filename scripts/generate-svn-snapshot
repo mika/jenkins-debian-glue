@@ -189,8 +189,14 @@ else
 
   dpkg-source --tar-ignore=\.svn -b "source/${branch:-}"
   (
+    if [ -n "${SNAPSHOT_VERSION:-}" ] ; then
+      CHANGES_FILE="${ORIG_DIR}/${PACKAGE}_${SNAPSHOT_VERSION}_source.changes"
+    else
+      CHANGES_FILE="${ORIG_DIR}/${PACKAGE}_${PREVIOUS_VERSION}_source.changes"
+    fi
+
     cd "source/${branch:-}"
-    dpkg-genchanges -S -u"${ORIG_DIR}" > "${ORIG_DIR}/${PACKAGE}_${SNAPSHOT_VERSION}_source.changes"
+    dpkg-genchanges -S -u"${ORIG_DIR}" > "${CHANGES_FILE}"
   )
 fi
 
