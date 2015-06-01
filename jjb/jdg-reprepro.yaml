@@ -33,7 +33,7 @@
             /usr/bin/lintian-junit-report *.dsc > report/lintian.xml
       publishers:
         - archive:
-            artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes,lintian.txt'
+            artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.git,*.changes,lintian.txt'
         - trigger:
             project: '{name}-binaries'
         - junit:
@@ -83,7 +83,7 @@
             /usr/bin/lintian-junit-report *.changes > report/lintian.xml
       publishers:
         - archive:
-            artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.changes,lintian.txt'
+            artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.git,*.changes,lintian.txt'
         - junit:
             results: '**/lintian.xml'
             keep-long-stdio: false
