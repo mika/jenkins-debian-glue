@@ -422,7 +422,8 @@ class jenkins::config {
       </selector>
     </hudson.plugins.copyartifact.CopyArtifact>
     <hudson.tasks.Shell>
-      <command>/usr/bin/build-and-provide-package</command>
+      <command>export POST_BUILD_HOOK=/usr/bin/jdg-debc
+/usr/bin/build-and-provide-package</command>
     </hudson.tasks.Shell>
     <hudson.tasks.Shell>
       <command>echo &quot;Listing packages inside the jenkins-debian-glue repository:&quot;
