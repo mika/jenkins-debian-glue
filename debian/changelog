@@ -1,3 +1,42 @@
+jenkins-debian-glue (0.13.0) unstable; urgency=medium
+
+  [ Antoine Musso ]
+  * [17c3778] generate-git-snapshot: replace distribution dashes in
+    version
+
+  [ Victor Seva ]
+  * [92ee917] repository_checker: add --version-remove-epoch option
+  * [9e42ce5] repository_checker: add option to skip packages from validate
+  * [34094e5] repository_checker: fix 9e42ce57180f5b7 missing $
+
+  [ Michael Prokop ]
+  * [5b7c490] generate-svn-snapshot: execute `svn upgrade` only with svn
+    >=1.7. Thanks to Christian Schneider <christian@chrisn.dtdns.net> for
+    the bug report and initial patch
+  * [26fee0c] generate-svn-snapshot: always generate changes file. Thanks
+    to Christian Schneider <christian@chrisn.dtdns.net> for the bug report
+    and patch
+  * [ba809b2] generate-svn-snapshot: support $SBP_OPTS to control svn-
+    buildpackage behaviour + add -nc to its default options. Thanks to
+    Christian Schneider <christian@chrisn.dtdns.net> for the patch
+  * [c50e9f0] generate-svn-snapshot: use UNRELEASED for snapshots builds.
+    Thanks to Christian Schneider <christian@chrisn.dtdns.net> for the
+    patch
+  * [7dd7133] generate-svn-snapshot: don't try to sign snapshot build
+    during release builds. Thanks to Christian Schneider
+    <christian@chrisn.dtdns.net> for the patch
+  * [ca53ec4] generate-git-snapshot: support overwriting DBP_EXTRA_OPTS +
+    adjust coding style
+  * [d0c30f2] Support listing Debian package content via new script jdg-
+    debc (Closes #119)
+
+  [ Franco (nextime) Lanza / Daniel Reurich  ]
+  * [5cb9bd6] Add git format deb pkgs support thanks to Daniel Reurich for
+    Devuan
+  * [9cf2086] Add a per-package way to set USENETWORK=yes to pbuilderrc
+
+ -- Michael Prokop <prokop@grml-solutions.com>  Wed, 03 Jun 2015 14:34:13 +0200
+
 jenkins-debian-glue (0.12.0) unstable; urgency=medium
 
   [ Michael Prokop ]
