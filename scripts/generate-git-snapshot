@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DBP_EXTRA_OPTS=''
-
 set -x
 set -e
 set -u
@@ -347,36 +345,40 @@ quilt_cleanup() {
 }
 
 source_format_opts() {
-  if [ -f "debian/source/format" ] ; then
-    SRC_FORMAT=`cat debian/source/format`
-    case $SRC_FORMAT in
-      '3.0 (quilt)')   #Quilt format, Nothing to do;
-        echo "***Source format detected as 3.0(quilt)";
-        DBP_EXTRA_OPTS="${DBP_EXTRA_OPTS} --source-option=--unapply-patches"
-        break;;
-      '3.0 (git)')
-        echo "***Source format detected as 3.0(git)"
-        PRISTINE_TAR=false
-        SKIP_QUILT_CLEANUP=true
-        IGNORE_GIT_BUILDPACKAGE=true
-        break;;
-      '3.0 (native)');;
-      '3.0');;
-      '1.0')
-        SKIP_QUILT_CLEANUP=true
-        break;;
-      *)
-        echo "Warning, Invalid or unknown source format: $SRC_FORMAT"
-        ;;
-    esac
-  else echo "WARNING: Source format is not specified in debian/source/format!"
+  if ! [ -f "debian/source/format" ] ; then
+    echo '*** WARNING: Source format is not specified in debian/source/format! ***'
+    return 0
   fi
+
+  local SRC_FORMAT="$(cat debian/source/format)"
+
+  case "$SRC_FORMAT" in
+    '3.0 (quilt)')
+      echo "*** Source format detected as 3.0 (quilt) ***";
+      DBP_EXTRA_OPTS="${DBP_EXTRA_OPTS:-} --source-option=--unapply-patches"
+      ;;
+    '3.0 (git)')
+      echo "*** Source format detected as 3.0 (git) ***"
+      PRISTINE_TAR=false
+      SKIP_QUILT_CLEANUP=true
+      IGNORE_GIT_BUILDPACKAGE=true
+      ;;
+    '3.0 (native)')
+      echo "*** Source format detected as 3.0 (native) ***"
+      ;;
+    '3.0')
+      echo "*** Source format detected as 3.0 ***"
+      ;;
+    '1.0')
+      echo "*** Source format detected as 1.0 ***"
+      SKIP_QUILT_CLEANUP=true
+      ;;
+    *)
+      echo "*** WARNING: invalid or unknown source format: ${SRC_FORMAT} ***"
+      ;;
+  esac
 }
 
-
-        
-
-   
 # main execution
 echo "*** source package build phase ***"
 rm -f ./* || true
@@ -423,10 +425,8 @@ changelog_generation
 # prepare orig.tar.gz using pristine-tar, but without actually building the source package
 if [ "${IGNORE_GIT_BUILDPACKAGE:-}" = "true" ] ; then
   echo "Skipping git-buildpackage execution as requested via IGNORE_GIT_BUILDPACKAGE ***"
-
 else
-  # set $GBP_OPTS
-  gbp_opts
+  gbp_opts # set $GBP_OPTS
   git-buildpackage ${GBP_OPTS:-}
 fi
 
@@ -434,7 +434,7 @@ quilt_cleanup
 
 # build source package, run before switching back to previous branch
 # to get the actual requested version
-dpkg-buildpackage -uc -us -nc -d -S -i -I ${DBP_EXTRA_OPTS}
+dpkg-buildpackage -uc -us -nc -d -S -i -I ${DBP_EXTRA_OPTS:-}
 
 if [ -n "${KEY_ID:-}" ] ; then
   echo "*** Found environment variable KEY_ID, set to ${KEY_ID:-}, signing source package ***"
