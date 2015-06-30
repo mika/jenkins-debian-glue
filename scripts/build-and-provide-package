@@ -415,6 +415,49 @@ identify_build_type() {
   rm -rf "${TMPDIR}"
 }
 
+autopkg_run() {
+  case "${ADT:-}" in
+    skip)
+      echo "*** Skipping external autopkgtests as ADT is set to 'skip' ***"
+      return 0
+      ;;
+    internal)
+      echo "*** Skipping external autopkgtests as ADT is set to 'internal' ***"
+      return 0
+      ;;
+    external|all)
+      echo "*** Executing external autopkgtests as ADT is set to $ADT ***"
+      ;;
+    *)
+      echo "*** Skipping external autopkgtests as ADT is neither set to 'external' nor 'all' ***"
+      return 0
+      ;;
+  esac
+
+  if [ -z "${ADT_RUNNER:-}" ] ; then
+    bailout 1 "*** Error: ADT_RUNNER is unset, external autopkgtests depend on according ADT_RUNNER configuration ***"
+  fi
+
+  dsc_file="${WORKSPACE}/"*"${newest_version}.dsc"
+  if ! grep -q '^Testsuite: autopkgtest' ${dsc_file} ; then
+    echo "*** No 'Testsuite: autopkgtest' present in ${dsc_file}, skipping external autopkgtests ***"
+    return 0
+  fi
+
+  if [ -n "${ADT_OPTIONS:-}" ] ; then
+    echo "*** Using provided ADT_OPTIONS $ADT_OPTIONS ***"
+  else
+    ADT_OPTIONS="--tmp-dir adt-external/out --summary adt-external/summary"
+    rm -rf adt-external
+    mkdir -p adt-external
+    echo "*** Using default ADT_OPTIONS $ADT_OPTIONS ***"
+  fi
+
+  changes_file="${WORKSPACE}/"*"${newest_version}_${arch}.changes"
+  echo "*** Executing 'adt-run --changes $changes_file ${ADT_OPTIONS:-} --- $ADT_RUNNER' ***"
+  adt-run --changes $changes_file ${ADT_OPTIONS:-} --- $ADT_RUNNER || bailout $?
+}
+
 autopkgtest_results() {
   if [ -n "${SKIP_AUTOPKGTEST_RESULTS:-}" ] ; then
     echo "** Skipping autopkgtest_results as requested via SKIP_AUTOPKGTEST_RESULTS ***"
@@ -870,6 +913,7 @@ else
 fi
 
 binaries_to_workspace
+autopkg_run
 autopkgtest_results
 
 if [ -n "${POST_BUILD_HOOK:-}" ] ; then

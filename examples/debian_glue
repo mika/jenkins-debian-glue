@@ -75,3 +75,15 @@
 # REPOSITORY_EXTRA_KEYS='http://foorepo.domain.com/key1.gpg,http://barrepo.domain.com/key2.gpg'
 # Default:
 # REPOSITORY_EXTRA_KEYS=
+
+# autopkgtests are executed automatically inside the cowbuilder environment by
+# default, corresponding to the ADT='internal' setting or if ADT is unset.
+# To execute autopkgtests also externally via adt-run you need to set ADT to
+# either 'external' (no internal runs) or 'all' (internal + external runs).
+# The external autopkgtests depend on a configured ADT_RUNNER setting.
+# To skip internal as well as external autopkgtests set ADT='skip'.
+# Usage example (see adt-virt-qemu(1) for details regarding image setup):
+# ADT='external'
+# ADT_RUNNER="adt-virt-qemu /srv/adt-${distribution:-}-${architecture:-}.img"
+# Default:
+# ADT=

@@ -8,6 +8,11 @@ if [ "${ADT:-}" = "skip" ]; then
   exit 0
 fi
 
+if [ "${ADT:-}" = "external" ]; then
+  echo "Skipping internal autopkgtests as external testing was requested via ADT variable"
+  exit 0
+fi
+
 set -ex
 
 cd /tmp/buildd/*/debian/..
@@ -20,6 +25,10 @@ fi
 if [ ! -f debian/files ]; then
   echo "Package source is not built, debian/files is missing" >&2
   exit 1
+fi
+
+if [ -n "${ADT_OPTIONS:-}" ] ; then
+  echo "*** Using provided ADT_OPTIONS $ADT_OPTIONS ***"
 fi
 
 set -- /tmp/adt-*/
@@ -37,8 +46,11 @@ apt-get install -y autopkgtest apt-utils pbuilder
 mkdir -p "$TMPADT/out"
 binaries=$(awk '/\.deb / { print "--binary ../" $1 }' debian/files)
 
-adt-run --tmp-dir $TMPADT/out --summary $TMPADT/summary \
-  $binaries --built-tree $PWD --- adt-virt-null || EXIT=$?
+adt-run \
+  --tmp-dir "${TMPADT}/out" \
+  --summary "${TMPADT}/summary" \
+  --built-tree "${PWD}" \
+  $binaries ${ADT_OPTIONS:-} --- adt-virt-null || EXIT=$?
 
 # 4 means some test failed, exit 0 here and let adtsummary_tap report the failure
 [ ${EXIT:-0} = 4 ] && exit 0
