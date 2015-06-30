@@ -438,7 +438,7 @@ autopkg_run() {
     bailout 1 "*** Error: ADT_RUNNER is unset, external autopkgtests depend on according ADT_RUNNER configuration ***"
   fi
 
-  dsc_file="${WORKSPACE}/"*"${newest_version}.dsc"
+  dsc_file="${WORKSPACE}/"*"_${newest_version}.dsc"
   if ! grep -q '^Testsuite: autopkgtest' ${dsc_file} ; then
     echo "*** No 'Testsuite: autopkgtest' present in ${dsc_file}, skipping external autopkgtests ***"
     return 0
@@ -453,7 +453,7 @@ autopkg_run() {
     echo "*** Using default ADT_OPTIONS $ADT_OPTIONS ***"
   fi
 
-  changes_file="${WORKSPACE}/"*"${newest_version}_${arch}.changes"
+  changes_file="${WORKSPACE}/"*"_${newest_version}_${arch}.changes"
   echo "*** Executing 'adt-run --changes $changes_file ${ADT_OPTIONS:-} --- $ADT_RUNNER' ***"
   adt-run --changes $changes_file ${ADT_OPTIONS:-} --- $ADT_RUNNER || bailout $?
 }
@@ -607,7 +607,7 @@ remove_packages() {
   ${SUDO_CMD:-} reprepro -A source -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${SOURCE_PACKAGE}"
 
   echo "*** Removing previous binary package versions from repository ***"
-  for p in $(list_deb_files "${WORKSPACE}/binaries/"*"${newest_version}_${arch}.changes") ; do
+  for p in $(list_deb_files "${WORKSPACE}/binaries/"*"_${newest_version}_${arch}.changes") ; do
     file="$(basename $p)"
     binpackage="${file%%_*}"
     binary_list="${binary_list:-} ${binpackage}"
@@ -708,7 +708,7 @@ reprepro_wrapper() {
   echo "*** Including packages in repository $REPOS ***"
   ${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} \
     --ignore=wrongdistribution --ignore=uploaders \
-    include "${REPOS}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
+    include "${REPOS}" "${WORKSPACE}/binaries/"*"_${newest_version}"_${architecture}.changes
   [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
 }
 
@@ -724,7 +724,7 @@ dput_wrapper() {
   esac
 
   echo "*** Including packages in repository $REPOS ***"
-  ${SUDO_CMD:-} dput -U -u "${DPUT_HOST:-}" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
+  ${SUDO_CMD:-} dput -U -u "${DPUT_HOST:-}" "${WORKSPACE}/binaries/"*"_${newest_version}"_${architecture}.changes
   [ $? -eq 0 ] || bailout 1 "Error: Failed to upload binary package to $DPUT_HOST dput host."
 }
 
@@ -767,7 +767,7 @@ freight_wrapper() {
   freight_ensure_repo
 
   echo "*** Including packages via freight in repository ${FREIGHT_VARLIB}/${REPOS} ***"
-  ${SUDO_CMD:-} freight add -v -c "$FREIGHT_CONF" "${WORKSPACE}/binaries/"*"${newest_version}"*"deb" "apt/${REPOS}"
+  ${SUDO_CMD:-} freight add -v -c "$FREIGHT_CONF" "${WORKSPACE}/binaries/"*"_${newest_version}"*"deb" "apt/${REPOS}"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to add binary package to repository."
 
   echo "*** Generating freight cache ***"
@@ -851,7 +851,7 @@ deploy_to_releases() {
   # support usage of same source package to build binaries for different distributions
   if [ -n "${ADJUST_DISTRIBUTION_ONTHEFLY:-}" ] ; then
     echo "*** ADJUST_DISTRIBUTION_ONTHEFLY is set, setting Distribution in changes file as requested to ${distribution} ***"
-    sed -i "s/Distribution: .*/Distribution: ${distribution}/" "${WORKSPACE}/binaries/"*"${newest_version}"_${architecture}.changes
+    sed -i "s/Distribution: .*/Distribution: ${distribution}/" "${WORKSPACE}/binaries/"*"_${newest_version}"_${architecture}.changes
   fi
 
   if [ -n "${USE_FREIGHT:-}" ] ; then
