@@ -1,0 +1,5 @@
+MIRRORSITE="http://packages.devuan.org/merged/"
+COMPONENTS="main contrib non-free"
+DEBOOTSTRAPOPTS=("${DEBOOTSTRAPOPTS[@]}" "--keyring=/usr/share/keyrings/devuan-keyring.gpg")
+EXTRAPACKAGES="devuan-keyring"
+

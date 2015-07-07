@@ -19,6 +19,7 @@ if [ ! -d "${SOURCE_DIRECTORY}" ] ; then
   exit 1
 fi
 
+
 if [ -z "${BUILD_NUMBER:-}" ] ; then
   echo "No BUILD_NUMBER defined, please run it in jenkins." >&2
   exit 1
@@ -344,6 +345,37 @@ quilt_cleanup() {
   rm -rf .pc
 }
 
+git_source_options() {
+	#Unless otherwise specified in the debian/source/options
+	# restrict git source archive depth and limit to only the branch we build.
+	if [ -z "${GIT_DEPTH:-}" ]; then
+		GIT_DEPTH=20
+	fi
+	local file
+	local value 
+	local opt_depth
+	local opt_ref
+	file="debian/source/options"
+	if [ -f ${file} ]; then
+		opt_depth=$(git config --file ${file} --get git-depth 2>&- || true)
+		opt_ref=$(git config --file ${file} --get git-ref 2>&- || true)
+	fi
+	if [ -z "${opt_depth:-}" ]; then
+		echo "Setting git source depth to $GIT_DEPTH"
+		DBP_EXTRA_OPTS="${DBP_EXTRA_OPTS:-} --source-option=--git-depth=$GIT_DEPTH"
+	else
+		echo "Using source depth of $opt_depth as defined in debian/source/options"
+	fi
+	if ![ -z "${opt_ref:-}" ]; then
+		echo "Setting git source ref to $GIT_REF"
+		DBP_EXTRA_OPTS="${DBP_EXTRA_OPTS:-} --source-option=--git-ref=${BRANCH}"
+	else
+		echo "Settin git source ref to $opt_ref as defined in debian/source/options"	
+	fi
+
+}
+
+
 source_format_opts() {
   if ! [ -f "debian/source/format" ] ; then
     echo '*** WARNING: Source format is not specified in debian/source/format! ***'
@@ -359,6 +391,7 @@ source_format_opts() {
       ;;
     '3.0 (git)')
       echo "*** Source format detected as 3.0 (git) ***"
+      git_source_options
       PRISTINE_TAR=false
       SKIP_QUILT_CLEANUP=true
       IGNORE_GIT_BUILDPACKAGE=true

@@ -63,6 +63,14 @@ checks_and_defaults() {
     export DEB_KEEP_BUILD_ENV
   fi
 
+  if [ "${USE_EATMYDATA:-}" = true ] ; then
+    export USE_EATMYDATA
+  fi
+
+  if [ "${USE_CCACHE:-}" = true ] ; then
+    export USE_CCACHE
+  fi
+
   if [ -z "${JOB_NAME:-}" ] ; then
     echo "Error: No JOB_NAME defined, please run it in jenkins." >&2
     exit 1
@@ -256,6 +264,22 @@ cowbuilder_init() {
   # allow pbuilder networking
   if [ -n "${PBUILDER_USENETWORK:-}" ] ; then
     echo "USENETWORK=yes" >> "$pbuilderrc"
+  fi
+
+  # add libeatmydata to pbuilderrc
+  if [ "${USE_EATMYDATA:-}" = true ] ; then
+     echo 'EXTRAPACKAGES="$EXTRAPACKAGES eatmydata"' >> "$pbuilderrc"
+     echo 'if [ -z "$LD_PRELOAD" ]; then' >> "$pbuilderrc"
+     echo '   LD_PRELOAD=libeatmydata.so' >> "$pbuilderrc"
+     echo 'else' >> "$pbuilderrc"
+     echo '   LD_PRELOAD="$LD_PRELOAD":libeatmydata.so' >> "$pbuilderrc"
+     echo 'fi' >> "$pbuilderrc"
+     echo 'export LD_PRELOAD' >> "$pbuilderrc"
+  fi
+
+  # add ccache to pbuilderrc
+  if [ "${USE_CCACHE:-}" = true ] ; then
+     echo 'export CCACHEDIR="/var/cache/pbuilder/ccache"' >> "$pbuilderrc"
   fi
 
   # allow setting main pbuilder configuration file from outside, then append data
@@ -539,6 +563,23 @@ EOF
   if [ -n "${PBUILDER_USENETWORK:-}" ] ; then
     echo "USENETWORK=yes" >> "$pbuilderrc"
   fi
+
+  # add libeatmydata to pbuilderrc
+  if [ "${USE_EATMYDATA:-}" = true ] ; then
+     echo 'EXTRAPACKAGES="$EXTRAPACKAGES eatmydata"' >> "$pbuilderrc"
+     echo 'if [ -z "$LD_PRELOAD" ]; then' >> "$pbuilderrc"
+     echo '   LD_PRELOAD=libeatmydata.so' >> "$pbuilderrc"
+     echo 'else' >> "$pbuilderrc"
+     echo '   LD_PRELOAD="$LD_PRELOAD":libeatmydata.so' >> "$pbuilderrc"
+     echo 'fi' >> "$pbuilderrc"
+     echo 'export LD_PRELOAD' >> "$pbuilderrc"
+  fi
+
+  # add ccache to pbuilderrc
+  if [ "${USE_CCACHE:-}" = true ] ; then
+     echo 'export CCACHEDIR="/var/cache/pbuilder/ccache"' >> "$pbuilderrc"
+  fi
+
 
   # allow setting main pbuilder configuration file from outside, then append data
   # as needed without actually writing anything to user-provided $PBUILDER_CONFIG

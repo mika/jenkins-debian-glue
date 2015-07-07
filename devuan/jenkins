@@ -1,0 +1,2 @@
+jenkins ALL=NOPASSWD: /usr/sbin/cowbuilder, /usr/sbin/chroot, /bin/chmod, /bin/rm, /bin/mv, /bin/cat
+Defaults env_keep+="DEB_* DIST ARCH ADT QEMU_LOG_FILENAME"
