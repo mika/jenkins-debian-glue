@@ -46,8 +46,16 @@ apt-get install -y autopkgtest apt-utils pbuilder
 mkdir -p "$TMPADT/out"
 binaries=$(awk '/\.deb / { print "--binary ../" $1 }' debian/files)
 
+# since autopkgtest 3.16 the --tmp-dir option is gone, make sure
+# we've --output-dir available though before using it
+if adt-run --help | grep -q -- --output-dir 2>/dev/null ; then
+  OUTPUT_OPTION='--output-dir'
+else
+  OUTPUT_OPTION='--tmp-dir'
+fi
+
 adt-run \
-  --tmp-dir "${TMPADT}/out" \
+  ${OUTPUT_OPTION} "${TMPADT}/out" \
   --summary "${TMPADT}/summary" \
   --built-tree "${PWD}" \
   $binaries ${ADT_OPTIONS:-} --- adt-virt-null || EXIT=$?

@@ -447,7 +447,15 @@ autopkg_run() {
   if [ -n "${ADT_OPTIONS:-}" ] ; then
     echo "*** Using provided ADT_OPTIONS $ADT_OPTIONS ***"
   else
-    ADT_OPTIONS="--tmp-dir adt-external/out --summary adt-external/summary"
+    # since autopkgtest 3.16 the --tmp-dir option is gone, make sure
+    # we've --output-dir available though before using it
+    if adt-run --help | grep -q -- --output-dir 2>/dev/null ; then
+      local adt_output_option='--output-dir'
+    else
+      local adt_output_option='--tmp-dir'
+    fi
+
+    ADT_OPTIONS="$adt_output_option adt-external/out --summary adt-external/summary"
     rm -rf adt-external
     mkdir -p adt-external
     echo "*** Using default ADT_OPTIONS $ADT_OPTIONS ***"
