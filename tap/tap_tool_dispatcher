@@ -22,6 +22,7 @@ rm -rf "${REPORTS_DIRECTORY}"
 # run all tap tools at once, in parallel
 find source -type f ! -path '*.svn*' ! -path '*.git/*' ! -name '.gitignore' -prune | parallel -v -- \
   mkdir -p ${REPORTS_DIRECTORY}'/'{//} ';' \
+  /usr/bin/shellcheck_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_shellcheck.tap' ';' \
   /usr/bin/checkbashism_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_checkbashism.tap' ';' \
   /usr/bin/perlcritic_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_perlcritic.tap' ';' \
   /usr/bin/pep8_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_pep8.tap' ';'

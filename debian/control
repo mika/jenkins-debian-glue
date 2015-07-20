@@ -94,7 +94,8 @@ Depends: devscripts,
          parallel,
          ruby,
          ${misc:Depends}
-Recommends: pep8 (>= 1.4.6~)
+Recommends: pep8 (>= 1.4.6~),
+            shellcheck
 Description: taptools integration in Jenkins
  This package provides scripts to check Shell, Perl and Python
  source code for common errors, using checkbashism and perlcritic
