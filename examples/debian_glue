@@ -34,6 +34,13 @@
 # Default:
 # REPOSITORY='/srv/repository'
 
+# In order to keep the build versions unique and to ensure that there
+# are no duplicates, the version number from the changelog is padded
+# with the date and the build number.
+# To override this behaviour and preserve the version number from the
+# changelog, set this version to true
+# USE_ORIG_VERSION=true
+
 # By default reprepro repositories are not verified but assumed to be
 # trustworthy.
 # Please note that if you build packages for Squeeze, the reprepro
