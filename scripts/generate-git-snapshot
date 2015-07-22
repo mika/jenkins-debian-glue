@@ -64,6 +64,7 @@ version_information() {
   # retrieve and adjust information
   ORIG_VERSION=$(dpkg-parsechangelog --count 1 | awk '/^Version/ {print $2}')
   DISTRIBUTION=$(dpkg-parsechangelog --count 1 | awk '/^Distribution/ {print $2}')
+  APPLY_VERSION_WORKAROUND=false
 
   if [ "$USE_ORIG_VERSION" = "true" ] ; then
     echo "USE_ORIG_VERSION is set to 'true', keeping original version from changelog"
@@ -78,7 +79,6 @@ version_information() {
 
     # we do NOT raise the version number, if we detect an unreleased version,
     # otherwise the released version would be older than our snapshot builds
-    APPLY_VERSION_WORKAROUND=false
     if [ "$DISTRIBUTION" = "UNRELEASED" ] && dpkg --compare-versions "$ORIG_VERSION" lt "$INCREASED_VERSION" ; then
       echo "*** Not increasing version number as distribution is set to UNRELEASED ***"
       INCREASED_VERSION="$ORIG_VERSION"
