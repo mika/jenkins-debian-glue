@@ -800,6 +800,35 @@ trunk_release() {
   fi
 }
 
+# Get rid of *unused* files to avoid uploading unreferenced files to incoming
+# directory. When generating the source package on jessie this might result in
+# a *.tar.xz file. But when building the binary package for an older release
+# like wheezy this might generate a *.tar.gz file. When directly copying those
+# files into reprepro's incoming directory (e.g. for release builds) the
+# *unused* tarball will be kept around, so let's avoid that.
+drop_unused_debfiles() {
+  if [ "${DROP_UNUSED_DEBFILES:-}" = "false" ] ; then
+    echo "*** DROP_UNUSED_DEBFILES is disabled, not removing unreferenced artifact files. ***"
+    return 0
+  fi
+
+  if ! [ -x "$(which dcmd)" ] ; then
+    echo "Error: dcmd executable not available, please install devscripts package." >&2
+    exit 1
+  fi
+
+  (
+    cd "${WORKSPACE}/binaries/"
+    for file in ./* ; do
+      filename="$(basename "${file}")" # get rid of trailing ./
+      if ! dcmd ./*.changes | grep -q -- "${filename}" ; then
+        echo "*** Removing file ${filename} ***"
+        rm -f "./${filename}"
+      fi
+    done
+  )
+}
+
 release_repos() {
   echo "*** Environment variable 'release' is set, running through release steps. ***"
 
@@ -816,6 +845,9 @@ release_repos() {
     echo "*** REMOVE_FROM_RELEASE is set, trying to remove package(s) from release repository"
     REPOS="${release}" remove_packages
   fi
+
+  # get rid of files that aren't mentioned in the changes files before copying to incoming directory
+  drop_unused_debfiles
 
   cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${release}/"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to copy binary packages to release directory."
