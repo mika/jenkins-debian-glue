@@ -1,6 +1,8 @@
 #!/bin/bash
 
-set -x
+if [ -z ${JENKINS_DEBIAN_GLUE_QUIET:-} ]; then
+  set -x
+fi
 set -e
 
 if [ -r /etc/jenkins/debian_glue ] ; then
