@@ -127,6 +127,14 @@ bailout() {
   [ -n "${1:-}" ] && EXIT="${1}" || EXIT=0
   [ -n "${2:-}" ] && echo "$2" >&2
 
+  rm -f "${build_lockfile}"
+  # if we have an aborted build we have to clean up left behinds,
+  # but we have to make sure we only clean up the files from our run
+  if [ -r "${update_lockfile_pid}" ] ; then
+    rm -f "${update_lockfile_pid}"
+    rm -f "${update_lockfile}"
+  fi
+
   if [ "${SKIP_BINARY_REMOVAL:-}" = "true" ] ; then
     echo "*** Skipping binary removal as requested via SKIP_BINARY_REMOVAL=true. ***"
   else
@@ -248,6 +256,10 @@ dist_and_arch_settings() {
     COWBUILDER_BASE="/var/cache/pbuilder/base-${COWBUILDER_DIST}-${arch}.cow"
     echo "*** No COWBUILDER_BASE set, using $COWBUILDER_BASE as cowbuilder base.cow ***"
   fi
+
+  build_lockfile="${COWBUILDER_BASE}.building.$$"
+  update_lockfile="${COWBUILDER_BASE}.update"
+  update_lockfile_pid="${COWBUILDER_BASE}.update.$$"
 }
 
 cowbuilder_init() {
@@ -309,6 +321,26 @@ cowbuilder_init() {
   echo "*** Listing pbuilder configuration file as reference: ***"
   cat "$pbuilderrc"
 
+  if ls "${COWBUILDER_BASE}.building."* >/dev/null 2>&1 ; then
+    echo "*** Skipping update run because a build is in progress ***"
+    return 0
+  fi
+
+  if ls "${update_lockfile}"* >/dev/null 2>&1 ; then
+    echo "*** Update run already taking place, skipping ***"
+    return 0
+  fi
+
+  (
+  # if we cannot get the lock then somebody else is already running
+  if ! flock --nonblock 9 ; then
+    exit 1
+  fi
+
+  # in order to be able to clean up aborted runs we need to
+  # mark that this file is ours
+  touch "${update_lockfile_pid}"
+
   if [ ! -d "${COWBUILDER_BASE}" ]; then
     echo "*** Creating cowbuilder base $COWBUILDER_BASE for arch $arch and distribution $COWBUILDER_DIST ***"
     sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
@@ -317,13 +349,31 @@ cowbuilder_init() {
          --debootstrapopts --arch --debootstrapopts "$arch" \
          --debootstrapopts --variant=buildd --configfile="${pbuilderrc}" \
          --hookdir "${PBUILDER_HOOKDIR}"
-    [ $? -eq 0 ] || bailout 1 "Error: Failed to create cowbuilder base ${COWBUILDER_BASE}."
+    [ $? -eq 0 ] || bailout 2
   else
     echo "*** Updating cowbuilder cow base ***"
     sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
       cowbuilder --update --basepath "${COWBUILDER_BASE}" --configfile="${pbuilderrc}"
-    [ $? -eq 0 ] || bailout 1 "Error: Failed to update cowbuilder base ${COWBUILDER_BASE}."
+    [ $? -eq 0 ] || bailout 3
   fi
+  ) 9>"${update_lockfile}" ||
+    {
+      # depending on the exit code we have to distinguish between different failures
+      case "$?" in
+        1)
+          echo "*** Someone else is holding the lock file ${update_lockfile}, skipping create/update ***"
+          return 0
+          ;;
+        2)
+          bailout 1 "Error: Failed to create cowbuilder base ${COWBUILDER_BASE}."
+          ;;
+        3)
+          bailout 1 "Error: Failed to update cowbuilder base ${COWBUILDER_BASE}."
+          ;;
+      esac
+  }
+
+  rm -f "${update_lockfile_pid}" "${update_lockfile}"
 
   [ -n "${pbuilderrc:-}" ] && rm -f "$pbuilderrc"
 }
@@ -562,6 +612,19 @@ EOF
     fi
   fi
 
+  counter=3600
+  while ls "${update_lockfile}."* >/dev/null 2>&1 && [ $counter -gt 0 ] ; do
+    echo "*** Update (or creation) of ${COWBUILDER_BASE} is in progress, waiting up to $counter seconds ***"
+    sleep 1
+    counter=$(( counter - 1 ))
+  done
+
+  if [ $counter -eq 0 ] ; then
+    bailout 1 "Error: ran into timeout because parallel create/update operation for ${COWBUILDER_BASE} didn't finish in time."
+  fi
+
+  touch "${build_lockfile}"
+
   case "$architecture" in
     i386)
       linux32 sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
@@ -584,6 +647,7 @@ EOF
       ;;
   esac
 
+  rm -f "${build_lockfile}"
   [ -n "${pbuilderrc:-}" ] && rm -f "$pbuilderrc"
 }
 
