@@ -142,7 +142,7 @@ bailout() {
     rm -f "$WORKSPACE"/binaries/*
   fi
 
-  ${SUDO_CMD:-} rm -rf /tmp/adt-$$ /tmp/apt-$$
+  ${SUDO_CMD:-} rm -rf /tmp/apt-$$
 
   [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
   echo "*** Finished execution of $0 at $(date) [running ${SECONDS} seconds] ***"
@@ -525,17 +525,19 @@ autopkgtest_results() {
     return 0
   fi
 
-  # copy autopkgtest results from /tmp
-  rm -rf adt
-  ${SUDO_CMD:-} chmod -R go+rX /tmp/adt-$$
-  cp -a /tmp/adt-$$ adt
+  mkdir -p adt
+  if [ -r autopkgtest.summary ] ; then
+    mv autopkgtest.summary adt/summary
+  else # do not fail if no autopkgtest run took place
+    touch adt/summary
+  fi
 }
 
 cowbuilder_run() {
   echo "*** cowbuilder build phase for arch $architecture ***"
-  mkdir -p "$WORKSPACE"/binaries/ /tmp/adt-$$ /tmp/apt-$$
+  mkdir -p "$WORKSPACE"/binaries/ /tmp/apt-$$
 
-  local BINDMOUNTS="/tmp/adt-$$ /tmp/apt-$$ /var/cache/pbuilder/build ${USER_BINDMOUNTS:-}"
+  local BINDMOUNTS="/tmp/apt-$$ /var/cache/pbuilder/build ${USER_BINDMOUNTS:-}"
 
   # make sure we build arch specific packages only when necessary
   identify_build_type
