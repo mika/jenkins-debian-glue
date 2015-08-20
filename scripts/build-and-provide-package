@@ -323,7 +323,7 @@ cowbuilder_init() {
       echo "*** PBUILDER_CONFIG is not set, continuing with checks for Ubuntu workaround ***"
 
       if ! [ -r "/usr/share/debootstrap/scripts/${COWBUILDER_DIST}" ] ; then
-        echo "*** Warning: distribution ${COWBUILDER_DIST} not supported by debootstrap, not considering Ubuntu workaround ***"
+        echo "*** WARNING: distribution ${COWBUILDER_DIST} not supported by debootstrap, not considering Ubuntu workaround ***"
       else
         # debootstrap scripts for recent versions of Ubuntu are all pointing to gutsy, use that
         # to identify Ubuntu as the distribution we want to build instead of hardcoding all
@@ -335,6 +335,23 @@ cowbuilder_init() {
           echo "# Building for Ubuntu detected, enabling universe repository component to work around cowdancer issue:" >> "$pbuilderrc"
           echo 'COMPONENTS="main universe"' >> "$pbuilderrc"
         fi
+      fi
+    fi
+  fi
+
+  # ensure that we've access to Debian's archive keyring if we're
+  # building for recent Debian releases on Ubuntu, see issue#130
+  if lsb_release --id 2>/dev/null | grep -q Ubuntu ; then
+    echo "*** Looks like we're building on Ubuntu, checking for distribution target ***"
+    if [ "$(readlink -f /usr/share/debootstrap/scripts/${COWBUILDER_DIST})" != '/usr/share/debootstrap/scripts/sid' ] ; then
+      echo "*** Doesn't look like we're building for Debian, not considering Debian archive keyring workaround ***"
+    else
+      if ! [ -r /usr/share/keyrings/debian-archive-keyring.gpg ] ; then
+        echo "*** WARNING: /usr/share/keyrings/debian-archive-keyring.gpg does not exist. ***"
+        echo "*** If building fails with 'E: Release signed by unknown key ...' please ensure package debian-archive-keyring is installed ***"
+      else
+        echo "*** Package debian-archive-keyring is present, enabling its usage for keyring ***"
+        echo "DEBOOTSTRAPOPTS=(${DEBOOTSTRAPOPTS[@]:-} '--keyring' '/usr/share/keyrings/debian-archive-keyring.gpg' )" >> "$pbuilderrc"
       fi
     fi
   fi
