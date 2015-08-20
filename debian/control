@@ -36,7 +36,8 @@ Depends: cowbuilder,
          devscripts,
          dpkg-dev,
          jenkins-debian-glue,
-         quilt
+         quilt,
+         ccache, eatmydata
 Description: Virtual package to be used on build slaves
  This virtual package depends on the software packages required
  for using jenkins-debian-glue as build environment.
@@ -118,3 +119,14 @@ Description: piuparts integration in Jenkins
  package installation and upgrades of generated Debian packages.
  The scripts can be used for generating TAP reports of piuparts
  runs checking Debian packages inside Jenkins jobs.
+
+Package: jenkins-debian-glue-buildenv-devuan
+Architecture: all
+Depends: sudo,
+         jenkins-debian-glue-buildenv,
+         ${misc:Depends}
+Description: Devuan GNU/Linux support in jenkins debian glue
+ This package provides Devuan specific additional files
+ used for building Devuan packages.
+
+

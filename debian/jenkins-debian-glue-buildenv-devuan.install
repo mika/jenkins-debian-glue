@@ -1,0 +1,2 @@
+debian/tmp/usr/share/jenkins-debian-glue/examples/devuan/pbuilderrc etc/jenkins/
+debian/tmp/usr/share/jenkins-debian-glue/examples/devuan/jenkins etc/sudoers.d/

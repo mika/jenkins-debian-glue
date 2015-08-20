@@ -94,3 +94,17 @@
 # ADT_RUNNER="adt-virt-qemu /srv/adt-${distribution:-}-${architecture:-}.img"
 # Default:
 # ADT=
+
+
+# Use eatmydata (https://launchpad.net/libeatmydata) to disable
+# fsync(), O_SYNC and so on to speed up build.
+# Default:
+# USE_EATMYDATA=false
+
+# Use ccache to speed up builds on packages that 
+# needs to rebuild the same source multiple times by
+# caching build results
+# Default: 
+# USE_CCACHE=false
+
+
