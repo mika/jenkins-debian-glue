@@ -350,12 +350,12 @@ cowbuilder_init() {
          --debootstrapopts --arch --debootstrapopts "$arch" \
          --debootstrapopts --variant=buildd --configfile="${pbuilderrc}" \
          --hookdir "${PBUILDER_HOOKDIR}"
-    [ $? -eq 0 ] || bailout 2
+    [ $? -eq 0 ] || exit 2
   else
     echo "*** Updating cowbuilder cow base ***"
     sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
       cowbuilder --update --basepath "${COWBUILDER_BASE}" --configfile="${pbuilderrc}"
-    [ $? -eq 0 ] || bailout 3
+    [ $? -eq 0 ] || exit 3
   fi
   ) 9>"${update_lockfile}" ||
     {
@@ -366,6 +366,8 @@ cowbuilder_init() {
           return 0
           ;;
         2)
+          echo "*** Something went wrong with the creation of the cowbuilder environment. Cleaning up. ***"
+          rm -rf "${COWBUILDER_BASE}"
           bailout 1 "Error: Failed to create cowbuilder base ${COWBUILDER_BASE}."
           ;;
         3)
