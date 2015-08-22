@@ -1,0 +1,7 @@
+jenkins-debian-glue: ruby-script-but-no-ruby-dep usr/bin/adtsummary_tap
+jenkins-debian-glue: ruby-script-but-no-ruby-dep usr/bin/checkbashism_tap
+jenkins-debian-glue: ruby-script-but-no-ruby-dep usr/bin/lintian-junit-report
+jenkins-debian-glue: ruby-script-but-no-ruby-dep usr/bin/pep8_tap
+jenkins-debian-glue: ruby-script-but-no-ruby-dep usr/bin/perlcritic_tap
+jenkins-debian-glue: ruby-script-but-no-ruby-dep usr/bin/piuparts_tap
+jenkins-debian-glue: ruby-script-but-no-ruby-dep usr/bin/shellcheck_tap

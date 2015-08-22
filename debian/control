@@ -11,110 +11,69 @@ Vcs-Browser: https://github.com/mika/jenkins-debian-glue
 
 Package: jenkins-debian-glue
 Architecture: all
-Depends: fakeroot,
-         reprepro | freight,
-         sudo | sudo-ldap,
+Depends: sudo | sudo-ldap,
          ${misc:Depends}
-Recommends: curl,
-            gnupg,
-            jenkins-debian-glue-buildenv-git,
-            qemu-user-static
-Description: glue scripts for building Debian packages inside Jenkins
- This package provides scripts which should make building Debian
- package inside Jenkins (a Continuous Integration suite) easier.
+Recommends: jenkins-debian-glue-buildenv
+Description: Jenkins Debian glue scripts
+ This package provides scripts which make building Debian
+ packages inside Jenkins (a Continuous Integration suite) easier.
  .
  It's meant to make Q/A builds of Debian packages inside Jenkins
  as manageable and homogeneous as possible.
  .
- Please note that you might want to also install the
- jenkins-debian-glue-buildenv-git or the jenkins-debian-glue-buildenv-svn
- package, depending on your needs.
+ You need to install the according packaging tools, depending on
+ your VCS type and the features you want to use. To get all tools
+ you can just install the jenkins-debian-glue-buildenv package.
 
 Package: jenkins-debian-glue-buildenv
 Architecture: all
-Depends: cowbuilder,
+Depends: build-essential,
+         cowbuilder,
          devscripts,
          dpkg-dev,
-         jenkins-debian-glue,
-         quilt
-Description: Virtual package to be used on build slaves
- This virtual package depends on the software packages required
- for using jenkins-debian-glue as build environment.
-
-Package: jenkins-debian-glue-buildenv-git
-Architecture: all
-Depends: build-essential,
-         git-buildpackage,
-         jenkins-debian-glue-buildenv,
-         pristine-tar,
-         ${misc:Depends}
-Description: virtual package for Git build environment of jenkins-debian-glue
- This virtual package depends on the software packages required
- for using jenkins-debian-glue as standalone build environment
- with Git.
-
-Package: jenkins-debian-glue-buildenv-svn
-Architecture: all
-Depends: build-essential,
-         jenkins-debian-glue-buildenv,
-         subversion-tools (<= 1.6.18dfsg-1) | svn2cl,
-         xsltproc,
-         ${misc:Depends}
-Description: virtual package for Subversion build environment of jenkins-debian-glue
- This virtual package depends on the software packages required
- for using jenkins-debian-glue as standalone build environment
- with Subversion.
-
-Package: jenkins-debian-glue-buildenv-slave
-Architecture: all
-Depends: build-essential,
-         jenkins-debian-glue-buildenv,
-         openjdk-7-jre-headless | sun-java6-jre | java-runtime-headless,
-         rsync,
-         ${misc:Depends}
-Description: virtual package for basic build environment of jenkins-debian-glue
- This virtual package depends on the software packages required
- for using jenkins-debian-glue on a slave system inside Jenkins.
-
-Package: jenkins-debian-glue-buildenv-lintian
-Architecture: all
-Depends: lintian,
-         ruby,
-         ${misc:Depends}
-Description: lintian integration in Jenkins
- This package provides the lintian-junit-report script. The
- script can be used for generating JUnit reports of lintian
- checking Debian packages inside Jenkins jobs.
-
-Package: jenkins-debian-glue-buildenv-taptools
-Architecture: all
-Depends: devscripts,
+         fakeroot,
          file,
+         git-buildpackage,
+         gnupg,
+         jenkins-debian-glue,
          libperl-critic-perl,
+         lintian,
          parallel,
+         piuparts,
+         pristine-tar,
+         quilt,
+         reprepro | freight,
+         rsync,
          ruby,
+         subversion-tools (<= 1.6.18dfsg-1) | svn2cl,
          ${misc:Depends}
-Recommends: pep8 (>= 1.4.6~),
+Conflicts: jenkins-debian-glue-buildenv-git,
+           jenkins-debian-glue-buildenv-lintian,
+           jenkins-debian-glue-buildenv-piuparts,
+           jenkins-debian-glue-buildenv-slave,
+           jenkins-debian-glue-buildenv-svn,
+           jenkins-debian-glue-buildenv-taptools
+Provides: jenkins-debian-glue-buildenv-git,
+          jenkins-debian-glue-buildenv-lintian,
+          jenkins-debian-glue-buildenv-piuparts,
+          jenkins-debian-glue-buildenv-slave,
+          jenkins-debian-glue-buildenv-svn,
+          jenkins-debian-glue-buildenv-taptools
+Replaces: jenkins-debian-glue-buildenv-git,
+          jenkins-debian-glue-buildenv-lintian,
+          jenkins-debian-glue-buildenv-piuparts,
+          jenkins-debian-glue-buildenv-slave,
+          jenkins-debian-glue-buildenv-svn,
+          jenkins-debian-glue-buildenv-taptools
+Recommends: curl,
+            pep8 (>= 1.4.6~),
+            perlcritic,
+            qemu-user-static,
             shellcheck
-Description: taptools integration in Jenkins
- This package provides scripts to check Shell, Perl and Python
- source code for common errors, using checkbashism and perlcritic
- to generate according TAP reports for usage inside Jenkins.
+Description: Jenkins Debian glue scripts - dependency package
+ This package depends on all Debian packaging/repository
+ management and VCS tools which may be used with
+ jenkins-debian-glue for easier installation.
  .
- The provided tap_tool_dispatcher script can be used to automatically
- detect according Shell scripts, Perl and Python scripts to execute
- checkbashism_tap, perlcritic_tap and pep8_tap accordingly.
- .
- Please notice that pep8 isn't a hard dependency because it's not yet
- available in the required version in Debian/wheezy.
-
-Package: jenkins-debian-glue-buildenv-piuparts
-Architecture: all
-Depends: piuparts,
-         ruby,
-         ${misc:Depends}
-Description: piuparts integration in Jenkins
- This package provides the piuparts integration for testing
- package installation and upgrades of generated Debian packages.
- The scripts can be used for generating TAP reports of piuparts
- runs checking Debian packages inside Jenkins jobs.
+ If disk space is a concern consider installing only the subset
+ of packages you actually need.
