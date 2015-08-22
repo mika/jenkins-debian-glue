@@ -1,3 +1,47 @@
+jenkins-debian-glue (0.14.0) unstable; urgency=medium
+
+  The "free the racoons AKA DebConf15" release
+
+  [ Franco (nextime) Lanza ]
+  * [b9c9cfd] Add pbuilder USENETWORK=yes option also to cowbuilder_run
+
+  [ Michael Prokop ]
+  * [3d79c45] Support execution of external autopkgtests via ADT=external
+    + ADT_RUNNER=... Thanks to Alexander Wirt for idea and feedback
+  * [108abe2] build-and-provide-package: be more specific when selecting
+    *.dsc + *.changes. Thanks to Christoph Berg for the hint
+  * [a00c865] Use adt-run's --output-dir option if available. Thanks to
+    Axel Beckert for the hint
+  * [f70b5fb] Get rid of unreferenced files in release process
+  * [026ace2] B20autopkgtest: do not fail build when skipping tests.
+    Thanks to Jan Alexander Steffens <jan.steffens@gmail.com> for
+    reporting
+  * [9c37df2] Improve parallel build support to not fail with concurrent
+    update operations. Thanks to Christian Hofstaedtler
+    <christian@hofstaedtler.name> for testing + feedback and Victor Seva
+    <linuxmaniac@torreviejawireless.org> for helping with the actual
+    implementation
+  * [6446c02] Use /var/run/lock/ for cowbuilder lockfiles to fix
+    permission issues
+  * [8e88422] Reduce number of binary packages (Closes #131) Thanks to
+    Christian Hofstaedtler <christian@hofstaedtler.name>
+  * [1a1102c] Update debian/copyright
+  * [0aebca1] Get rid of generate-reprepro-codename lockfile
+  * [e9e533c] Get rid of mount bind for autopkgtest (Closes #123) Thanks
+    to Christoph Berg <myon@debian.org>
+
+  [ Victor Seva ]
+  * [d27c6c6] tap: add shellcheck support
+
+  [ Walter Kleynscheldt ]
+  * [0e0dacd] Add override option USE_ORIG_VERSION to keep the changelog
+    version
+
+  [ Antoine Musso ]
+  * [ee9d99c] Support muting command printing in shell scripts
+
+ -- Michael Prokop <prokop@grml-solutions.com>  Sat, 22 Aug 2015 12:57:37 +0200
+
 jenkins-debian-glue (0.13.0) unstable; urgency=medium
 
   [ Antoine Musso ]
