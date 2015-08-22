@@ -2,6 +2,66 @@
 
 set -u
 
+# command line handling
+CMDLINE_OPTS=disable-checkbashism,disable-pep8,disable-perlcritic,disable-shellcheck,help
+
+_opt_temp=$(getopt --name tap_tool_dispatcher -o +h --long $CMDLINE_OPTS -- "$@")
+if [ $? -ne 0 ]; then
+  echo "Try '$0 --help' for more information." >& 2
+  exit 1
+fi
+eval set -- "$_opt_temp"
+
+# defaults
+_opt_checkbashism=true
+_opt_pep8=true
+_opt_perlcritic=true
+_opt_shellcheck=true
+
+usage() {
+  echo "$0 - run code style quality tools in parallel
+
+  Usage: $0 [<options>]
+
+  Supported options:
+
+   --disable-checkbashism  Disable checkbashism execution
+   --disable-pep8          Disable pep8 execution
+   --disable-perlcritic    Disable perlcritic execution
+   --disable-shellcheck    Disable shellcheck execution
+   --help                  Display this usage information and exit
+   "
+}
+
+while :; do
+  case "$1" in
+  --help|-h)
+    usage ; exit 0;
+    ;;
+  --disable-checkbashism)
+    _opt_checkbashism=false
+    ;;
+  --disable-pep8)
+    _opt_pep8=false
+    ;;
+  --disable-perlcritic)
+    _opt_perlcritic=false
+    ;;
+  --disable-shellcheck)
+    _opt_shellcheck=false
+    ;;
+  --)
+    shift; break
+    ;;
+  *)
+    echo "Internal getopt error! $1" >&2
+    exit 1
+    ;;
+  esac
+  shift
+done
+
+# sanity checks before executing anything
 if [ -z "${REPORTS_DIRECTORY:-}" ] ; then
   export REPORTS_DIRECTORY='reports'
 fi
@@ -19,15 +79,58 @@ fi
 # start with clean report dir
 rm -rf "${REPORTS_DIRECTORY}"
 
-# run all tap tools at once, in parallel
-find source -type f ! -path '*.svn*' ! -path '*.git/*' ! -name '.gitignore' -prune | parallel -v -- \
-  mkdir -p ${REPORTS_DIRECTORY}'/'{//} ';' \
-  /usr/bin/shellcheck_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_shellcheck.tap' ';' \
-  /usr/bin/checkbashism_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_checkbashism.tap' ';' \
-  /usr/bin/perlcritic_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_perlcritic.tap' ';' \
-  /usr/bin/pep8_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_pep8.tap' ';'
+# set up a temporary file which executes the requested commands
+TMPFILE="$(mktemp)" || exit 1
 
-# get rid of empty files
+echo "find source -type f ! -path '*.svn*' ! -path '*.git/*' ! -name '.gitignore' -prune | parallel -v -- \\
+  mkdir -p ${REPORTS_DIRECTORY}'/'{//} ';' \\" > "${TMPFILE}"
+
+if ! [ -x "$(which checkbashisms)" ] ; then
+  echo "*** Skipping checkbashism checks as tool checkbashisms isn't present ***"
+else
+  if $_opt_checkbashism ; then
+    echo "/usr/bin/checkbashism_shellchecktap '{}' '>' ${REPORTS_DIRECTORY}'/{}_checkbashism.tap' ';' \\" >> "${TMPFILE}"
+  else
+    echo "*** Skipping checkbashism tests as requested via --disable-checkbashism ***"
+  fi
+fi
+
+if ! [ -x "$(which pep8)" ] ; then
+  echo "*** Skipping pep8 checks as tool pep8 isn't present ***"
+else
+  if $_opt_pep8 ; then
+    echo "/usr/bin/pep8_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_pep8.tap' ';' \\" >> "${TMPFILE}"
+  else
+    echo "*** Skipping pep8 tests as requested via --disable-pep8 ***"
+  fi
+fi
+
+if ! [ -x "$(which perlcritic)" ] ; then
+  echo "*** Skipping perlcritic checks as tool perlcritic isn't present ***"
+else
+  if $_opt_perlcritic ; then
+    echo "/usr/bin/perlcritic_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_perlcritic.tap' ';' \\" >> "${TMPFILE}"
+  else
+    echo "*** Skipping pep8 tests as requested via --disable-perlcritic ***"
+  fi
+fi
+
+if ! [ -x "$(which shellcheck)" ] ; then
+  echo "*** Skipping shellcheck checks as tool shellcheck isn't present ***"
+else
+  if $_opt_shellcheck ; then
+    echo "/usr/bin/shellcheck_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_shellcheck.tap' ';'" >> "${TMPFILE}"
+  else
+    echo "*** Skipping shellcheck tests as requested via --disable-shellcheck ***"
+  fi
+fi
+
+# generate the executed script
+bash "${TMPFILE}"
+rm -f "${TMPFILE}"
+
+echo "*** Getting rid of empty files + directories ***"
 find "${REPORTS_DIRECTORY}" -type f -empty -exec rm {} +
+find "${REPORTS_DIRECTORY}" -type d -empty -exec rmdir -p --ignore-fail-on-non-empty {} +
 
 ## END OF FILE #################################################################
