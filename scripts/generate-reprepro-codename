@@ -8,6 +8,7 @@ set -e
 bailout() {
   [ -n "${1:-}" ] && EXIT="${1}" || EXIT=0
   [ -n "${2:-}" ] && echo "$2" >&2
+  rm -f /var/lock/jdg-generate-reprepro-codename."$(id -un)"
   exit $EXIT
 }
 
@@ -145,5 +146,7 @@ fi
 echo "Added $REPOS as new codename/repos to the reprepro configuration."
 
 ) 9>/var/lock/jdg-generate-reprepro-codename."$(id -un)" || bailout 1 "Error while generating reprepro codename/repos."
+
+rm -f /var/lock/jdg-generate-reprepro-codename."$(id -un)"
 
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
