@@ -82,7 +82,13 @@ rm -rf "${REPORTS_DIRECTORY}"
 # set up a temporary file which executes the requested commands
 TMPFILE="$(mktemp)" || exit 1
 
-echo "find source -type f ! -path '*.svn*' ! -path '*.git/*' ! -name '.gitignore' -prune | parallel -v -- \\
+# GNU parallel supports the -v option, while parallel from moreutils doesn't
+unset PARALLEL_OPTION
+if parallel --version >/dev/null 2>&1 ; then
+  PARALLEL_OPTION='-v'
+fi
+
+echo "find source -type f ! -path '*.svn*' ! -path '*.git/*' ! -name '.gitignore' -prune | parallel $PARALLEL_OPTION -- \\
   mkdir -p ${REPORTS_DIRECTORY}'/'{//} ';' \\" > "${TMPFILE}"
 
 if ! [ -x "$(which checkbashisms)" ] ; then
