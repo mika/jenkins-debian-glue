@@ -95,7 +95,7 @@ if ! [ -x "$(which checkbashisms)" ] ; then
   echo "*** Skipping checkbashism checks as tool checkbashisms isn't present ***"
 else
   if $_opt_checkbashism ; then
-    echo "/usr/bin/checkbashism_shellchecktap '{}' '>' ${REPORTS_DIRECTORY}'/{}_checkbashism.tap' ';' \\" >> "${TMPFILE}"
+    echo "/usr/bin/checkbashism_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_checkbashism.tap' ';' \\" >> "${TMPFILE}"
   else
     echo "*** Skipping checkbashism tests as requested via --disable-checkbashism ***"
   fi
