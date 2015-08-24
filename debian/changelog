@@ -1,3 +1,24 @@
+jenkins-debian-glue (0.14.1) unstable; urgency=medium
+
+  * [b9b7c13] Get rid of cowbuilder environment if creating it failed
+  * [3da4c8a] Support disabling specific tap tool checks (Closes #132)
+  * [d414549] Conflict with old jenkins-debian-glue-buildenv-* to fix
+    upgrade issues
+  * [4025da3] Support parallel from moreutils as alternative to GNU
+    parallel
+  * [1862af3] Drop jenkins-debian-glue-buildenv-* from Provides
+  * [e5a39b4] tap_tool_dispatcher: keep existing behaviour by not removing
+    empty directories
+  * [38b3c1c] The package is named libperl-critic-perl, not perlcritic.
+    Thanks to Victor Seva <vseva@sipwise.com>
+  * [740c8b9] Do not skip dist_and_arch_settings in PROVIDE_ONLY mode
+  * [4b60635] tap_tool_dispatcher: fix path for checkbashism_tap check
+  * [9bb89c8] Replace my business mail address with my debian.org one
+  * [f7235ed] libperl-critic-perl in Depends is unneeded, Recommends is
+    enough
+
+ -- Michael Prokop <mika@debian.org>  Mon, 24 Aug 2015 22:08:32 +0200
+
 jenkins-debian-glue (0.14.0) unstable; urgency=medium
 
   The "free the racoons AKA DebConf15" release
