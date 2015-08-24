@@ -14,6 +14,12 @@ Architecture: all
 Depends: sudo | sudo-ldap,
          ${misc:Depends}
 Recommends: jenkins-debian-glue-buildenv
+Conflicts: jenkins-debian-glue-buildenv-git,
+           jenkins-debian-glue-buildenv-lintian,
+           jenkins-debian-glue-buildenv-piuparts,
+           jenkins-debian-glue-buildenv-slave,
+           jenkins-debian-glue-buildenv-svn,
+           jenkins-debian-glue-buildenv-taptools
 Description: Jenkins Debian glue scripts
  This package provides scripts which make building Debian
  packages inside Jenkins (a Continuous Integration suite) easier.
