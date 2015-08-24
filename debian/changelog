@@ -40,7 +40,7 @@ jenkins-debian-glue (0.14.0) unstable; urgency=medium
   [ Antoine Musso ]
   * [ee9d99c] Support muting command printing in shell scripts
 
- -- Michael Prokop <prokop@grml-solutions.com>  Sat, 22 Aug 2015 12:57:37 +0200
+ -- Michael Prokop <mika@debian.org>  Sat, 22 Aug 2015 12:57:37 +0200
 
 jenkins-debian-glue (0.13.0) unstable; urgency=medium
 
@@ -79,7 +79,7 @@ jenkins-debian-glue (0.13.0) unstable; urgency=medium
     Devuan
   * [9cf2086] Add a per-package way to set USENETWORK=yes to pbuilderrc
 
- -- Michael Prokop <prokop@grml-solutions.com>  Wed, 03 Jun 2015 14:34:13 +0200
+ -- Michael Prokop <mika@debian.org>  Wed, 03 Jun 2015 14:34:13 +0200
 
 jenkins-debian-glue (0.12.0) unstable; urgency=medium
 
@@ -120,7 +120,7 @@ jenkins-debian-glue (0.12.0) unstable; urgency=medium
   * [060e227] Added support for binary only build and qemu foreign arch
     build
 
- -- Michael Prokop <prokop@grml-solutions.com>  Thu, 09 Apr 2015 12:02:23 +0200
+ -- Michael Prokop <mika@debian.org>  Thu, 09 Apr 2015 12:02:23 +0200
 
 jenkins-debian-glue (0.11.0) unstable; urgency=medium
 
@@ -149,7 +149,7 @@ jenkins-debian-glue (0.11.0) unstable; urgency=medium
   [ Mathieu Parent ]
   * [2934b08] Ensure correct version comparison
 
- -- Michael Prokop <prokop@grml-solutions.com>  Mon, 20 Oct 2014 10:13:18 +0200
+ -- Michael Prokop <mika@debian.org>  Mon, 20 Oct 2014 10:13:18 +0200
 
 jenkins-debian-glue (0.10.0) unstable; urgency=medium
 
@@ -179,7 +179,7 @@ jenkins-debian-glue (0.10.0) unstable; urgency=medium
   * [f9a139d] tap_tool_dispatcher: run all tools in parallel
   * [5d33d21] pep8_tap: don't re-enable default-disabled checkers
 
- -- Michael Prokop <prokop@grml-solutions.com>  Wed, 04 Jun 2014 16:56:34 +0200
+ -- Michael Prokop <mika@debian.org>  Wed, 04 Jun 2014 16:56:34 +0200
 
 jenkins-debian-glue (0.9.0) unstable; urgency=medium
 
@@ -221,7 +221,7 @@ jenkins-debian-glue (0.9.0) unstable; urgency=medium
   [ Andrey Elmanov ]
   * [0a4191c] Allow adding extra repositories for resolving dependencies
 
- -- Michael Prokop <prokop@grml-solutions.com>  Fri, 16 May 2014 12:56:48 +0200
+ -- Michael Prokop <mika@debian.org>  Fri, 16 May 2014 12:56:48 +0200
 
 jenkins-debian-glue (0.8.1) unstable; urgency=medium
 
@@ -229,7 +229,7 @@ jenkins-debian-glue (0.8.1) unstable; urgency=medium
     that shouldn't include sources" [Closes: #88] Thanks to Christoph Berg
     <christoph.berg@credativ.de> for feedback
 
- -- Michael Prokop <prokop@grml-solutions.com>  Fri, 14 Feb 2014 10:58:19 +0100
+ -- Michael Prokop <mika@debian.org>  Fri, 14 Feb 2014 10:58:19 +0100
 
 jenkins-debian-glue (0.8.0) unstable; urgency=medium
 
@@ -275,7 +275,7 @@ jenkins-debian-glue (0.8.0) unstable; urgency=medium
   * [b1e42c1] Make it possible to verify our own reprepro repositories by
     providing a pubkey
 
- -- Michael Prokop <prokop@grml-solutions.com>  Mon, 03 Feb 2014 14:51:01 +0100
+ -- Michael Prokop <mika@debian.org>  Mon, 03 Feb 2014 14:51:01 +0100
 
 jenkins-debian-glue (0.7.1) unstable; urgency=low
 
@@ -283,7 +283,7 @@ jenkins-debian-glue (0.7.1) unstable; urgency=low
     "reprepro | freight" to jenkins-debian-glue instead
   * [7588e3e] Add jenkins-debian-glue-buildenv-git to Recommends
 
- -- Michael Prokop <prokop@grml-solutions.com>  Thu, 24 Oct 2013 13:42:46 +0200
+ -- Michael Prokop <mika@debian.org>  Thu, 24 Oct 2013 13:42:46 +0200
 
 jenkins-debian-glue (0.7.0) unstable; urgency=low
 
