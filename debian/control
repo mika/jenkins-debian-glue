@@ -59,12 +59,6 @@ Conflicts: jenkins-debian-glue-buildenv-git,
            jenkins-debian-glue-buildenv-slave,
            jenkins-debian-glue-buildenv-svn,
            jenkins-debian-glue-buildenv-taptools
-Provides: jenkins-debian-glue-buildenv-git,
-          jenkins-debian-glue-buildenv-lintian,
-          jenkins-debian-glue-buildenv-piuparts,
-          jenkins-debian-glue-buildenv-slave,
-          jenkins-debian-glue-buildenv-svn,
-          jenkins-debian-glue-buildenv-taptools
 Replaces: jenkins-debian-glue-buildenv-git,
           jenkins-debian-glue-buildenv-lintian,
           jenkins-debian-glue-buildenv-piuparts,
