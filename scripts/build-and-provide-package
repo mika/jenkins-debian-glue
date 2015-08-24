@@ -226,12 +226,6 @@ dist_and_arch_settings() {
     echo "*** architecture is set to ${architecture} ***"
   fi
 
-  # only set $arch for other functions in this script if PROVIDE_ONLY is set
-  if [ -n "${PROVIDE_ONLY:-}" ] ; then
-    echo "*** Config variable 'PROVIDE_ONLY' is set, not setting COWBUILDER_BASE, COWBUILDER_DIST and DIST ***"
-    return 0
-  fi
-
   if [ -n "${distribution:-}" ] ; then
     local DIST="${distribution}"
   else
