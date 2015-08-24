@@ -135,8 +135,7 @@ fi
 bash "${TMPFILE}"
 rm -f "${TMPFILE}"
 
-echo "*** Getting rid of empty files + directories ***"
+echo "*** Getting rid of empty files ***"
 find "${REPORTS_DIRECTORY}" -type f -empty -exec rm {} +
-find "${REPORTS_DIRECTORY}" -type d -empty -exec rmdir -p --ignore-fail-on-non-empty {} +
 
 ## END OF FILE #################################################################
