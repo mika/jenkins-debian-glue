@@ -66,8 +66,8 @@ Replaces: jenkins-debian-glue-buildenv-git,
           jenkins-debian-glue-buildenv-svn,
           jenkins-debian-glue-buildenv-taptools
 Recommends: curl,
+            libperl-critic-perl,
             pep8 (>= 1.4.6~),
-            perlcritic,
             qemu-user-static,
             shellcheck
 Description: Jenkins Debian glue scripts - dependency package

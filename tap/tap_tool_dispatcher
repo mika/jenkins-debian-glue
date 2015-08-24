@@ -112,7 +112,7 @@ else
 fi
 
 if ! [ -x "$(which perlcritic)" ] ; then
-  echo "*** Skipping perlcritic checks as tool perlcritic isn't present ***"
+  echo "*** Skipping perlcritic checks as tool perlcritic (package libperl-critic-perl) isn't present ***"
 else
   if $_opt_perlcritic ; then
     echo "/usr/bin/perlcritic_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_perlcritic.tap' ';' \\" >> "${TMPFILE}"
