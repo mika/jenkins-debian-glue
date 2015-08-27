@@ -1,3 +1,13 @@
+jenkins-debian-glue (0.14.2) unstable; urgency=medium
+
+  * [a12c01d] Explicitly set umask to avoid running into cowbuilder bug
+    #531885. Thanks to Christoph Berg <myon@debian.org>
+  * [a410fbb] Drop /var/cache/pbuilder/build from default bindmounts.
+    Thanks to Philipp Hahn <hahn@univention.de> for the bug report and
+    analysis
+
+ -- Michael Prokop <mika@debian.org>  Thu, 27 Aug 2015 23:29:43 +0200
+
 jenkins-debian-glue (0.14.1) unstable; urgency=medium
 
   * [b9b7c13] Get rid of cowbuilder environment if creating it failed
