@@ -5,6 +5,9 @@ if [ -z ${JENKINS_DEBIAN_GLUE_QUIET:-} ]; then
 fi
 set -u
 
+# Debian bug #531885: cowbuilder build fails with restrictive umask
+umask 022
+
 # make sure cowbuilder/pbuilder/... are available
 PATH='/bin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin'
 
