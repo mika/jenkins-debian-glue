@@ -27,6 +27,7 @@ if ! [ -d /var/cache/pbuilder/build/ ] ; then
   cat >&2 <<EOF
   ┌──────────────────────────────────────────────────────────────────────────────┐
   │  Error: could not access /var/cache/pbuilder/build/ - missing in bindmount?  │
+  │  Please make sure /var/cache/pbuilder/build is included in USER_BINDMOUNTS   │
   └──────────────────────────────────────────────────────────────────────────────┘
 EOF
   exit 1
