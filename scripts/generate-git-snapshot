@@ -351,6 +351,33 @@ quilt_cleanup() {
   rm -rf .pc
 }
 
+git_source_options() {
+  if [ -n "${SKIP_GIT_SOURCE_OPTIONS:-}" ] ; then
+    echo "*** Skipping git_source_options as requested via SKIP_GIT_SOURCE_OPTIONS ***"
+    return 0
+  fi
+
+  local file="debian/source/options"
+  if [ -f "${file}" ]; then
+    local opt_depth=$(git config --file "${file}" --get git-depth 2>&- || true)
+    local opt_ref=$(git config --file "${file}" --get git-ref 2>&- || true)
+  fi
+
+  if [ -n "${GIT_DEPTH:-}" ]; then
+    echo "*** GIT_DEPTH is set, setting git depth to ${GIT_DEPTH} ***"
+    DBP_EXTRA_OPTS="${DBP_EXTRA_OPTS:-} --source-option=--git-depth=${GIT_DEPTH}"
+  elif [ -n "${opt_depth:-}" ]; then
+    echo "*** Using source depth of '$opt_depth' as defined in debian/source/options ***"
+  fi
+
+  if [ -n "${GIT_REF:-}" ] ; then
+    echo "*** GIT_REF is set, setting git ref to ${GIT_REF} ***"
+    DBP_EXTRA_OPTS="${DBP_EXTRA_OPTS:-} --source-option=--git-ref=${GIT_REF}"
+  elif [ -n "${opt_ref:-}" ]; then
+    echo "*** Using git ref '$opt_ref' as defined in debian/source/options ***"
+  fi
+}
+
 source_format_opts() {
   if ! [ -f "debian/source/format" ] ; then
     echo '*** WARNING: Source format is not specified in debian/source/format! ***'
@@ -366,6 +393,7 @@ source_format_opts() {
       ;;
     '3.0 (git)')
       echo "*** Source format detected as 3.0 (git) ***"
+      git_source_options
       PRISTINE_TAR=false
       SKIP_QUILT_CLEANUP=true
       IGNORE_GIT_BUILDPACKAGE=true
