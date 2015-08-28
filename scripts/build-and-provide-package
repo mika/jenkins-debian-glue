@@ -566,19 +566,23 @@ use_eatmydata() {
     if ! dpkg-query --show --showformat='${Status}' eatmydata | grep -q '^install' ; then
       echo "*** eatmydata missing on host system, not considering for usage (force via USE_EATMYDATA=true) ***"
     else
-      echo "*** eatmydata is present on host system, now checking distribution support ***"
-      case "${COWBUILDER_DIST}" in
-        etch|lenny|squeeze|wheezy)
-          echo "*** Debian release $COWBUILDER_DIST doesn't provide eatmydata >=82-6, skipping eatmydata ***"
-          ;;
-        warty|hoary|breezy|dapper|edgy|feisty|gutsy|hardy|intrepid|jaunty|karmi|lucid|maverick|natty|oneiric|quantal|raring|saucy|utopic|precise|trusty)
-          echo "*** Ubuntu release $COWBUILDER_DIST doesn't provide eatmydata >=82-6, skipping eatmydata ***"
-          ;;
-        *)
-          echo "*** Distribution ${COWBUILDER_DIST} should provide recent eatmydata support, enabling eatmydata ***"
-          enable_eatmydata
-          ;;
-      esac
+      if ! dpkg --compare-versions "$(dpkg-query --show --showformat='${Version}' eatmydata)" gt '26-2' ; then
+        echo "*** eatmydata version on host needs to be newer than v26-2 (>=82-6 is recommended), skipping eatmydata ***"
+      else
+        echo "*** eatmydata is present on host system, now checking distribution support ***"
+        case "${COWBUILDER_DIST}" in
+          etch|lenny|squeeze|wheezy)
+            echo "*** Debian release $COWBUILDER_DIST doesn't provide eatmydata >=82-6, skipping eatmydata ***"
+            ;;
+          warty|hoary|breezy|dapper|edgy|feisty|gutsy|hardy|intrepid|jaunty|karmi|lucid|maverick|natty|oneiric|quantal|raring|saucy|utopic|precise|trusty)
+            echo "*** Ubuntu release $COWBUILDER_DIST doesn't provide eatmydata >=82-6, skipping eatmydata ***"
+            ;;
+          *)
+            echo "*** Distribution ${COWBUILDER_DIST} should provide recent eatmydata support, enabling eatmydata ***"
+            enable_eatmydata
+            ;;
+        esac
+      fi
     fi
   fi
 }
