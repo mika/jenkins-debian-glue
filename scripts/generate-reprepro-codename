@@ -84,12 +84,12 @@ if [ -n "${JENKINS_DEBIAN_GLUE_VERSION:-}" ] ; then
 fi
 
 if [ -z "${REPOSITORY:-}" ] ; then
-  REPOSITORY='/srv/repository'
+  REPOSITORY=${DEFAULT_REPOSITORY}
   echo "*** Repository variable REPOSITORY is unset, using default [$REPOSITORY] ***"
 fi
 
 if ! ${SUDO_CMD:-} mkdir -p "${REPOSITORY}"/conf ; then
-  echo "Error creating ${REPOSITORY}/conf (forgot to create /srv/repository and chown jenkins?)" >&2
+  echo "Error creating ${REPOSITORY}/conf (forgot to create ${DEFAULT_REPOSITORY} and chown jenkins?)" >&2
   exit 1
 fi
 
