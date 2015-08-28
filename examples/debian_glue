@@ -94,3 +94,14 @@
 # ADT_RUNNER="adt-virt-qemu /srv/adt-${distribution:-}-${architecture:-}.img"
 # Default:
 # ADT=
+
+# Control usage of eatmydata to speed up builds. If eatmydata is present on the
+# host system and when building for a recent distribution (Debian/jessie +
+# Ubuntu/vivid or newer) eatmydata is enabled automatically.
+# To force its usage (skipping any host + distribution checks) set it to 'true'.
+# To disable its usage set it to 'false'.
+# USE_EATMYDATA=true
+
+# Enable ccache (compiler cache for fast recompilation of C/C++ code)
+# to speed up builds.
+# USE_CCACHE=true
