@@ -17,7 +17,7 @@ export DEBEMAIL
 
 if [ ! -d "${SOURCE_DIRECTORY}" ] ; then
   echo "Please run the script in the jenkins workspace." >&2
-  echo 'NOTE: Make sure that Source Code Management -> Branches to build -> Advanced has "Local subdirectory for repo (optional)" configured to "source"' >&2
+  echo 'NOTE: Make sure that "Source Code Management -> Git -> Additional Behaviours -> Check out to a sub-directory" is set to "source"' >&2
   exit 1
 fi
 
