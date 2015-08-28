@@ -5,12 +5,34 @@ if [ -z ${JENKINS_DEBIAN_GLUE_QUIET:-} ]; then
 fi
 set -e
 
+# backwards compatibility, see PR#94
+if [ -z "${REPOSITORY:-}" ] ; then
+  repository_is_missing_in_env=true
+else
+  repository_is_missing_in_env=false
+fi
+
 if [ -r /etc/jenkins/debian_glue ] ; then
   . /etc/jenkins/debian_glue
 fi
 
+# backwards compatibility, see PR#94
+if [ -n "${REPOSITORY:-}" ] && $repository_is_missing_in_env ; then
+  echo "*** WARNING: 'REPOSITORY' set in /etc/jenkins/debian_glue but should be DEFAULT_REPOSITORY ***"
+  echo "*** WARNING: Setting DEFAULT_REPOSITORY to $REPOSITORY for backwards compatibility ***"
+  echo "*** WARNING: Please replace REPOSITORY=... in /etc/jenkins/debian_glue with DEFAULT_REPOSITORY=... ***"
+  DEFAULT_REPOSITORY="${REPOSITORY}"
+fi
+
+if [ -z "${DEFAULT_REPOSITORY:-}" ] ; then
+  echo "*** Repository variable DEFAULT_REPOSITORY is unset, using default [$DEFAULT_REPOSITORY] ***"
+  DEFAULT_REPOSITORY='/srv/repository'
+fi
+
+# REPOSITORY can overwrite DEFAULT_REPOSITORY, so define only if unset
 if [ -z "${REPOSITORY:-}" ] ; then
-  REPOSITORY='/srv/repository'
+  REPOSITORY="${DEFAULT_REPOSITORY}"
+  echo "*** Repository variable REPOSITORY is unset, using default [$REPOSITORY] ***"
 fi
 
 if [ -z "${REPREPRO_OPTS:-}" ]  ; then

@@ -30,9 +30,10 @@
 # By default no user specific pbuilder configuration file is used.
 # PBUILDER_CONFIG=/etc/jenkins/pbuilderrc
 
-# Base directory for reprepro repositories
+# Base directory for reprepro repositories, can be overwritten
+# via REPOSITORY on demand
 # Default:
-# REPOSITORY='/srv/repository'
+# DEFAULT_REPOSITORY='/srv/repository'
 
 # In order to keep the build versions unique and to ensure that there
 # are no duplicates, the version number from the changelog is padded
