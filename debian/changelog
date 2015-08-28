@@ -1,3 +1,18 @@
+jenkins-debian-glue (0.15.0) unstable; urgency=medium
+
+  * [220f87e] Support eatmydata (automatically enabled if host +
+    distribution needs match) + ccache
+  * [a1cba38] Rename global REPOSITORY to DEFAULT_REPOSITORY to support
+    overwriting it on demand (Closes #94) Thanks to Jean Baptiste Favre
+    for the bug report
+  * [469a1ed] Ensure that eatmydata version on host is recent enough
+  * [fdd0c85] Use debian-archive-keyring when building for recent Debian
+    on Ubuntu (Closes #130)
+  * [89d3400] Update informational message regarding sub-directory
+    checkout for Git (Closes #107)
+
+ -- Michael Prokop <mika@debian.org>  Fri, 28 Aug 2015 16:19:06 +0200
+
 jenkins-debian-glue (0.14.2) unstable; urgency=medium
 
   * [a12c01d] Explicitly set umask to avoid running into cowbuilder bug
