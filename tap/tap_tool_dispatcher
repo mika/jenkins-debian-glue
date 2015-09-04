@@ -6,7 +6,7 @@ BASE_BIN=${BASE_BIN:-/usr/bin}
 
 # command line handling
 CMDLINE_OPTS=disable-checkbashism,disable-pep8,disable-perlcritic,disable-shellcheck
-CMDLINE_OPTS+=file-list,help
+CMDLINE_OPTS+=,file-list,help
 
 _opt_temp=$(getopt --name tap_tool_dispatcher -o -f+h --long $CMDLINE_OPTS -- "$@")
 if [ $? -ne 0 ]; then
