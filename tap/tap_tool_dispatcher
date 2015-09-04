@@ -3,9 +3,10 @@
 set -u
 
 # command line handling
-CMDLINE_OPTS=disable-checkbashism,disable-pep8,disable-perlcritic,disable-shellcheck,help
+CMDLINE_OPTS=disable-checkbashism,disable-pep8,disable-perlcritic,disable-shellcheck
+CMDLINE_OPTS+=file-list,help
 
-_opt_temp=$(getopt --name tap_tool_dispatcher -o +h --long $CMDLINE_OPTS -- "$@")
+_opt_temp=$(getopt --name tap_tool_dispatcher -o -f+h --long $CMDLINE_OPTS -- "$@")
 if [ $? -ne 0 ]; then
   echo "Try '$0 --help' for more information." >& 2
   exit 1
@@ -29,7 +30,8 @@ usage() {
    --disable-pep8          Disable pep8 execution
    --disable-perlcritic    Disable perlcritic execution
    --disable-shellcheck    Disable shellcheck execution
-   --help                  Display this usage information and exit
+   -f|--file-list FILE     File with the list of files to check
+   -h|--help               Display this usage information and exit
    "
 }
 
@@ -49,6 +51,11 @@ while :; do
     ;;
   --disable-shellcheck)
     _opt_shellcheck=false
+    ;;
+  --file-list|-f)
+    [ -f "$2" ] || { echo "No $2 file found" >&2; exit 1; }
+    FILE_LIST="$2"
+    shift;
     ;;
   --)
     shift; break
@@ -88,7 +95,13 @@ if parallel --version >/dev/null 2>&1 ; then
   PARALLEL_OPTION='-v'
 fi
 
-echo "find source -type f ! -path '*.svn*' ! -path '*.git/*' ! -name '.gitignore' -prune | parallel $PARALLEL_OPTION -- \\
+if [ -n "${FILE_LIST:-}" ] ; then
+  LIST="sed 's#^#source/#g' < $FILE_LIST"
+else
+  LIST="find source -type f ! -path '*.svn*' ! -path '*.git/*' ! -name '.gitignore' -prune"
+fi
+
+echo "$LIST | parallel ${PARALLEL_OPTION:-} -- \\
   mkdir -p ${REPORTS_DIRECTORY}'/'{//} ';' \\" > "${TMPFILE}"
 
 if ! [ -x "$(which checkbashisms)" ] ; then
