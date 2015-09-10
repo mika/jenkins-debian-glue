@@ -45,8 +45,6 @@ fi
 # pbuilder's pbuilder-satisfydepends-classic
 apt-get install -y autopkgtest apt-utils pbuilder $newpid_name
 
-binaries=$(awk '/\.deb / { print "--binary ../" $1 }' debian/files)
-
 # since autopkgtest 3.16 the --tmp-dir option is gone, make sure
 # we've --output-dir available though before using it
 if adt-run --help | grep -q -- --output-dir 2>/dev/null ; then
@@ -60,8 +58,9 @@ mkdir -p /tmp/buildd/autopkgtest.out
 $newpid_name adt-run \
   ${OUTPUT_OPTION} /tmp/buildd/autopkgtest.out \
   --summary /tmp/buildd/autopkgtest.summary \
+  /tmp/buildd/*.deb \
   --built-tree "${PWD}" \
-  $binaries ${ADT_OPTIONS:-} --- adt-virt-null || EXIT=$?
+  ${ADT_OPTIONS:-} --- adt-virt-null || EXIT=$?
 
 # collect autopkgtest output in a single file so pbuilder automatically copies it
 tar acf /tmp/buildd/autopkgtest.tar.gz /tmp/buildd/autopkgtest.out
