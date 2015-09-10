@@ -1,3 +1,19 @@
+jenkins-debian-glue (0.15.1) unstable; urgency=medium
+
+  [ Victor Seva ]
+  * [129b226] tap_tool_dispatcher: add --file-list option
+  * [8aa6aab] tap_tool_dispatcher: support BASE_BIN to control location of
+    *_tap scripts
+
+  [ Michael Prokop ]
+  * [254809c] tap_tool_dispatcher: fix command line handling for file-
+    list. Thanks to Victor Seva <linuxmaniac@torreviejawireless.org>
+  * [08710a4] B20autopkgtest: fix order of adt-run tests on command line.
+    Thanks to Axel Beckert <abe@debian.org> for spotting the issue +
+    Martin Pitt <mpitt@debian.org> for helping resolve this issue
+
+ -- Michael Prokop <mika@debian.org>  Thu, 10 Sep 2015 22:14:57 +0200
+
 jenkins-debian-glue (0.15.0) unstable; urgency=medium
 
   * [220f87e] Support eatmydata (automatically enabled if host +
