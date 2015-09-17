@@ -1,3 +1,11 @@
+jenkins-debian-glue (0.15.2) unstable; urgency=medium
+
+  * [6d02e56] generate-git-snapshot: support git-buildpackage >=0.6.24.
+    Thanks to Daniele E. Domenichelli <daniele.domenichelli@gmail.com> for
+    the bug report (Closes: #799183)
+
+ -- Michael Prokop <mika@debian.org>  Thu, 17 Sep 2015 11:41:48 +0200
+
 jenkins-debian-glue (0.15.1) unstable; urgency=medium
 
   [ Victor Seva ]
