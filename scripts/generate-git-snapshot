@@ -31,6 +31,15 @@ if [ -z "${GIT_COMMIT:-}" ] ; then
   exit 1
 fi
 
+# since git-buildpackage >=0.6.24 only the gbp command is available
+if [ -x "$(which gbp)" ] ; then
+  GBP_DCH="gbp dch"
+  GBP_BUILDPACKAGE="gbp buildpackage"
+else
+  GBP_DCH="git-dch"
+  GBP_BUILDPACKAGE="git-buildpackage"
+fi
+
 JENKINS_DEBIAN_GLUE_VERSION=$(dpkg --list jenkins-debian-glue 2>/dev/null | awk '/^ii/ {print $3}')
 if [ -n "${JENKINS_DEBIAN_GLUE_VERSION:-}" ] ; then
   echo "*** Running jenkins-debian-glue version $JENKINS_DEBIAN_GLUE_VERSION ***"
@@ -40,8 +49,8 @@ if [ -n "${DIST:-}" -a -z "${KEEP_SOURCE_CHANGES:-}" ]; then
   echo "*** Warning: DIST is set but KEEP_SOURCE_CHANGES is not, this doesn't make sense. ***"
   echo "*** Please consider setting KEEP_SOURCE_CHANGES=true when setting DIST. ***"
 
-  if ! git-dch --help 2>&1 | grep -q -- --distribution ; then
-    echo "Error: git-dch doesn't support the --distribution option. Upgrade git-buildpackage to version 0.6.7 or newer." >&2
+  if ! ${GBP_DCH} --help 2>&1 | grep -q -- --distribution ; then
+    echo "Error: ${GBP_DCH} doesn't support the --distribution option. Upgrade git-buildpackage to version 0.6.7 or newer." >&2
     exit 1
   fi
 fi
@@ -104,7 +113,7 @@ dch_opts() {
     echo "Found environment variable DCH_OPTS, set to ${DCH_OPTS}"
   else
     DCH_OPTS="-S --multimaint-merge --ignore-branch"
-    echo "Using default git-dch options (${DCH_OPTS})"
+    echo "Using default ${GBP_DCH} options (${DCH_OPTS})"
   fi
   DCH_COMBINED_OPTS="${DCH_OPTS}"
 
@@ -116,7 +125,7 @@ dch_opts() {
     if [ -n "${DIST:-}" ]; then
       DCH_EXTRA_OPTS="${DCH_EXTRA_OPTS} --distribution ${DIST} --force-distribution"
     fi
-    echo "Using extra git-dch options (${DCH_EXTRA_OPTS})"
+    echo "Using extra ${GBP_DCH} options (${DCH_EXTRA_OPTS})"
   fi
   DCH_COMBINED_OPTS="${DCH_COMBINED_OPTS} ${DCH_EXTRA_OPTS}"
 
@@ -188,7 +197,7 @@ git_dch_auto() {
     dch -b --distribution=UNRELEASED --newversion=$VERSION_STRING -- \
       "SNAPSHOT autobuild for unreleased $ORIG_VERSION via jenkins-debian-glue."
   else
-    git-dch --auto $DCH_COMBINED_OPTS
+    ${GBP_DCH} --auto $DCH_COMBINED_OPTS
   fi
 }
 
@@ -213,7 +222,7 @@ identify_latest_change() {
   fi
 
   echo "Latest tag [${last_tag:-}] / merge [${last_merge:-}] seems to be $since"
-  git-dch -s "${since}" $DCH_COMBINED_OPTS
+  ${GBP_DCH} -s "${since}" $DCH_COMBINED_OPTS
 
   local NEW_VERSION=$(dpkg-parsechangelog | awk '/^Version: / {print $2}')
 
@@ -308,10 +317,10 @@ changelog_generation() {
         identify_latest_change
       fi
     elif [ -r debian/gbp.conf ] ; then
-      echo "Found debian/gbp.conf, using git-dch with auto mode."
+      echo "Found debian/gbp.conf, using ${GBP_DCH} with auto mode."
       git_dch_auto
     else
-      echo "Using git-dch with auto mode."
+      echo "Using ${GBP_DCH} with auto mode."
       git_dch_auto
     fi
 
@@ -434,7 +443,7 @@ if [ "${IGNORE_GIT_BUILDPACKAGE:-}" = "true" ] ; then
   echo "Skipping git-buildpackage execution as requested via IGNORE_GIT_BUILDPACKAGE ***"
 else
   gbp_opts # set $GBP_OPTS
-  git-buildpackage ${GBP_OPTS:-}
+  ${GBP_BUILDPACKAGE} ${GBP_OPTS:-}
 fi
 
 quilt_cleanup
