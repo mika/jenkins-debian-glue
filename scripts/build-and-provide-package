@@ -718,7 +718,7 @@ EOF
 
   case "$architecture" in
     i386)
-      linux32 sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
+      linux32 sudo DIST="${distribution:-}" ${ADT:+ADT=$ADT} \
         cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
         --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}" \
@@ -726,7 +726,7 @@ EOF
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
     amd64|all|*)
-      sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
+      sudo DIST="${distribution:-}" ${ADT:+ADT=$ADT} \
         cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
         --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}" \
