@@ -381,7 +381,7 @@ cowbuilder_init() {
 
   if [ ! -d "${COWBUILDER_BASE}" ]; then
     echo "*** Creating cowbuilder base $COWBUILDER_BASE for arch $arch and distribution $COWBUILDER_DIST ***"
-    sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
+    sudo ${ADT:+ADT=$ADT} \
       cowbuilder --create --basepath "${COWBUILDER_BASE}" --distribution "${COWBUILDER_DIST}" \
          --debootstrap "${DEBOOTSTRAP}" --architecture "${architecture:-}" \
          --debootstrapopts --arch --debootstrapopts "$arch" \
@@ -390,8 +390,9 @@ cowbuilder_init() {
     [ $? -eq 0 ] || exit 2
   else
     echo "*** Updating cowbuilder cow base ***"
-    sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
-      cowbuilder --update --basepath "${COWBUILDER_BASE}" --configfile="${pbuilderrc}"
+    sudo ${ADT:+ADT=$ADT} \
+      cowbuilder --update --basepath "${COWBUILDER_BASE}" --configfile="${pbuilderrc}" \
+         --distribution "${COWBUILDER_DIST}" --architecture "${architecture:-}"
     [ $? -eq 0 ] || exit 3
   fi
   ) 9>"${update_lockfile}" ||
