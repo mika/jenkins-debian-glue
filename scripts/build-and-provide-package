@@ -718,17 +718,19 @@ EOF
 
   case "$architecture" in
     i386)
-      linux32 sudo DIST="${distribution:-}" ${ADT:+ADT=$ADT} \
+      linux32 sudo ${ADT:+ADT=$ADT} \
         cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
+        --distribution="${distribution:-}" --architecture="${architecture:-}" \
         --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}" \
         --hookdir "${PBUILDER_HOOKDIR}" --bindmounts "$BINDMOUNTS" --configfile="${pbuilderrc}"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
       ;;
     amd64|all|*)
-      sudo DIST="${distribution:-}" ${ADT:+ADT=$ADT} \
+      sudo ${ADT:+ADT=$ADT} \
         cowbuilder --buildresult "$WORKSPACE"/binaries/ \
         --build $sourcefile \
+        --distribution="${distribution:-}" --architecture="${architecture:-}" \
         --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}" \
         --hookdir "${PBUILDER_HOOKDIR}" --bindmounts "$BINDMOUNTS" --configfile="${pbuilderrc}"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
