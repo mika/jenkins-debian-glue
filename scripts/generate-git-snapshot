@@ -93,6 +93,13 @@ version_information() {
     if [ "$DISTRIBUTION" = "UNRELEASED" ] && dpkg --compare-versions "$ORIG_VERSION" lt "$INCREASED_VERSION" ; then
       echo "*** Not increasing version number as distribution is set to UNRELEASED ***"
       INCREASED_VERSION="$ORIG_VERSION"
+
+      if [ "${UNRELEASED_APPEND_COMMIT:-}" = "true" ]; then
+        # However, as we will use plain 'dch' for this, we still want to have
+        # the (short) GIT commit id inside the version...
+        echo "*** UNRELEASED_APPEND_COMMIT is set to 'true', manually appending GIT commit to version number ***"
+        BUILD_VERSION="${BUILD_VERSION}~${GIT_COMMIT:0:7}"
+      fi
       APPLY_VERSION_WORKAROUND=true
     fi
 
