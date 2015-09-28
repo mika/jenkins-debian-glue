@@ -111,3 +111,10 @@
 # build timestamp.
 # Default: %Y%m%d%H%M%S
 # TIMESTAMP_FORMAT="%Y%m%d%H%M%S"
+
+# In case you are explicitly marking your new package version as "UNRELEASED"
+# inside the debian/changelog file, you may not get a package build version
+# number containing the SCM commit. Set this to 'true' in order to work around
+# this.
+# Default: false
+# UNRELEASED_APPEND_COMMIT=false
