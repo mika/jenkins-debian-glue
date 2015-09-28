@@ -106,3 +106,8 @@
 # Enable ccache (compiler cache for fast recompilation of C/C++ code)
 # to speed up builds.
 # USE_CCACHE=true
+
+# Specify the format (as accepted by the 'date' command) for the generated
+# build timestamp.
+# Default: %Y%m%d%H%M%S
+# TIMESTAMP_FORMAT="%Y%m%d%H%M%S"

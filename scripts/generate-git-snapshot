@@ -85,7 +85,12 @@ version_information() {
     # $ORIG_VERSION+0~$TIMESTAMP.$BUILD_NUMBER~1.$GIT_ID
     # so the version is always increasing over time, no matter what
     INCREASED_VERSION=$(increase-version-number $ORIG_VERSION)
-    TIMESTAMP="$(date -u +%Y%m%d%H%M%S)"
+    if [ -n "${TIMESTAMP_FORMAT:-}" ] ; then
+      echo "*** Using custom timestamp format as specified by TIMESTAMP_FORMAT ***"
+      TIMESTAMP="$(date -u +"$TIMESTAMP_FORMAT")"
+    else
+      TIMESTAMP="$(date -u +%Y%m%d%H%M%S)"
+    fi
     BUILD_VERSION="${TIMESTAMP}.${BUILD_NUMBER}" # git-dch appends something like ~1.gbp5f433e then
 
     # we do NOT raise the version number, if we detect an unreleased version,

@@ -95,7 +95,12 @@ build_snapshot() {
 
   DISTRIBUTION=$(dpkg-parsechangelog --count 1 | awk '/^Distribution/ {print $2}')
 
-  TIMESTAMP=$(date -u +%Y%m%d%H%M%S)
+  if [ -n "${TIMESTAMP_FORMAT:-}" ] ; then
+    echo "*** Using custom timestamp format as specified by TIMESTAMP_FORMAT ***"
+    TIMESTAMP="$(date -u +"$TIMESTAMP_FORMAT")"
+  else
+    TIMESTAMP="$(date -u +%Y%m%d%H%M%S)"
+  fi
 
   if [ "$DISTRIBUTION" = "UNRELEASED" ] ; then
     # we do NOT raise the version number, if we detect an unreleased version
