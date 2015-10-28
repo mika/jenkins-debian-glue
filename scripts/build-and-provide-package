@@ -389,10 +389,14 @@ cowbuilder_init() {
          --hookdir "${PBUILDER_HOOKDIR}"
     [ $? -eq 0 ] || exit 2
   else
-    echo "*** Updating cowbuilder cow base ***"
-    sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
-      cowbuilder --update --basepath "${COWBUILDER_BASE}" --configfile="${pbuilderrc}"
-    [ $? -eq 0 ] || exit 3
+    if [ "${SKIP_COWBUILDER_UPDATE:-}" = "true" ] ; then
+      echo "*** Skipping cowbuilder update as requested via SKIP_COWBUILDER_UPDATE ***"
+    else
+      echo "*** Updating cowbuilder cow base ***"
+      sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
+        cowbuilder --update --basepath "${COWBUILDER_BASE}" --configfile="${pbuilderrc}"
+      [ $? -eq 0 ] || exit 3
+    fi
   fi
   ) 9>"${update_lockfile}" ||
     {
