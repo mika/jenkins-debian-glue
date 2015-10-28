@@ -15,11 +15,11 @@ PATH='/bin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin'
 export QEMU_RESERVED_VA=0x0
 
 get_uptime_seconds() {
-        grep \\. /proc/uptime > /dev/zero
+        grep -q '\.' /proc/uptime
         if [ $? -eq 0 ];then
-                echo `cut -d . -f 1 /proc/uptime`
+                echo $(cut -d . -f 1 /proc/uptime)
         else
-                echo `cut -d" "  -f 1 /proc/uptime`
+                echo $(cut -d" "  -f 1 /proc/uptime)
         fi
 }
 
