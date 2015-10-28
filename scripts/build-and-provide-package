@@ -14,8 +14,17 @@ PATH='/bin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin'
 # make sure qemu doesn't give us the "out of memory issue" when compiling
 export QEMU_RESERVED_VA=0x0
 
+get_uptime_seconds() {
+        grep \\. /proc/uptime > /dev/zero
+        if [ $? -eq 0 ];then
+                echo `cut -d . -f 1 /proc/uptime`
+        else
+                echo `cut -d" "  -f 1 /proc/uptime`
+        fi
+}
+
 echo "*** Starting $0 at $(date) ***"
-start_seconds=$(cut -d . -f 1 /proc/uptime)
+start_seconds=$(get_uptime_seconds)
 
 JENKINS_DEBIAN_GLUE_VERSION=$(dpkg --list jenkins-debian-glue 2>/dev/null | awk '/^ii/ {print $3}')
 if [ -n "${JENKINS_DEBIAN_GLUE_VERSION:-}" ] ; then
@@ -167,7 +176,7 @@ bailout() {
 
   ${SUDO_CMD:-} rm -rf /tmp/apt-$$
 
-  [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
+  [ -n "$start_seconds" ] && SECONDS="$[$(get_uptime_seconds)-$start_seconds]" || SECONDS="unknown"
   echo "*** Finished execution of $0 at $(date) [running ${SECONDS} seconds] ***"
 
   exit $EXIT
