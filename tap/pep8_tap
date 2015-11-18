@@ -67,7 +67,7 @@ class Issue
       'code' => @code,
       'source' => @source.join("\n"),
       'file' => @file
-    }) + '---'  # end of yaml
+    }) + '...'  # end of yaml
     return ("not ok #{counter} #{@firstline}\n  " + body.gsub("\n","\n  "))
   end
 end
