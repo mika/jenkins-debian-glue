@@ -1037,9 +1037,7 @@ EOF
 
   local old_dir=$(pwd)
   cd "${REPOSITORY}/incoming/${release}"
-  ${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} \
-                --ignore=wrongdistribution \
-                --ignore=surprisingbinary \
+  ${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} --ignore=wrongdistribution \
                 processincoming "${release}" "$(basename ${WORKSPACE}/binaries/*.changes)"
   local RC=$?
   cd "$old_dir"
