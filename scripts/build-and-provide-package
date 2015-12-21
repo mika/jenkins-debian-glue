@@ -876,7 +876,7 @@ reprepro_wrapper() {
 
   echo "*** Including packages in repository $REPOS ***"
   ${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} \
-    --ignore=wrongdistribution --ignore=uploaders \
+    --ignore=wrongdistribution --ignore=uploaders --ignore=surprisingbinary \
     include "${REPOS}" "${WORKSPACE}/binaries/"*"_${newest_version}"_${architecture}.changes
   [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
 }
@@ -1037,7 +1037,9 @@ EOF
 
   local old_dir=$(pwd)
   cd "${REPOSITORY}/incoming/${release}"
-  ${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} --ignore=wrongdistribution \
+  ${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} \
+                --ignore=wrongdistribution \
+                --ignore=surprisingbinary \
                 processincoming "${release}" "$(basename ${WORKSPACE}/binaries/*.changes)"
   local RC=$?
   cd "$old_dir"
