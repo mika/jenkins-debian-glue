@@ -33,7 +33,13 @@ EOF
   exit 1
 fi
 
-cd /tmp/buildd/*/debian/..
+if [ -d /build ] ; then
+  BUILD_DIR="/build"      # pbuilder >=0.216
+else
+  BUILD_DIR="/tmp/buildd" # pbuilder <0.216
+fi
+
+cd "${BUILD_DIR}"/*/debian/..
 ID="$(basename $PWD)"
 
 touch /testfile.$$
@@ -58,7 +64,7 @@ cat <<EOF
   │  chroot /var/cache/pbuilder/build/debug.$ID
   │  su - pbuilder
   │  bash
-  │  cd /tmp/buildd/*/debian/..
+  │  cd ${BUILD_DIR}/*/debian/..
   │  env PATH="/usr/sbin:/usr/bin:/sbin:/bin" dpkg-buildpackage -us -uc -nc -rfakeroot
   │
   ┌──────────────────────────────────────────────────────────────────────────────┐
