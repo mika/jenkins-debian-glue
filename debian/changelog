@@ -1,3 +1,25 @@
+jenkins-debian-glue (0.16.0) unstable; urgency=medium
+
+  [ Kane ]
+  * [1e15d10] Allow customization of generated timestamp in package
+    version
+  * [59a3171] Add an option for enforcing Git commit in package version
+
+  [ Michael Prokop ]
+  * [4f81b3e] Support skipping cowbuilder updates via
+    SKIP_COWBUILDER_UPDATE=true
+  * [d00f953] reprepro: use --ignore=surprisingbinary to support automatic
+    debug symbols
+  * [2614b20] reprepro: processincoming doesn't handle
+    --ignore=surprisingbinary yet. Thanks to Christoph Berg
+    <myon@debian.org> (see #808558)
+  * [0d872a2] pbuilder-hookdir/C10shell: support pbuilder >=0.216
+
+  [ Christian Hofstaedtler ]
+  * [b07e121] Fix TAP format pep8_tap output
+
+ -- Michael Prokop <mika@debian.org>  Thu, 07 Jan 2016 11:11:38 +0100
+
 jenkins-debian-glue (0.15.2) unstable; urgency=medium
 
   * [6d02e56] generate-git-snapshot: support git-buildpackage >=0.6.24.
