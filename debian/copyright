@@ -3,11 +3,11 @@ Upstream-Name: jenkins-debian-glue
 Source: https://github.com/mika/jenkins-debian-glue
 
 Files: *
-Copyright: 2011-2015 Michael Prokop <mika@debian.org>
+Copyright: 2011-2016 Michael Prokop <mika@debian.org>
 License: MIT
 
 Files: debian/*
-Copyright: 2011-2015 Michael Prokop <mika@debian.org>
+Copyright: 2011-2016 Michael Prokop <mika@debian.org>
 License: MIT
 
 Files: pbuilder-hookdir/B20autopkgtest
