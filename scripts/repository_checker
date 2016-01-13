@@ -33,6 +33,9 @@ if [ -z "${REPOSITORY:-}" ] ; then
   echo "*** Repository variable REPOSITORY is unset, using default [$REPOSITORY] ***"
 fi
 
+# support usage of a reprepro wrapper
+REPREPRO_CMD="${REPREPRO_CMD:-reprepro}"
+
 if [ -z "${REPREPRO_OPTS:-}" ]  ; then
   REPREPRO_OPTS='--waitforlock 1000 -v'
 fi
@@ -126,20 +129,20 @@ validate-source-bin-versions() {
   rc=0
 
   for repository in $(awk '/^Codename: / {print $2}' "${REPOSITORY}"/conf/distributions 2>"${LOGFILE}") ; do
-    for sourcepackage in $(reprepro $REPREPRO_OPTS -A source -b "${REPOSITORY}" --list-format='${package}\n' list $repository 2>"${LOGFILE}") ; do
+    for sourcepackage in $(${REPREPRO_CMD} $REPREPRO_OPTS -A source -b "${REPOSITORY}" --list-format='${package}\n' list $repository 2>"${LOGFILE}") ; do
       if $_opt_validate_skip_package && _skip_package "${SKIP_PACKAGE}" "$sourcepackage" ; then
         echo "skipping: $sourcepackage"
         continue
       fi
-      sourceversion=$(reprepro $REPREPRO_OPTS -A source -b "${REPOSITORY}" --list-format='${version}\n' list $repository $sourcepackage 2>"${LOGFILE}")
-      for binarypackage in $(reprepro $REPREPRO_OPTS -b "${REPOSITORY}" --list-format='${package}\n' -T deb listfilter "$repository" "\$Source (==$sourcepackage)" 2>"${LOGFILE}") ; do
+      sourceversion=$(${REPREPRO_CMD} $REPREPRO_OPTS -A source -b "${REPOSITORY}" --list-format='${version}\n' list $repository $sourcepackage 2>"${LOGFILE}")
+      for binarypackage in $(${REPREPRO_CMD} $REPREPRO_OPTS -b "${REPOSITORY}" --list-format='${package}\n' -T deb listfilter "$repository" "\$Source (==$sourcepackage)" 2>"${LOGFILE}") ; do
 
         if $_opt_validate_skip_package && _skip_package "${SKIP_PACKAGE}" "$binarypackage" ; then
           echo "skipping: $binarypackage"
           continue
         fi
 
-        archversion=$(reprepro $REPREPRO_OPTS -A amd64 -b "${REPOSITORY}" --list-format='${version}\n' list $repository $binarypackage 2>"${LOGFILE}")
+        archversion=$(${REPREPRO_CMD} $REPREPRO_OPTS -A amd64 -b "${REPOSITORY}" --list-format='${version}\n' list $repository $binarypackage 2>"${LOGFILE}")
 
         if $_opt_version_remove_epoch ; then
           sourceversion=$(_remove_epoch $sourceversion)
@@ -256,32 +259,32 @@ fi
 
 # main execution
 if $_opt_list_packages ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" ls "${PACKAGE}"
+  ${REPREPRO_CMD} ${REPREPRO_OPTS} -b "${REPOSITORY}" ls "${PACKAGE}"
   bailout 0
 fi
 
 if $_opt_list_source_package ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -A source ls "${PACKAGE}"
+  ${REPREPRO_CMD} ${REPREPRO_OPTS} -b "${REPOSITORY}" -A source ls "${PACKAGE}"
   bailout 0
 fi
 
 if $_opt_list_binary_package ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -T deb ls "${PACKAGE}"
+  ${REPREPRO_CMD} ${REPREPRO_OPTS} -b "${REPOSITORY}" -T deb ls "${PACKAGE}"
   bailout 0
 fi
 
 if $_opt_list_repos ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" list "${REPOS}"
+  ${REPREPRO_CMD} ${REPREPRO_OPTS} -b "${REPOSITORY}" list "${REPOS}"
   bailout 0
 fi
 
 if $_opt_list_source_repos ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -A source list "${REPOS}"
+  ${REPREPRO_CMD} ${REPREPRO_OPTS} -b "${REPOSITORY}" -A source list "${REPOS}"
   bailout 0
 fi
 
 if $_opt_list_binary_repos ; then
-  reprepro ${REPREPRO_OPTS} -b "${REPOSITORY}" -T deb list "${REPOS}"
+  ${REPREPRO_CMD} ${REPREPRO_OPTS} -b "${REPOSITORY}" -T deb list "${REPOS}"
   bailout 0
 fi
 

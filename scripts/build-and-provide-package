@@ -101,6 +101,9 @@ checks_and_defaults() {
     echo "*** REPREPRO_OPTS is unset, using default: $REPREPRO_OPTS ***"
   fi
 
+  # support usage of a reprepro wrapper
+  REPREPRO_CMD="${REPREPRO_CMD:-reprepro}"
+
   if [ -z "${DEFAULT_REPOSITORY:-}" ] ; then
     DEFAULT_REPOSITORY='/srv/repository'
   fi
@@ -773,7 +776,7 @@ remove_packages() {
   fi
 
   echo "*** Removing source package version from repository ***"
-  ${SUDO_CMD:-} reprepro -A source -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${SOURCE_PACKAGE}"
+  ${SUDO_CMD:-} ${REPREPRO_CMD} -A source -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${SOURCE_PACKAGE}"
 
   echo "*** Removing previous binary package versions from repository ***"
   for p in $(list_deb_files "${WORKSPACE}/binaries/"*"_${newest_version}_${arch}.changes") ; do
@@ -797,10 +800,10 @@ remove_packages() {
     elif echo "$file" | egrep -q '_all.deb$'; then
       # note: "removesrc" would remove foreign arch files (of different builds)
       echo "*** Removing existing package ${binpackage} from repository ${REPOS} (arch all) ***"
-      ${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${binpackage}"
+      ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${binpackage}"
     else
       echo "*** Removing existing package ${binpackage} from repository ${REPOS} for arch ${arch} ***"
-      ${SUDO_CMD:-} reprepro -A "${arch}" -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${binpackage}"
+      ${SUDO_CMD:-} ${REPREPRO_CMD} -A "${arch}" -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${binpackage}"
     fi
 
   done
@@ -827,7 +830,7 @@ remove_missing_binary_packages() {
       ;;
   esac
 
-  for p in $(${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} --list-format '${package}\n' listmatched "${REPOS}" '*' | sort -u); do
+  for p in $(${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} --list-format '${package}\n' listmatched "${REPOS}" '*' | sort -u); do
     echo " $binary_list " | grep -q " $p " || missing_packages="${missing_packages:-} $p"
   done
 
@@ -850,7 +853,7 @@ remove_missing_binary_packages() {
         echo "*** Package '$p' listed in SKIP_PACKAGE_FROM_REMOVAL - skipping removal therefore ***"
       else
         echo "*** Removing $p from $REPOS to avoid out-of-date data ***"
-        ${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${p}"
+        ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${p}"
       fi
    done
 
@@ -875,7 +878,7 @@ reprepro_wrapper() {
   esac
 
   echo "*** Including packages in repository $REPOS ***"
-  ${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} \
+  ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} \
     --ignore=wrongdistribution --ignore=uploaders --ignore=surprisingbinary \
     include "${REPOS}" "${WORKSPACE}/binaries/"*"_${newest_version}"_${architecture}.changes
   [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
@@ -956,7 +959,7 @@ trunk_release() {
 
     ${SUDO_CMD:-} generate-reprepro-codename "$TRUNK_RELEASE"
 
-    ${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
+    ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
     [ $? -eq 0 ] || bailout 1 "Error: Failed to copy packages from ${REPOS} to ${TRUNK_RELEASE}."
   fi
 }
@@ -1037,7 +1040,7 @@ EOF
 
   local old_dir=$(pwd)
   cd "${REPOSITORY}/incoming/${release}"
-  ${SUDO_CMD:-} reprepro -b "${REPOSITORY}" ${REPREPRO_OPTS} --ignore=wrongdistribution \
+  ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} --ignore=wrongdistribution \
                 processincoming "${release}" "$(basename ${WORKSPACE}/binaries/*.changes)"
   local RC=$?
   cd "$old_dir"

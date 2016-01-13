@@ -35,6 +35,9 @@ if [ -z "${REPOSITORY:-}" ] ; then
   echo "*** Repository variable REPOSITORY is unset, using default [$REPOSITORY] ***"
 fi
 
+# support usage of a reprepro wrapper
+REPREPRO_CMD="${REPREPRO_CMD:-reprepro}"
+
 if [ -z "${REPREPRO_OPTS:-}" ]  ; then
   REPREPRO_OPTS='--waitforlock 1000 -v'
 fi
@@ -60,6 +63,6 @@ echo "*** Removing codename $codename from reprepro configuration in $REPOSITORY
 perl -i -00 -pe "if (!\$done && m|$codename|) { \$_=q(); \$done++}" "${REPOSITORY}/conf/distributions"
 
 echo "*** Removing vanished data from reprepro ***"
-reprepro $REPREPRO_OPTS -b "$REPOSITORY" --delete clearvanished
+${REPREPRO_CMD} $REPREPRO_OPTS -b "$REPOSITORY" --delete clearvanished
 
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
