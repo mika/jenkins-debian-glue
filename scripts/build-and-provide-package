@@ -996,13 +996,19 @@ drop_unused_debfiles() {
 release_repos() {
   echo "*** Environment variable 'release' is set, running through release steps. ***"
 
+  # if codename should be different from release
+  if [ -z "${RELEASE_DISTRIBUTION:-}" ] ; then
+    RELEASE_DISTRIBUTION="$release"
+    echo "*** Environment variable 'RELEASE_DISTRIBUTION' is unset, defaulting to $RELEASE_DISTRIBUTION ***"
+  fi
+
   if [ -n "${RELEASE_REPOSITORY:-}" ]; then
     local REPOSITORY="${RELEASE_REPOSITORY}"
   else
     local REPOSITORY="${REPOSITORY}/release/${release}"
   fi;
 
-  mkdir -p "${REPOSITORY}/incoming/${release}"
+  mkdir -p "${REPOSITORY}/incoming/${RELEASE_DISTRIBUTION}"
   mkdir -p "${REPOSITORY}/conf"
 
   if [ "${REMOVE_FROM_RELEASE:-}" = 'true' ]; then
@@ -1013,25 +1019,25 @@ release_repos() {
   # get rid of files that aren't mentioned in the changes files before copying to incoming directory
   drop_unused_debfiles
 
-  cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${release}/"
+  cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${RELEASE_DISTRIBUTION}/"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to copy binary packages to release directory."
 
-  REPOSITORY=$REPOSITORY generate-reprepro-codename "${release}"
+  REPOSITORY=$REPOSITORY generate-reprepro-codename "${RELEASE_DISTRIBUTION}"
 
   # lock access to file to avoid duplicate entries when two build-and-provide-package
   # runs happen at the very same time with regard to conf/incoming setup
   (
   flock --timeout 5 9 || bailout 1 "Error: could not lock file ${REPOSITORY}/conf/incoming, giving up."
 
-  if ! grep -q "^Name: $release$" "${REPOSITORY}/conf/incoming" 2>/dev/null ; then
+  if ! grep -q "^Name: $RELEASE_DISTRIBUTION$" "${REPOSITORY}/conf/incoming" 2>/dev/null ; then
     cat >> "${REPOSITORY}/conf/incoming" << EOF
 
-Name: $release
-IncomingDir: incoming/$release
+Name: ${RELEASE_DISTRIBUTION}
+IncomingDir: incoming/${RELEASE_DISTRIBUTION}
 TempDir: tmp
 LogDir: log
 MorgueDir: ${REPOSITORY}/morgue
-Default: $release
+Default: ${RELEASE_DISTRIBUTION}
 Cleanup: unused_files on_deny on_error
 
 EOF
@@ -1039,9 +1045,9 @@ EOF
   ) 9>/var/lock/jdg-build-and-provide-incoming."$(id -un)" || bailout 1 "Error while setting up incoming repository."
 
   local old_dir=$(pwd)
-  cd "${REPOSITORY}/incoming/${release}"
+  cd "${REPOSITORY}/incoming/${RELEASE_DISTRIBUTION}"
   ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} --ignore=wrongdistribution \
-                processincoming "${release}" "$(basename ${WORKSPACE}/binaries/*.changes)"
+                processincoming "${RELEASE_DISTRIBUTION}" "$(basename ${WORKSPACE}/binaries/*.changes)"
   local RC=$?
   cd "$old_dir"
 
