@@ -1076,7 +1076,16 @@ deploy_to_releases() {
     # setting the predefined parameters therefore) then ${release} is set to
     # '${release}' instead of being empty
     [ "${release}" != '${release}' ] ; then
-    release_repos
+
+    if [ -z "${RELEASE_REPOSITORIES:-}" ] ; then
+      release_repos
+    else
+      # allow pushing packages to multiple release repositories, like:
+      # RELEASE_REPOSITORIES="/srv/repository/release/ce/${release} /srv/repository/release/pro/${release}"
+      for release_repository in ${RELEASE_REPOSITORIES:-} ; do
+        RELEASE_REPOSITORY="$release_repository" release_repos
+      done
+    fi
   else
     reprepro_wrapper
     trunk_release
