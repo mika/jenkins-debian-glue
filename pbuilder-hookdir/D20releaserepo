@@ -21,6 +21,7 @@ if [ -d "$TMPAPT" ]; then
     echo "Using keyring for additional apt sources."
 
     cp "${TMPAPT}/keyring.gpg" /etc/apt/trusted.gpg.d
+    chmod 0644 /etc/apt/trusted.gpg.d/keyring.gpg
   fi
 
   if [ "$UPDATE_PKGLIST" = 1 ]; then
