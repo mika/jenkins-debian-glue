@@ -1,3 +1,22 @@
+jenkins-debian-glue (0.17.0) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [f33c054] Update copyright information (hello 2016)
+  * [ea83f07] Support usage of a reprepro wrapper script via REPREPRO_CMD
+  * [8c422f0] build-and-provide-package: support RELEASE_REPOSITORIES
+  * [5a6c4d6] Support choosing distribution/codename via
+    $RELEASE_DISTRIBUTION
+  * [12a45c5] Vcs-Git header: replace git with more secure https version
+  * [8e81ada] Bump Standards-Version to 3.9.7
+
+  [ Cyril Brulebois ]
+  * [d3a0dc3] puppet: end sources.list snippets with newlines.
+
+  [ Adrian Vondendriesch ]
+  * [a490dbb] Fix permissions of keyring.gpg in D20releaserepo.
+
+ -- Michael Prokop <mika@debian.org>  Mon, 14 Mar 2016 21:33:44 +0100
+
 jenkins-debian-glue (0.16.0) unstable; urgency=medium
 
   [ Kane ]
