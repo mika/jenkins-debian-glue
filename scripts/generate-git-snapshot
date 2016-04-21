@@ -209,7 +209,7 @@ git_dch_auto() {
     dch -b --distribution=UNRELEASED --newversion=$VERSION_STRING -- \
       "SNAPSHOT autobuild for unreleased $ORIG_VERSION via jenkins-debian-glue."
   else
-    ${GBP_DCH} --auto $DCH_COMBINED_OPTS
+    ${GBP_DCH} --auto $DCH_COMBINED_OPTS $DCH_CHANGELOG_FILE
   fi
 }
 
@@ -234,7 +234,7 @@ identify_latest_change() {
   fi
 
   echo "Latest tag [${last_tag:-}] / merge [${last_merge:-}] seems to be $since"
-  ${GBP_DCH} -s "${since}" $DCH_COMBINED_OPTS
+  ${GBP_DCH} -s "${since}" $DCH_COMBINED_OPTS $DCH_CHANGELOG_FILE
 
   local NEW_VERSION=$(dpkg-parsechangelog | awk '/^Version: / {print $2}')
 
