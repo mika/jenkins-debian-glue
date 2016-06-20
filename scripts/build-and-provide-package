@@ -367,14 +367,11 @@ cowbuilder_init() {
     return 0
   fi
 
-  if ls "${update_lockfile}"* >/dev/null 2>&1 ; then
-    echo "*** Update run already taking place, skipping ***"
-    return 0
-  fi
-
   (
-  # if we cannot get the lock then somebody else is already running
-  if ! flock --nonblock 9 ; then
+  # If we cannot get the lock then somebody else is already running. In this
+  # case we wait for up to 10 minutes. If we don't get the lock during that
+  # time we fail.
+  if ! flock --wait 600 9 ; then
     exit 1
   fi
 
@@ -406,8 +403,8 @@ cowbuilder_init() {
       # depending on the exit code we have to distinguish between different failures
       case "$?" in
         1)
-          echo "*** Someone else is holding the lock file ${update_lockfile}, skipping create/update ***"
-          return 0
+          echo "*** Someone else is holding a lock (flock) on file ${update_lockfile} for more than 10 minutes. Giving up. ***"
+          bailout 1 "Error: Failed to acquire lock for cowbuilder update."
           ;;
         2)
           echo "*** Something went wrong with the creation of the cowbuilder environment. Cleaning up. ***"
