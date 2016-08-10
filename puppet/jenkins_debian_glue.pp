@@ -209,6 +209,11 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
+  # required for usage of HTML markup in user-submitted text
+  jenkins::plugin::install { 'antisamy-markup-formatter':
+    require => Package['jenkins'],
+  }
+
   package { 'default-jre-headless':
     ensure  => present,
   }
