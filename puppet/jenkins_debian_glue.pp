@@ -159,6 +159,26 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
+  jenkins::plugin::install { 'matrix-project':
+    require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'junit':
+    require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'script-security':
+    require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'workflow-scm-step':
+    require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'mailer':
+    require => Package['jenkins'],
+  }
+
   # required for recent versions of git-client
   jenkins::plugin::install { 'ssh-agent':
     require => Package['jenkins'],
@@ -166,6 +186,14 @@ class jenkins::software {
 
   # required for recent versions of ssh-agent
   jenkins::plugin::install { 'workflow-step-api':
+    require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'bouncycastle-api':
+    require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'structs':
     require => Package['jenkins'],
   }
 
