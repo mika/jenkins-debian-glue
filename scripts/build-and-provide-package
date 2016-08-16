@@ -15,7 +15,7 @@ PATH='/bin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin'
 export QEMU_RESERVED_VA=0x0
 
 echo "*** Starting $0 at $(date) ***"
-start_seconds=$(cut -d . -f 1 /proc/uptime)
+start_seconds=$(sed -e 's/^\([0-9]*\).*/\1/' < /proc/uptime)
 
 JENKINS_DEBIAN_GLUE_VERSION=$(dpkg --list jenkins-debian-glue 2>/dev/null | awk '/^ii/ {print $3}')
 if [ -n "${JENKINS_DEBIAN_GLUE_VERSION:-}" ] ; then
@@ -170,7 +170,7 @@ bailout() {
 
   ${SUDO_CMD:-} rm -rf /tmp/apt-$$
 
-  [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
+  [ -n "$start_seconds" ] && SECONDS="$[$(sed -e 's/^\([0-9]*\).*/\1/' < /proc/uptime)-$start_seconds]" || SECONDS="unknown"
   echo "*** Finished execution of $0 at $(date) [running ${SECONDS} seconds] ***"
 
   exit $EXIT

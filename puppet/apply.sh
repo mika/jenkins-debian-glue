@@ -1,7 +1,7 @@
 #!/bin/bash
 
-start_seconds=$(cut -d . -f 1 /proc/uptime)
-[ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
+start_seconds=$(sed -e 's/^\([0-9]*\).*/\1/' < /proc/uptime)
+[ -n "$start_seconds" ] && SECONDS="$[$(sed -e 's/^\([0-9]*\).*/\1/' < /proc/uptime)-$start_seconds]" || SECONDS="unknown"
 
 if [ -r /var/lib/jenkins/config.xml ] ; then
   echo "Configuration file /var/lib/jenkins/config.xml exists already." >&2
@@ -98,7 +98,7 @@ $IP $(hostname).example.org $(hostname)
 fi
 
 if puppet apply jenkins_debian_glue.pp ; then
-  [ -n "$start_seconds" ] && SECONDS="$[$(cut -d . -f 1 /proc/uptime)-$start_seconds]" || SECONDS="unknown"
+  [ -n "$start_seconds" ] && SECONDS="$[$(sed -e 's/^\([0-9]*\).*/\1/' < /proc/uptime)-$start_seconds]" || SECONDS="unknown"
   echo "jenkins-debian-glue deployment finished after ${SECONDS} seconds."
 else
   echo "Fatal error during puppet run. :(" >&2
