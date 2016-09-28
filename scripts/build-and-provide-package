@@ -797,7 +797,7 @@ remove_packages() {
 
     if $skip ; then
       echo "*** Package '$binpackage' listed in SKIP_PACKAGE_FROM_REMOVAL - skipping removal therefore ***"
-    elif echo "$file" | egrep -q '_all.deb$'; then
+    elif echo "$file" | egrep -q '_all.u?deb$'; then
       # note: "removesrc" would remove foreign arch files (of different builds)
       echo "*** Removing existing package ${binpackage} from repository ${REPOS} (arch all) ***"
       ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${binpackage}"
