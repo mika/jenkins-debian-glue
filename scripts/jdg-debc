@@ -13,12 +13,17 @@ fi
 
 CHANGES=$(find . -maxdepth 1 -name \*.changes ! -name \*_source.changes)
 
+HOST_ARCH="$(dpkg-architecture -qDEB_HOST_ARCH)"
+if [ -n "${HOST_ARCH}" ] &&  [ -n "${architecture}" ] && [ "${architecture}" != "${HOST_ARCH}" ] ; then
+  arch="-a ${architecture}"
+fi
+
 if [ -n "$CHANGES" ] >/dev/null 2>&1 ; then
   for file in $CHANGES ; do
-    debc "$file"
+    debc ${arch} "$file"
   done
 elif ls ./*.deb >/dev/null 2>&1 ; then
-  debc ./*.deb
+  debc ${arch} ./*.deb
 else
   echo "No changes and deb files found in $(pwd), ignoring."
 fi
