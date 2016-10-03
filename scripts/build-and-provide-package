@@ -912,7 +912,7 @@ freight_ensure_repo() {
 #
 # Directories for the Freight library and Freight cache.
 # Your web server's document root should point to \$VARCACHE.
-VARLIB="${FREIGHT_VARLIB:-/var/lib/freigh}"
+VARLIB="${FREIGHT_VARLIB:-/var/lib/freight}"
 VARCACHE="${FREIGHT_VARCACHE:-/var/cache/freight}"
 
 # Default 'Origin' and 'Label' fields for 'Release' files.
