@@ -168,7 +168,7 @@ bailout() {
     rm -f "$WORKSPACE"/binaries/*
   fi
 
-  ${SUDO_CMD:-} rm -rf /tmp/apt-$$
+  [ -n "${tmpaptdir:-}" ] && ${SUDO_CMD:-} rm -rf "${tmpaptdir}"
 
   [ -n "$start_seconds" ] && SECONDS="$[$(sed -e 's/^\([0-9]*\).*/\1/' < /proc/uptime)-$start_seconds]" || SECONDS="unknown"
   echo "*** Finished execution of $0 at $(date) [running ${SECONDS} seconds] ***"
@@ -627,9 +627,10 @@ autopkgtest_results() {
 
 cowbuilder_run() {
   echo "*** cowbuilder build phase for arch $architecture ***"
-  mkdir -p "$WORKSPACE"/binaries/ /tmp/apt-$$
+  tmpaptdir=$(mktemp -d /tmp/apt-jdg_XXXXXX)
+  mkdir -p "$WORKSPACE"/binaries/ "${tmpaptdir}"
 
-  local BINDMOUNTS="/tmp/apt-$$ ${USER_BINDMOUNTS:-}"
+  local BINDMOUNTS="${tmpaptdir} ${USER_BINDMOUNTS:-}"
 
   # make sure we build arch specific packages only when necessary
   identify_build_type
@@ -661,19 +662,19 @@ cowbuilder_run() {
         # available in Squeeze.
         local trusted="[trusted=yes]"
       fi
-      cat > /tmp/apt-$$/release.list <<EOF
+      cat > "${tmpaptdir}"/release.list <<EOF
 deb ${trusted} file://${REPOSITORY} ${release} ${components}
 EOF
     fi
 
     if [ -n "${REPOSITORY_KEYRING:-}" ]; then
-      cp -a "${REPOSITORY_KEYRING}" /tmp/apt-$$/keyring.gpg
+      cp -a "${REPOSITORY_KEYRING}" "${tmpaptdir}"/keyring.gpg
     fi
   fi
 
   # Adding extra repository for resolving dependencies
   if [ -n "${REPOSITORY_EXTRA:-}" ]; then
-    echo ${REPOSITORY_EXTRA} | tr ',' '\n' > /tmp/apt-$$/extra.list
+    echo ${REPOSITORY_EXTRA} | tr ',' '\n' > "${tmpaptdir}"/extra.list
   fi
 
   if [ -n "${REPOSITORY_EXTRA_KEYS:-}" ]; then
@@ -681,7 +682,7 @@ EOF
     IFS=',' read -a array <<< "${REPOSITORY_EXTRA_KEYS}"
     for key in "${array[@]}" ; do
       curl -O "${key}"
-      gpg --no-default-keyring --keyring /tmp/apt-$$/keyring.gpg --import "${key##*/}"
+      gpg --no-default-keyring --keyring "${tmpaptdir}"/keyring.gpg --import "${key##*/}"
     done
     unset key
     IFS="$OIFS"
