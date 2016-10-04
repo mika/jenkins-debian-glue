@@ -1,3 +1,34 @@
+jenkins-debian-glue (0.18.0) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [f9b1fc8] puppet: update list of Jenkis plugins to satisfy
+    dependencies. Thanks to youam the bug report
+  * [db59998] puppet: update dependencies for git, ws-cleanup + ssh-agent
+    Jenkins plugins
+  * [96fe9fe] puppet: install antisamy-markup-formatter plugin for HTML
+    markup support
+  * [16f0ba5] Adjust runtime detection to properly work with LXC hosts.
+    Thanks to Ondřej Surý
+  * [59e1a99] Avoid dpkg-architecture usage for identifying host
+    architecture. Thanks to Guillem Jover for feedback
+  * [737e4e9] generate-git-snapshot: do not fail with branch specifier
+    being a commit ID. Thanks to Jan Alexander Steffens
+    <jan.steffens@gmail.com> for bugreport + patch
+  * [0f436f2] Bump Standards-Version to 3.9.8
+
+  [ Antoine Delvaux ]
+  * [c1e13b9] Adding SKIP_MISSING_BINARY_REMOVAL to prevent removal of
+    binary packages not belonging to the currently built source package.
+
+  [ Sebastian Damm ]
+  * [09a78f2] generate-git-snapshot: support DCH_CHANGELOG_FILE to change
+    path for git-dch
+
+  [ Alexis Bezverkhyy ]
+  * [6561c54] take into account .udebs in remove_packages()
+
+ -- Michael Prokop <mika@debian.org>  Tue, 04 Oct 2016 14:20:23 +0200
+
 jenkins-debian-glue (0.17.0) unstable; urgency=medium
 
   [ Michael Prokop ]
