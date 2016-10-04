@@ -20,7 +20,7 @@ if [ -z "${distribution:-}" ] ; then
 fi
 
 if [ -z "${architecture:-}" ] ; then
-  architecture=$(dpkg-architecture -qDEB_HOST_ARCH)
+  architecture=$(dpkg --print-architecture)
   echo "*** architecture variable is unset, using system architecture [$architecture] ***"
 fi
 
