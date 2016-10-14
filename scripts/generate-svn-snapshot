@@ -173,7 +173,8 @@ esac
 
 cd $ORIG_DIR
 
-debian_only="$(svn propget mergeWithUpstream source/${branch:-}/debian)"
+# subversion >=1.9 fails hard, see github issue #164
+debian_only="$(svn propget mergeWithUpstream source/${branch:-}/debian || true)"
 
 if [ -n "${SBP_OPTS:-}" ] ; then
   echo "*** Found environment variable SBP_OPTS, set to ${SBP_OPTS} ***"
