@@ -179,6 +179,10 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
+  jenkins::plugin::install { 'display-url-api':
+    require => Package['jenkins'],
+  }
+
   # required for recent versions of git-client
   jenkins::plugin::install { 'ssh-agent':
     require => Package['jenkins'],
