@@ -105,5 +105,29 @@ else
   exit 1
 fi
 
+echo "
+NOTE: if you should notice failing Jenkins jobs this might be related to
+incomplete Jenkins plugin dependencies (see
+https://github.com/jenkinsci/puppet-jenkins/issues/64 +
+https://github.com/jenkinsci/puppet-jenkins/issues/12 for details why we
+can't easily automate that yet).
 
-echo "Now point your browser to http://${IP}:8080"
+Usually this is related to the Git plugin. You can check whether the
+Git plugin for Jenkins is installed by checking if the following URL
+displays '<installed/>':
+
+  http://${IP}:8080/updateCenter/plugin/git/api/xml?xpath=plugin/installed
+
+If it returns something like 'XPath plugin/installed didn't match' then
+please install the plugin by visiting:
+
+  http://${IP}:8080/pluginManager/install?plugin.git.default
+
+and then click on the 'Restart Jenkins' option there.
+
+If the Git plugin is missing a dependency please report this at
+https://github.com/mika/jenkins-debian-glue/issues
+
+Enjoy your jenkins-debian-glue system!
+
+Now point your browser to http://${IP}:8080"
