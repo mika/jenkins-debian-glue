@@ -575,6 +575,8 @@ use_ccache() {
 enable_eatmydata() {
   echo 'EXTRAPACKAGES="$EXTRAPACKAGES eatmydata"' >> "$pbuilderrc"
   echo 'export LD_PRELOAD="${LD_PRELOAD:+$LD_PRELOAD:}libeatmydata.so"' >> "$pbuilderrc"
+  echo '# builtin support available with pbuilder >=0.225 (otherwise ignored):' >> "$pbuilderrc"
+  echo 'EATMYDATA=yes' >> "$pbuilderrc"
 }
 
 use_eatmydata() {
