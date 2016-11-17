@@ -1046,6 +1046,7 @@ TempDir: tmp
 LogDir: log
 MorgueDir: ${REPOSITORY}/morgue
 Default: ${RELEASE_DISTRIBUTION}
+Permit: unused_files
 Cleanup: unused_files on_deny on_error
 
 EOF
