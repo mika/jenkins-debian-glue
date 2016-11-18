@@ -1,3 +1,28 @@
+jenkins-debian-glue (0.18.1) unstable; urgency=medium
+
+  [ André Draszik ]
+  * jdg-debc: works for foreign architecture packages
+  * build-and-provide-package: fix a typo wrt freight
+  * build-and-provide-package: don't create freight dirs unnecessarily
+  * build-and-provide-package: use mktemp rather than PID for directory
+    name
+  * build-and-provide-package: make sure to remove pbuilderrc
+
+  [ Michael Prokop ]
+  * generate-svn-snapshot: avoid mergeWithUpstream failure with recent
+    subversion versions
+  * puppet: ensure display-url-api plugin is installed
+  * puppet: warn users of automated installations regarding missing
+    jenkins plugin dependencies
+  * build-and-provide-package: enable builtin support for eatmydata in
+    pbuilder
+  * Include .buildinfo files in list of artifact files. Thanks to
+    Christoph Berg <myon@debian.org>
+  * Don't fail when hitting .buildinfo files in reprepro's incoming stage
+  * Bump debhelper compat version to v9
+
+ -- Michael Prokop <mika@debian.org>  Fri, 18 Nov 2016 11:29:55 +0100
+
 jenkins-debian-glue (0.18.0) unstable; urgency=medium
 
   [ Michael Prokop ]
