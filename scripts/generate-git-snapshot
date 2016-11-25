@@ -356,7 +356,13 @@ git_cleanup() {
 
   echo "*** Cleaning git repository to make sure there are no modified files ***"
   echo "*** Note: You can skip this step by setting SKIP_GIT_CLEANUP=true ***"
-  git clean -fxd
+  echo "*** Note: You can add cleanup exclusions by setting GIT_CLEANUP_EXCLUDES ***"
+  if [ -n "${GIT_CLEANUP_EXCLUDES:-}" ] ; then
+    IFS=':' read -a git_cleanup_excludes_array <<< "$GIT_CLEANUP_EXCLUDES"
+    git clean -fxd ${git_cleanup_excludes_array[@]/#/-e }
+  else
+    git clean -fxd
+  fi
   git reset --hard HEAD
 }
 
@@ -409,7 +415,22 @@ source_format_opts() {
 
 # main execution
 echo "*** source package build phase ***"
-rm -f ./* || true
+if [ -n "${WS_CLEANUP_EXCLUDES:-}" ]; then
+  IFS=':' read -a ws_cleanup_excludes_array <<< "$WS_CLEANUP_EXCLUDES"
+  for f in ./*; do
+    [ -f "$f" ] || continue
+    for ex in "${ws_cleanup_excludes_array[@]}"; do
+      if echo "$f" | grep -q "$ex"; then
+        f=""
+        break
+      fi
+    done
+    [ -n "$f" ] || continue
+    rm -f "$f" || true
+  done
+else
+  rm -f ./* || true
+fi
 
 if [ -n "${PRE_SOURCE_HOOK:-}" ] ; then
   echo "*** Found environment variable PRE_SOURCE_HOOK, set to ${PRE_SOURCE_HOOK:-} ***"
@@ -460,9 +481,21 @@ fi
 
 quilt_cleanup
 
+# handle source package options...
+if [ -z "${DBP_OPTS:-}" ] && [ -f "debian/source/options" ]; then
+  DBP_OPTS=
+  if grep -q -E '^tar-ignore\s*=\s*.+' debian/source/options; then
+    echo "*** Found --tar-ignore option in debian/source/options, not using standard ignore for source package ***"
+  else
+    DBP_OPTS=-I
+  fi
+elif [ -n "${DBP_OPTS:-}" ]; then
+  echo "*** Found environment variable DBP_OPTS, set to ${DBP_OPTS:-} ***"
+fi
+
 # build source package, run before switching back to previous branch
 # to get the actual requested version
-dpkg-buildpackage -uc -us -nc -d -S -i -I ${DBP_EXTRA_OPTS:-}
+dpkg-buildpackage -uc -us -nc -d -S -i ${DBP_OPTS:-} ${DBP_EXTRA_OPTS:-}
 
 if [ -n "${KEY_ID:-}" ] ; then
   echo "*** Found environment variable KEY_ID, set to ${KEY_ID:-}, signing source package ***"
