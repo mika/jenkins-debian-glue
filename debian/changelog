@@ -1,3 +1,10 @@
+jenkins-debian-glue (0.18.2) unstable; urgency=medium
+
+  [ Will DeBerry ]
+  * [8fe6778] Don't override filter regexs
+
+ -- Michael Prokop <mika@debian.org>  Tue, 24 Jan 2017 22:13:48 +0100
+
 jenkins-debian-glue (0.18.1) unstable; urgency=medium
 
   [ André Draszik ]
