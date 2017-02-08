@@ -88,7 +88,7 @@ if [ -z "$IP" ] ; then
   IP=$(ip addr show dev $(route -n | awk '/^0\.0\.0\.0/{print $NF}') | awk '/inet / {print $2}' | head -1 |sed "s;/.*;;")
 fi
 
-if [[ $(facter fqdn) == "" ]] ; then
+if [[ "$(hostname -f 2>/dev/null)" == "" ]] ; then
   echo "Error: please make sure you have a valid FQDN configured in /etc/hosts" >&2
   echo "NOTE:  Something like adding the following snippet to /etc/hosts might help:
 
