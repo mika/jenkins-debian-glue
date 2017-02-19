@@ -462,7 +462,7 @@ quilt_cleanup
 
 # build source package, run before switching back to previous branch
 # to get the actual requested version
-dpkg-buildpackage -uc -us -nc -d -S ${DBP_EXTRA_OPTS:-}
+dpkg-buildpackage -b -uc -us -nc -d -S ${DBP_EXTRA_OPTS:-}
 
 if [ -n "${KEY_ID:-}" ] ; then
   echo "*** Found environment variable KEY_ID, set to ${KEY_ID:-}, signing source package ***"
