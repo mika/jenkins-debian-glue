@@ -441,10 +441,12 @@ identify_build_type() {
     case "${FORCE_BINARY_ONLY}" in
       all)
         DEBBUILDOPTS="-A"
+        SKIP_SOURCE_REMOVAL=true
         echo "*** FORCE_BINARY_ONLY set to 'all', building with DEBBUILDOPTS=${DEBBUILDOPTS} ***"
         ;;
       *)
         DEBBUILDOPTS="-B"
+        SKIP_SOURCE_REMOVAL=true
         echo "*** FORCE_BINARY_ONLY is NOT set to 'all', building with DEBBUILDOPTS=${DEBBUILDOPTS} ***"
         ;;
     esac
@@ -474,6 +476,7 @@ identify_build_type() {
       echo "*** Host architecture [${HOST_ARCH}] does not match \$architecture [${architecture:-}] ... ***"
       echo "*** ... setting binary only build and continuing with identify_build_type ***"
       DEBBUILDOPTS="-B"
+      SKIP_SOURCE_REMOVAL=true
     fi
   else
     if [ "${MAIN_ARCHITECTURE:-}" = "${architecture:-}" ] ;then
@@ -483,6 +486,7 @@ identify_build_type() {
     else
       echo "*** MAIN_ARCHITECTURE [${MAIN_ARCHITECTURE:-}] does not match \$architecture [${architecture:-}], setting binary only build and continuing with identify_build_type ***"
       DEBBUILDOPTS="-B"
+      SKIP_SOURCE_REMOVAL=true
     fi
   fi
 
@@ -500,6 +504,7 @@ identify_build_type() {
           echo "*** Package provides arch 'all' + 'any', enabling -B buildoption for this architecture. ***"
           # -B -> binary-only build, limited to architecture dependent packages
           DEBBUILDOPTS="-B"
+          SKIP_SOURCE_REMOVAL=true
           break
         else
           # only "Architecture: all", so no arch specific packages since
@@ -776,8 +781,12 @@ remove_packages() {
     return 0
   fi
 
-  echo "*** Removing source package version from repository ***"
-  ${SUDO_CMD:-} ${REPREPRO_CMD} -A source -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${SOURCE_PACKAGE}"
+  if [ -n "${SKIP_SOURCE_REMOVAL:-}" ] ; then
+    echo "*** Skipping removal of existing source package as requested via SKIP_SOURCE_REMOVAL ***"
+  else
+    echo "*** Removing source package version from repository ***"
+    ${SUDO_CMD:-} ${REPREPRO_CMD} -A source -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${SOURCE_PACKAGE}"
+  fi
 
   echo "*** Removing previous binary package versions from repository ***"
   for p in $(list_deb_files "${WORKSPACE}/binaries/"*"_${newest_version}_${arch}.changes") ; do
