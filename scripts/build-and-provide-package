@@ -878,6 +878,11 @@ remove_missing_binary_packages() {
 }
 
 reprepro_wrapper() {
+  if [ -n "${SKIP_REPREPRO_WRAPPER:-}" ] ; then
+    echo "*** Skipping reprepro_wrapper as requested via SKIP_REPREPRO_WRAPPER ***"
+    return
+  fi
+
   if ! [ -d "$REPOSITORY" ] ; then
     bailout 1 "Error: repository ${REPOSITORY} does not exist."
   fi
