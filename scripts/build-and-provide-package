@@ -1131,7 +1131,7 @@ binaries_to_workspace() {
 }
 
 # main execution
-trap bailout SIGHUP SIGINT SIGQUIT SIGABRT SIGKILL SIGALRM SIGTERM
+trap bailout SIGHUP SIGINT SIGQUIT SIGABRT SIGALRM SIGTERM
 
 checks_and_defaults
 clean_workspace
