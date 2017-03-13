@@ -877,6 +877,13 @@ remove_missing_binary_packages() {
   fi
 }
 
+get_arch_changes() {
+  case ${architecture} in
+    all) echo '*';; # support as file expansion in reprepro cmdline
+      *) echo "${architecture}";;
+  esac
+}
+
 reprepro_wrapper() {
   if [ -n "${SKIP_REPREPRO_WRAPPER:-}" ] ; then
     echo "*** Skipping reprepro_wrapper as requested via SKIP_REPREPRO_WRAPPER ***"
@@ -892,33 +899,18 @@ reprepro_wrapper() {
   remove_packages
   remove_missing_binary_packages
 
-  archall=false
-  case $architecture in
-    all) archall=true
-      architecture='*' # support as file expansion in reprepro cmdline
-      ;;
-  esac
-
   echo "*** Including packages in repository $REPOS ***"
   ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} \
     --ignore=wrongdistribution --ignore=uploaders --ignore=surprisingbinary \
-    include "${REPOS}" "${WORKSPACE}/binaries/"*"_${newest_version}"_${architecture}.changes
+    include "${REPOS}" "${WORKSPACE}/binaries/"*"_${newest_version}_$(get_arch_changes).changes"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
 }
 
 dput_wrapper() {
   command -v dput || bailout 1 "Error: dput not found."
 
-  archall=false
-  case $architecture in
-    all)
-      archall=true
-      architecture='*' # support as file expansion in cmdline
-      ;;
-  esac
-
   echo "*** Including packages in repository $REPOS ***"
-  ${SUDO_CMD:-} dput -U -u "${DPUT_HOST:-}" "${WORKSPACE}/binaries/"*"_${newest_version}"_${architecture}.changes
+  ${SUDO_CMD:-} dput -U -u "${DPUT_HOST:-}" "${WORKSPACE}/binaries/"*"_${newest_version}_$(get_arch_changes).changes"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to upload binary package to $DPUT_HOST dput host."
 }
 
@@ -988,8 +980,17 @@ trunk_release() {
 
     ${SUDO_CMD:-} generate-reprepro-codename "$TRUNK_RELEASE"
 
-    ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
-    [ $? -eq 0 ] || bailout 1 "Error: Failed to copy packages from ${REPOS} to ${TRUNK_RELEASE}."
+
+    if [ -n "${SKIP_REPREPRO_WRAPPER:-}" ] ; then
+      ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} \
+        --ignore=wrongdistribution --ignore=uploaders --ignore=surprisingbinary \
+        include "${TRUNK_RELEASE}" "${WORKSPACE}/binaries/"*"_${newest_version}_$(get_arch_changes).changes"
+      [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in ${TRUNK_RELEASE} repository."
+    else
+      ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} \
+        --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
+      [ $? -eq 0 ] || bailout 1 "Error: Failed to copy packages from ${REPOS} to ${TRUNK_RELEASE}."
+    fi
   fi
 }
 
