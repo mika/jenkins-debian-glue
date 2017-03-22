@@ -372,6 +372,31 @@ quilt_cleanup() {
   rm -rf .pc
 }
 
+identify_source_build_opts() {
+  # unset by default
+  DBP_OPTS=""
+
+  if [ -r "debian/source/format" ] && ! grep -q '^1\.0' debian/source/format ; then
+    echo "*** Found dpkg source format != 1.0, nothing to do ****"
+    return 0
+  fi
+
+  if [ -r "debian/source/options" ] ; then
+    if ! grep -q 'tar-ignore' "debian/source/options" ; then
+      echo "*** Enabling '-I' option as tar-ignore option not present in debian/source/options ***"
+      DBP_OPTS+=" -I"
+    fi
+
+    if ! egrep -qe '^(diff-ignore|extend-diff-ignore)' "debian/source/options" ; then
+      echo "*** Enabling '-i' option as diff-ignore or extend-diff-ignore options not present in debian/source/options ***"
+      DBP_OPTS+=" -i"
+    fi
+  else
+    echo "*** Enabling '-i -I' options as building for dpkg source format 1.0 ***"
+    DBP_OPTS="-i -I"
+  fi
+}
+
 source_format_opts() {
   if ! [ -f "debian/source/format" ] ; then
     echo '*** WARNING: Source format is not specified in debian/source/format! ***'
@@ -420,6 +445,7 @@ cd "$SOURCE_DIRECTORY"
 
 git_cleanup
 source_format_opts
+identify_source_build_opts
 
 # Only if we are using git-buildpackage...
 if [ "${IGNORE_GIT_BUILDPACKAGE:-}" != "true" ] ; then
@@ -462,7 +488,7 @@ quilt_cleanup
 
 # build source package, run before switching back to previous branch
 # to get the actual requested version
-dpkg-buildpackage -uc -us -nc -d -S ${DBP_EXTRA_OPTS:-}
+dpkg-buildpackage -uc -us -nc -d -S ${DBP_OPTS:-} ${DBP_EXTRA_OPTS:-}
 
 if [ -n "${KEY_ID:-}" ] ; then
   echo "*** Found environment variable KEY_ID, set to ${KEY_ID:-}, signing source package ***"
