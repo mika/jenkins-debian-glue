@@ -6,10 +6,10 @@ define jenkins::plugin::install($version=0, $force=0) {
   $plugin_dir = '/var/lib/jenkins/plugins'
 
   if ($version != 0) {
-    $base_url = "http://updates.jenkins-ci.org/download/plugins/${name}/${version}/"
+    $base_url = "http://updates.jenkins.io/download/plugins/${name}/${version}/"
   }
   else {
-    $base_url = 'http://updates.jenkins-ci.org/latest/'
+    $base_url = 'http://updates.jenkins.io/latest/'
   }
 
   if (!defined(File[$plugin_dir])) {
@@ -80,13 +80,13 @@ class jenkins::repos {
 
   apt::key { 'D50582E6':
     ensure => present,
-    source => 'http://pkg.jenkins-ci.org/debian-stable/jenkins-ci.org.key',
+    source => 'https://pkg.jenkins.io/debian-stable/jenkins.io.key',
   }
 
   file { '/etc/apt/sources.list.d/jenkins.list':
     ensure  => present,
     notify  => Exec['refresh-apt-jenkins'],
-    content => "deb http://pkg.jenkins-ci.org/debian-stable binary/\n",
+    content => "deb https://pkg.jenkins.io/debian-stable binary/\n",
     require => Apt::Key['D50582E6'],
   }
 
