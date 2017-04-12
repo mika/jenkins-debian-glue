@@ -22,7 +22,7 @@ define jenkins::plugin::install($version=0, $force=0) {
 
   if ($force != 0) {
     exec { "download-${name}" :
-      command => "touch $plugin_dir/${name}.jpi.pinned; wget --no-check-certificate -O $plugin_dir/${name}.jpi ${base_url}${plugin}",
+      command => "touch $plugin_dir/${name}.jpi.pinned; wget -O $plugin_dir/${name}.jpi ${base_url}${plugin}",
       cwd     => $plugin_dir,
       require => File[$plugin_dir],
       path    => ['/usr/bin', '/usr/sbin',],
@@ -31,7 +31,7 @@ define jenkins::plugin::install($version=0, $force=0) {
     }
   } else {
     exec { "download-${name}" :
-      command => "wget --no-check-certificate ${base_url}${plugin}",
+      command => "wget ${base_url}${plugin}",
       cwd     => $plugin_dir,
       require => File[$plugin_dir],
       path    => ['/usr/bin', '/usr/sbin',],

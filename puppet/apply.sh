@@ -34,11 +34,11 @@ if [ -n "$2" ] ; then
     exit 1
   else
     echo "Retrieving $2 and storing as jenkins_debian_glue.pp"
-    wget -O jenkins_debian_glue.pp --no-check-certificate "$2"
+    wget -O jenkins_debian_glue.pp "$2"
   fi
 else
   if ! [ -r jenkins_debian_glue.pp ] ; then
-    wget --no-check-certificate https://raw.github.com/mika/jenkins-debian-glue/master/puppet/jenkins_debian_glue.pp
+    wget https://raw.github.com/mika/jenkins-debian-glue/master/puppet/jenkins_debian_glue.pp
   fi
 fi
 
