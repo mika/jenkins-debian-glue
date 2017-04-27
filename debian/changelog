@@ -1,3 +1,31 @@
+jenkins-debian-glue (0.18.3) experimental; urgency=medium
+
+  The "¡Hola Alicante!" release
+
+  [ Michael Prokop ]
+  * [6cd165a] deployment: fail if we don't have a FQDN to avoid runtime
+    errors later on. Thanks to Arthur Lutz for the bugreport
+  * [16ec0f3] Support SKIP_SOURCE_REMOVAL to not remove source package in
+    binary only package builds. Thanks to Antoine Delvaux
+    <antoine.delvaux@gmail.com> for the bugreport + initial patch
+  * [42a7ea8] Support skipping reprepro wrapper via SKIP_REPREPRO_WRAPPER
+  * [d210c14] Fix regression from commit 8fe677820fae2 to apply safe dpkg-
+    buildpackage defaults. Thanks to Guillem Jover for feedback and code
+    review
+  * [5a7d041] puppet: switch from jenkins-ci.org to jenkins.io. Thanks to
+    Cyril Brulebois for the hint
+  * [066a1c0] puppet: no longer run wget with --no-check-certificate
+  * [12e873d] Further regression fixes for commit 8fe677820fae2 WRT dpkg-
+    buildpackage options. Thanks to Guillem Jover for feedback and code
+    review
+
+  [ Victor Seva ]
+  * [a7b350e] scripts: SIGKILL cannot be trapped
+  * [b707552] build-and-provide-package: fix trunk_release if
+    SKIP_REPREPRO_WRAPPER
+
+ -- Michael Prokop <mika@debian.org>  Thu, 27 Apr 2017 18:29:07 +0200
+
 jenkins-debian-glue (0.18.2) unstable; urgency=medium
 
   [ Will DeBerry ]
