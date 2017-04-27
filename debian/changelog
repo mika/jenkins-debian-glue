@@ -1,3 +1,17 @@
+jenkins-debian-glue (0.18.2.1) unstable; urgency=medium
+
+  * [9492a4f] Support SKIP_SOURCE_REMOVAL to not remove source package in
+    binary only package builds. Thanks to Antoine Delvaux
+    <antoine.delvaux@gmail.com> for the bugreport + initial patch
+  * [56563d7] Fix regression from commit 8fe677820fae2 to apply safe dpkg-
+    buildpackage defaults. Thanks to Guillem Jover for feedback and code
+    review
+  * [3b79a73] Further regression fixes for commit 8fe677820fae2 WRT dpkg-
+    buildpackage options. Thanks to Guillem Jover for feedback and code
+    review
+
+ -- Michael Prokop <mika@debian.org>  Thu, 27 Apr 2017 18:01:04 +0200
+
 jenkins-debian-glue (0.18.2) unstable; urgency=medium
 
   [ Will DeBerry ]
