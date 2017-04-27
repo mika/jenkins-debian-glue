@@ -382,13 +382,14 @@ identify_source_build_opts() {
   fi
 
   if [ -r "debian/source/options" ] ; then
-    if ! grep -q 'tar-ignore' "debian/source/options" ; then
+    if ! grep -q '^[[:space:]]*tar-ignore' "debian/source/options" ; then
       echo "*** Enabling '-I' option as tar-ignore option not present in debian/source/options ***"
       DBP_OPTS+=" -I"
     fi
 
-    if ! egrep -qe '^(diff-ignore|extend-diff-ignore)' "debian/source/options" ; then
-      echo "*** Enabling '-i' option as diff-ignore or extend-diff-ignore options not present in debian/source/options ***"
+    # note: we shouldn't match on 'extend-diff-ignore'
+    if ! grep -q '^[[:space:]]*diff-ignore' "debian/source/options" ; then
+      echo "*** Enabling '-i' option as diff-ignore option not present in debian/source/options ***"
       DBP_OPTS+=" -i"
     fi
   else
