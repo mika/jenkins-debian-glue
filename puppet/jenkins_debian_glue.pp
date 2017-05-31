@@ -43,20 +43,12 @@ define jenkins::plugin::install($version=0, $force=0) {
 
 }
 
-exec { 'apt-get_update':
-  refreshonly => true,
-  path        => '/bin:/usr/bin',
-  command     => 'apt-get update',
-}
-
 define apt::key($ensure = present, $source) {
   case $ensure {
     present: {
       exec { "/usr/bin/wget -O - '$source' | /usr/bin/apt-key add -":
         unless => "apt-key list | grep -Fqe '${name}'",
         path   => '/bin:/usr/bin',
-        before => Exec['apt-get_update'],
-        notify => Exec['apt-get_update'],
       }
     }
 
@@ -85,19 +77,15 @@ class jenkins::repos {
 
   file { '/etc/apt/sources.list.d/jenkins.list':
     ensure  => present,
-    notify  => Exec['refresh-apt-jenkins'],
     content => "deb https://pkg.jenkins.io/debian-stable binary/\n",
-    require => Apt::Key['D50582E6'],
   }
 
   exec { 'refresh-apt-jenkins':
-    refreshonly => true,
     require     => [
       File['/etc/apt/sources.list.d/jenkins.list'],
       Apt::Key['D50582E6'],
     ],
-    path        => ['/usr/bin', '/usr/sbin'],
-    command     => 'apt-get update',
+    command     => '/usr/bin/apt-get update',
   }
 
   apt::key { '52D4A654':
@@ -107,19 +95,15 @@ class jenkins::repos {
 
   file { '/etc/apt/sources.list.d/jenkins-debian-glue.list':
     ensure  => present,
-    notify  => Exec['refresh-apt-jenkins-debian-glue'],
     content => "deb http://jenkins.grml.org/debian jenkins-debian-glue main\n",
-    require => Apt::Key['52D4A654'],
   }
 
   exec { 'refresh-apt-jenkins-debian-glue':
-    refreshonly => true,
     require     => [
       File['/etc/apt/sources.list.d/jenkins-debian-glue.list'],
       Apt::Key['52D4A654'],
     ],
-    path        => ['/usr/bin', '/usr/sbin'],
-    command     => 'apt-get update';
+    command     => '/usr/bin/apt-get update';
   }
 }
 
