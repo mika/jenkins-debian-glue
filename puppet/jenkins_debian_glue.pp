@@ -60,9 +60,9 @@ define apt::key($ensure = present, $source) {
   }
 }
 
-if $ec2_public_ipv4 {
+if defined('$ec2_public_ipv4') {
   $jenkins_server = "$ec2_public_ipv4"
-} elsif $ipaddress {
+} elsif defined('$ipaddress') {
   $jenkins_server = "$ipaddress"
 } else {
   $jenkins_server = "YOUR_JENKINS_SERVER"
@@ -512,7 +512,7 @@ class jenkins::config {
     ensure  => present,
     mode    => '0644',
     owner   => 'jenkins',
-    require => File['/var/lib/jenkins/jobs/jenkins-debian-glue-piuparts'],
+    require => File['/var/lib/jenkins/jobs/jenkins-debian-glue-piuparts/'],
     notify  => Service['jenkins'],
     content => "<?xml version='1.0' encoding='UTF-8'?>
 <project>
@@ -603,7 +603,7 @@ sudo piuparts_wrapper \${PWD}/artifacts/*.deb || true</command>
       <name>All</name>
       <description>&lt;h1&gt;&lt;a href=&quot;http://jenkins-debian-glue.org/&quot;&gt;jenkins-debian-glue&lt;/a&gt; Continuous Integration labs&lt;/h1&gt;</description>
       <filterQueue>false</filterQueue>
-      <properties class='hudson.model.View$PropertyList'/>
+      <properties class='hudson.model.View\$PropertyList'/>
     </hudson.model.AllView>
   </views>
   <primaryView>All</primaryView>
@@ -646,7 +646,7 @@ sudo piuparts_wrapper \${PWD}/artifacts/*.deb || true</command>
           <name>All</name>
           <filterExecutors>false</filterExecutors>
           <filterQueue>false</filterQueue>
-          <properties class='hudson.model.View$PropertyList'/>
+          <properties class='hudson.model.View\$PropertyList'/>
         </hudson.model.AllView>
       </views>
     </hudson.model.MyViewsProperty>
