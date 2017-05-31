@@ -98,6 +98,13 @@ $IP $(hostname).example.org $(hostname)
 fi
 
 if puppet apply jenkins_debian_glue.pp ; then
+  if ! dpkg-query -s jenkins jenkins-debian-glue >/dev/null 2>&1 ; then
+    echo "While puppet reported a successful run, jenkins and/or jenkins-debian-glue aren't successfully installed. :(" >&2
+    echo "Please re-execute this script and if the problem persists please report this at" >&2
+    echo "https://github.com/mika/jenkins-debian-glue/issues" >&2
+    exit 1
+  fi
+
   [ -n "$start_seconds" ] && SECONDS="$[$(sed -e 's/^\([0-9]*\).*/\1/' < /proc/uptime)-$start_seconds]" || SECONDS="unknown"
   echo "jenkins-debian-glue deployment finished after ${SECONDS} seconds."
 else
