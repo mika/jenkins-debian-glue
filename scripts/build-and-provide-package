@@ -129,7 +129,7 @@ checks_and_defaults() {
     FREIGHT_VARCACHE=${FREIGHT_BASE}/default
     FREIGHT_CONF=${FREIGHT_BASE}/default.conf
   else
-    # Default to /srv/freight unless specifed
+    # Default to /srv/freight unless specified
     if [ -z "${FREIGHT_BASE:-}" ] ; then
       FREIGHT_BASE=/srv/freight
     fi
