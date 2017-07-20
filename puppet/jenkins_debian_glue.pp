@@ -197,6 +197,40 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
+  # required for recent versions of ws-cleanup
+  jenkins::plugin::install { 'workflow-durable-task-step':
+    require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'resource-disposer':
+    require => Package['jenkins'],
+  }
+
+  # note: workflow-aggregator is a dependency of ws-cleanup and
+  # is the plugin ID for "Pipeline Plugin"
+  jenkins::plugin::install { 'workflow-aggregator':
+    require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'pipeline-input-step':
+    require => Package['jenkins'],
+  }
+  jenkins::plugin::install { 'workflow-job':
+    require => Package['jenkins'],
+  }
+  jenkins::plugin::install { 'workflow-basic-steps':
+    require => Package['jenkins'],
+  }
+  jenkins::plugin::install { 'workflow-api':
+    require => Package['jenkins'],
+  }
+  jenkins::plugin::install { 'workflow-support':
+    require => Package['jenkins'],
+  }
+  jenkins::plugin::install { 'durable-task':
+    require => Package['jenkins'],
+  }
+
   # required for usage of HTML markup in user-submitted text
   jenkins::plugin::install { 'antisamy-markup-formatter':
     require => Package['jenkins'],
