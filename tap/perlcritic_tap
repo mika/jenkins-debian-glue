@@ -19,7 +19,7 @@ end
 file = ARGV[0]
 
 # make sure we're checking a perl script
-mimetype = `file -b --keep-going #{file}`.gsub(/\n/,"")
+mimetype = `file -b #{file}`.gsub(/\n/,"")
 if not /.*perl/i.match(mimetype)
   $stderr.puts "File #{file} doesn't look like perl [#{mimetype}]. Ignoring."
   exit 0
