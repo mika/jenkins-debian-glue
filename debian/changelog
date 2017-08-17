@@ -1,3 +1,21 @@
+jenkins-debian-glue (0.18.4) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [a9ab3f4] puppet: ensure that jenkins + jenkins-debian-glue packages
+    are installed and only then report a successful run
+  * [2061ac0] puppet: rework apt-get/apt-key handling to work with recent
+    puppet versions. Thanks to msqk for reporting on IRC
+  * [2f939f2] puppet: further changes to work with recent puppet versions
+  * [c6c8c02] puppet: workspace cleanup plugin depends on further plugins
+  * [5d02459] tap: avoid deep inspection of scripts by dropping file(1)'s
+    `--keep-going` option
+  * [e98da4b] Bump Standards-Version to 4.0.1
+
+  [ klemens ]
+  * [a3b8324] spelling fix
+
+ -- Michael Prokop <mika@debian.org>  Thu, 17 Aug 2017 14:51:57 +0200
+
 jenkins-debian-glue (0.18.3) experimental; urgency=medium
 
   The "¡Hola Alicante!" release
