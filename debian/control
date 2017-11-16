@@ -7,7 +7,7 @@ Homepage: https://github.com/mika/jenkins-debian-glue
 Vcs-Git: https://github.com/mika/jenkins-debian-glue.git
 Vcs-Browser: https://github.com/mika/jenkins-debian-glue
 Build-Depends:
- debhelper (>= 8.0.0),
+ debhelper (>= 10),
  shunit2,
 
 Package: jenkins-debian-glue
