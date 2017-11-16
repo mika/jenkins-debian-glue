@@ -2,24 +2,28 @@ Source: jenkins-debian-glue
 Section: admin
 Priority: extra
 Maintainer: Michael Prokop <mika@debian.org>
-Build-Depends: debhelper (>= 8.0.0),
-               shunit2
 Standards-Version: 4.0.1
 Homepage: https://github.com/mika/jenkins-debian-glue
 Vcs-Git: https://github.com/mika/jenkins-debian-glue.git
 Vcs-Browser: https://github.com/mika/jenkins-debian-glue
+Build-Depends:
+ debhelper (>= 8.0.0),
+ shunit2,
 
 Package: jenkins-debian-glue
 Architecture: all
-Depends: sudo | sudo-ldap,
-         ${misc:Depends}
-Recommends: jenkins-debian-glue-buildenv
-Conflicts: jenkins-debian-glue-buildenv-git,
-           jenkins-debian-glue-buildenv-lintian,
-           jenkins-debian-glue-buildenv-piuparts,
-           jenkins-debian-glue-buildenv-slave,
-           jenkins-debian-glue-buildenv-svn,
-           jenkins-debian-glue-buildenv-taptools
+Depends:
+ ${misc:Depends},
+ sudo | sudo-ldap,
+Recommends:
+ jenkins-debian-glue-buildenv,
+Conflicts:
+ jenkins-debian-glue-buildenv-git,
+ jenkins-debian-glue-buildenv-lintian,
+ jenkins-debian-glue-buildenv-piuparts,
+ jenkins-debian-glue-buildenv-slave,
+ jenkins-debian-glue-buildenv-svn,
+ jenkins-debian-glue-buildenv-taptools,
 Description: Jenkins Debian glue scripts
  This package provides scripts which make building Debian
  packages inside Jenkins (a Continuous Integration suite) easier.
@@ -33,43 +37,47 @@ Description: Jenkins Debian glue scripts
 
 Package: jenkins-debian-glue-buildenv
 Architecture: all
-Depends: build-essential,
-         cowbuilder,
-         devscripts,
-         dpkg-dev,
-         eatmydata,
-         fakeroot,
-         file,
-         git-buildpackage,
-         gnupg,
-         jenkins-debian-glue,
-         lintian,
-         parallel | moreutils,
-         piuparts,
-         pristine-tar,
-         quilt,
-         reprepro | freight,
-         rsync,
-         ruby,
-         subversion-tools (<= 1.6.18dfsg-1) | svn2cl,
-         ${misc:Depends}
-Conflicts: jenkins-debian-glue-buildenv-git,
-           jenkins-debian-glue-buildenv-lintian,
-           jenkins-debian-glue-buildenv-piuparts,
-           jenkins-debian-glue-buildenv-slave,
-           jenkins-debian-glue-buildenv-svn,
-           jenkins-debian-glue-buildenv-taptools
-Replaces: jenkins-debian-glue-buildenv-git,
-          jenkins-debian-glue-buildenv-lintian,
-          jenkins-debian-glue-buildenv-piuparts,
-          jenkins-debian-glue-buildenv-slave,
-          jenkins-debian-glue-buildenv-svn,
-          jenkins-debian-glue-buildenv-taptools
-Recommends: curl,
-            libperl-critic-perl,
-            pep8 (>= 1.4.6~),
-            qemu-user-static,
-            shellcheck
+Depends:
+ ${misc:Depends},
+ build-essential,
+ cowbuilder,
+ devscripts,
+ dpkg-dev,
+ eatmydata,
+ fakeroot,
+ file,
+ git-buildpackage,
+ gnupg,
+ jenkins-debian-glue,
+ lintian,
+ parallel | moreutils,
+ piuparts,
+ pristine-tar,
+ quilt,
+ reprepro | freight,
+ rsync,
+ ruby,
+ subversion-tools (<= 1.6.18dfsg-1) | svn2cl,
+Conflicts:
+ jenkins-debian-glue-buildenv-git,
+ jenkins-debian-glue-buildenv-lintian,
+ jenkins-debian-glue-buildenv-piuparts,
+ jenkins-debian-glue-buildenv-slave,
+ jenkins-debian-glue-buildenv-svn,
+ jenkins-debian-glue-buildenv-taptools,
+Replaces:
+ jenkins-debian-glue-buildenv-git,
+ jenkins-debian-glue-buildenv-lintian,
+ jenkins-debian-glue-buildenv-piuparts,
+ jenkins-debian-glue-buildenv-slave,
+ jenkins-debian-glue-buildenv-svn,
+ jenkins-debian-glue-buildenv-taptools,
+Recommends:
+ curl,
+ libperl-critic-perl,
+ pep8 (>= 1.4.6~),
+ qemu-user-static,
+ shellcheck,
 Description: Jenkins Debian glue scripts - dependency package
  This package depends on all Debian packaging/repository
  management and VCS tools which may be used with
