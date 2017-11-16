@@ -1,6 +1,6 @@
 Source: jenkins-debian-glue
 Section: admin
-Priority: extra
+Priority: optional
 Maintainer: Michael Prokop <mika@debian.org>
 Standards-Version: 4.0.1
 Homepage: https://github.com/mika/jenkins-debian-glue
