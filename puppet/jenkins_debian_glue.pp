@@ -172,6 +172,15 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
+  # required for recent versions of Jenkins Git client plugin
+  jenkins::plugin::install { 'apache-httpcomponents-client-4-api':
+    require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'jsch':
+    require => Package['jenkins'],
+  }
+
   # required for recent versions of ssh-agent
   jenkins::plugin::install { 'workflow-step-api':
     require => Package['jenkins'],
