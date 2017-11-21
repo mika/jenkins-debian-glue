@@ -70,6 +70,10 @@ if defined('$ec2_public_ipv4') {
 
 class jenkins::repos {
 
+  package { 'apt-transport-https':
+    ensure => present,
+  }
+
   apt::key { 'D50582E6':
     ensure => present,
     source => 'https://pkg.jenkins.io/debian-stable/jenkins.io.key',
@@ -78,6 +82,7 @@ class jenkins::repos {
   file { '/etc/apt/sources.list.d/jenkins.list':
     ensure  => present,
     content => "deb https://pkg.jenkins.io/debian-stable binary/\n",
+    require => Package['apt-transport-https'],
   }
 
   exec { 'refresh-apt-jenkins':
