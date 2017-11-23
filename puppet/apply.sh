@@ -97,8 +97,28 @@ $IP $(hostname).example.org $(hostname)
   exit 1
 fi
 
+if dpkg --compare-versions "$(dpkg-query -f "\${Version}\n" -W dpkg 2>/dev/null)" ge '1.17.11' 2>/dev/null ; then
+  package_check() {
+    [ "$(dpkg-query -f "\${db:Status-Status} \${db:Status-Eflag}" -W "$package" 2>/dev/null)" = 'installed ok' ]
+  }
+else # dpkg versions older than 1.17.11 (e.g. Debian/wheezy) don't support db:Status* flags, so fall back then
+  package_check() {
+    dpkg --list "$package" 2>/dev/null | grep -q '^.i'
+  }
+fi
+
+package_installed() {
+  local packages="$*"
+
+  for package in $packages ; do
+    if ! package_check "$package" ; then
+      return 1
+    fi
+  done
+}
+
 if puppet apply jenkins_debian_glue.pp ; then
-  if ! dpkg-query -s jenkins jenkins-debian-glue >/dev/null 2>&1 ; then
+  if ! package_installed jenkins jenkins-debian-glue; then
     echo "While puppet reported a successful run, jenkins and/or jenkins-debian-glue aren't successfully installed. :(" >&2
     echo "Please re-execute this script and if the problem persists please report this at" >&2
     echo "https://github.com/mika/jenkins-debian-glue/issues" >&2
