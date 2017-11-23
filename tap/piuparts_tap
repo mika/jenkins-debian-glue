@@ -66,8 +66,8 @@ output.gsub(/:\n/, ':').each_line do |critic|
                 cmd = /(.*)? (DEBUG: Command failed \(status=1\), but ignoring error:) (.*)?/.match(critic)[3]
                 puts "ok #{counter}           #{cmd} # skip Ignoring failed command"
                 counter += 1
-        elsif critic =~ /.*ERROR: Command failed \(status=100\):.*/
-                cmd = /(.*)? (ERROR: Command failed \(status=100\):) (.*)?/.match(critic)[3]
+        elsif critic =~ /.*ERROR: Command failed \(status=\d+\):.*/
+                cmd = /(.*)? (ERROR: Command failed \(status=\d+\):) (.*)?/.match(critic)[3]
                 puts "not ok #{counter}           #{cmd}"
                 counter += 1
         elsif critic =~ /.*ERROR: Installation of .* failed/
