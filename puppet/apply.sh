@@ -99,10 +99,12 @@ fi
 
 if dpkg --compare-versions "$(dpkg-query -f "\${Version}\n" -W dpkg 2>/dev/null)" ge '1.17.11' 2>/dev/null ; then
   package_check() {
+    local package="$1"
     [ "$(dpkg-query -f "\${db:Status-Status} \${db:Status-Eflag}" -W "$package" 2>/dev/null)" = 'installed ok' ]
   }
 else # dpkg versions older than 1.17.11 (e.g. Debian/wheezy) don't support db:Status* flags, so fall back then
   package_check() {
+    local package="$1"
     dpkg --list "$package" 2>/dev/null | grep -q '^.i'
   }
 fi
