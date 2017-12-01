@@ -86,7 +86,7 @@
 
 # autopkgtests are executed automatically inside the cowbuilder environment by
 # default, corresponding to the ADT='internal' setting or if ADT is unset.
-# To execute autopkgtests also externally via adt-run you need to set ADT to
+# To execute autopkgtests also externally you need to set ADT to
 # either 'external' (no internal runs) or 'all' (internal + external runs).
 # The external autopkgtests depend on a configured ADT_RUNNER setting.
 # To skip internal as well as external autopkgtests set ADT='skip'.

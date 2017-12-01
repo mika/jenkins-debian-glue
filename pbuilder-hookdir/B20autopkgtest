@@ -31,7 +31,7 @@ if [ -n "${ADT_OPTIONS:-}" ] ; then
   echo "*** Using provided ADT_OPTIONS $ADT_OPTIONS ***"
 fi
 
-# try to launch adt-run in a new PID namespace so several testsuites can run
+# try to launch autopkgtest in a new PID namespace so several testsuites can run
 # in parallel, newpid exists in jessie and newer only though
 unset newpid_name
 if ! apt-cache policy newpid | grep -q 'newpid:' ; then
@@ -41,13 +41,25 @@ else
   newpid_name='newpid'
 fi
 
-# runner/adt-run uses apt-utils's apt-ftparchive and
+# autopkgtest uses apt-utils's apt-ftparchive and
 # pbuilder's pbuilder-satisfydepends-classic
 apt-get install -y autopkgtest apt-utils pbuilder $newpid_name
 
+if [ -x /usr/bin/autopkgtest ]; then
+  # starting with autopkgtest 5.0 there's only the dedicated autopkgtest CLI
+  AUTOPKG_BINARY=autopkgtest
+elif [ -x /usr/bin/adt-run ] ; then
+  # autopkgtest as in Debian/jessie (v3.6jessie1) and older doesn't provide
+  # autopkgtest binary yet, but let's be backwards compatible
+  AUTOPKG_BINARY=adt-run
+else
+  echo "Error: neither autopkgtest nor adt-run binary found." >&2
+  exit 1
+fi
+
 # since autopkgtest 3.16 the --tmp-dir option is gone, make sure
 # we've --output-dir available though before using it
-if adt-run --help | grep -q -- --output-dir 2>/dev/null ; then
+if "$AUTOPKG_BINARY" --help | grep -q -- --output-dir 2>/dev/null ; then
   OUTPUT_OPTION='--output-dir'
 else
   OUTPUT_OPTION='--tmp-dir'
@@ -55,12 +67,23 @@ fi
 
 mkdir -p /tmp/buildd/autopkgtest.out
 
-$newpid_name adt-run \
-  ${OUTPUT_OPTION} /tmp/buildd/autopkgtest.out \
-  --summary /tmp/buildd/autopkgtest.summary \
-  /tmp/buildd/*.deb \
-  --built-tree "${PWD}" \
-  ${ADT_OPTIONS:-} --- adt-virt-null || EXIT=$?
+if [ -x /usr/bin/autopkgtest ]; then
+  # new autopkgtest interface
+  $newpid_name "$AUTOPKG_BINARY" \
+    ${OUTPUT_OPTION} /tmp/buildd/autopkgtest.out \
+    --summary /tmp/buildd/autopkgtest.summary \
+    "${PWD}" \
+    /tmp/buildd/*.deb \
+    ${ADT_OPTIONS:-} -- null || EXIT=$?
+else
+  # old adt interface
+  $newpid_name "$AUTOPKG_BINARY" \
+    ${OUTPUT_OPTION} /tmp/buildd/autopkgtest.out \
+    --summary /tmp/buildd/autopkgtest.summary \
+    /tmp/buildd/*.deb \
+    --built-tree "${PWD}" \
+    ${ADT_OPTIONS:-} --- adt-virt-null || EXIT=$?
+fi
 
 # collect autopkgtest output in a single file so pbuilder automatically copies it
 tar acf /tmp/buildd/autopkgtest.tar.gz /tmp/buildd/autopkgtest.out
