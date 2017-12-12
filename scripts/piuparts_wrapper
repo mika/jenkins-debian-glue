@@ -57,15 +57,15 @@ create_base_tgz() {
     echo "*** Using mirror $MIRROR ***"
   fi
 
-  if [ -n "${COMPONENTS:-}" ] ; then
-    echo "*** COMPONENTS is set [$COMPONENTS], using for debootstrapping ***"
-    components="$COMPONENTS"
+  if [ -n "${PIUPARTS_COMPONENTS:-}" ] ; then
+    echo "*** PIUPARTS_COMPONENTS is set [${PIUPARTS_COMPONENTS}], using for debootstrapping ***"
+    components="${PIUPARTS_COMPONENTS}"
   elif lsb_release --id 2>/dev/null | grep -q Ubuntu ; then
     components='main,universe,restricted,multiverse'
     echo "*** Ubuntu detected, using components $components ***"
   else
     components='main,contrib,non-free'
-    echo "*** COMPONENTS is unset and looks like Debian - therefore using components $components ***"
+    echo "*** PIUPARTS_COMPONENTS is unset and looks like Debian - therefore using components $components ***"
   fi
 
   tmpdir=$(mktemp -d)
