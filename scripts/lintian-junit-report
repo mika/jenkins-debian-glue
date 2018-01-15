@@ -11,11 +11,13 @@
 ################################################################################
 
 require 'shellwords'
+require 'tempfile'
 
 ### cmdline parsing {{{
 require 'optparse'
 options = {}
 lintian_options = []
+lintian2junit_options = []
 
 # default
 lintian_file = "lintian.txt"
@@ -24,8 +26,9 @@ o = OptionParser.new do|opts|
   opts.banner = "Usage: #{$0} [<options>] <debian_package_file(s)>"
 
   options[:warnings] = false
-  opts.on( '-w', '--warnings', 'Output lintian errors *AND* warnings' ) do
+  opts.on( '-w', '--warnings', 'Output lintian errors *AND* warnings (passed to lintian2junit)' ) do
     options[:warnings] = true
+    lintian2junit_options << '-w'
   end
 
   options[:disablenotes] = false
@@ -47,13 +50,15 @@ o = OptionParser.new do|opts|
   end
 
   opts.on('--mark-warnings-skipped',
-          'Mark warnings as skipped test cases.') do
+          'Mark warnings as skipped test cases (passed to lintian2junit)') do |mws|
     options[:markwarningsskipped] = true
+    lintian2junit_options << '--mark-warnings-skipped'
   end
 
   opts.on('--mark-as-skipped=tag1,tag2,...', Array,
-          'Mark selected tags as skipped.') do |l|
+          'Mark selected tags as skipped (passed to lintian2junit)') do |l|
     options[:markasskipped] = l
+    lintian2junit_options << '--mark-as-skipped=' + l.join(',')
   end
 
   opts.on( '-h', '--help', 'Display this screen' ) do
@@ -84,6 +89,10 @@ if not system("which lintian >/dev/null 2>&1") then
   $stderr.puts "Error: lintian not available."
   exit(1)
 end
+if not system("which lintian2junit >/dev/null 2>&1") then
+  $stderr.puts "Error: lintian2junit not available."
+  exit(1)
+end
 # }}}
 
 ### run lintian {{{
@@ -102,117 +111,12 @@ $duration = Time.now.to_f - start
 if ! options[:disablenotes] then
   File.open(lintian_file, 'w') {|f| f.write($output) }
 end
-
 ### }}}
 
-class JUnitOutput
-  require 'rexml/formatters/transitive'
-  require 'rexml/document'
-
-  def initialize(duration)
-    @duration = duration
-    @document = REXML::Document::new
-    @document << REXML::XMLDecl::new
-    @failures = 0
-    @skipped = 0
-    @suite = @document.add_element 'testsuite', {'time' => duration}
-  end
-
-  def add_case(package, tag)
-    tc = @suite.add_element 'testcase'
-    tc.attributes['name'] = "#{tag}"
-    tc.attributes['classname'] = "lintian.#{package}"
-    tc.attributes['assertions'] = 0
-    @last_tag = tag
-    @last_package = package
-  end
-
-  def mark(kind, message)
-    tc = @suite[-1]
-    e = tc.add_element kind
-    e.attributes['type'] = @last_tag
-    e.attributes['message'] = message
-  end
-
-  def mark_skipped(message = '')
-    @skipped += 1
-    mark('skipped', message)
-  end
-
-  def mark_failure(message = '')
-    @failures += 1
-    mark('failure', message)
-  end
-
-  def append_stdout(s)
-     stdout = @suite[-1].get_elements('system-out')[0]
-     stdout ||= @suite[-1].add_element 'system-out'
-     stdout.add_text(s)
-  end
-
-  def add_success
-    self.add_case('<all>', 'lintian-checks')
-  end
-
-  def finish
-    self.add_success unless @suite.has_elements?
-    tc_time = @duration / @suite.size
-    @suite.each { |tc| tc.attributes['time'] = tc_time }
-    @suite.attributes['tests'] = @suite.size
-    @suite.attributes['failures'] = @failures
-    @suite.attributes['skipped'] = @skipped
-    @suite.attributes['errors'] = 0
-    @suite.attributes['assertions'] = 0
-  end
-
-  def write
-    self.finish
-    formatter = REXML::Formatters::Transitive::new
-    formatter.write(@document, $stdout)
-  end
+lintian2junit_cmd = (['lintian2junit'] + lintian2junit_options + [lintian_file]).collect { |v| Shellwords.escape(v) }.join(" ")
+IO.popen(lintian2junit_cmd) do |io|
+  puts io.read
 end
-
-junit_output = JUnitOutput::new($duration)
-
-infos = Hash.new { |hash, key| hash[key] = "" }
-last_tag = nil
-tc_open = false
-
-$output.each_line do |line|
-  case line
-  when /^([EW]):\s([^:]*):\s(.*)/
-    kind, package, note = $~.captures
-
-    if tc_open then
-      junit_output.append_stdout(infos[last_tag])
-      tc_open = false
-    end
-
-    tag = note.match('^[^\s]*')[0]
-
-    if kind == 'E' || options[:warnings] then
-      junit_output.add_case(package, note)
-      if (kind == 'W' && options[:markwarningsskipped]) ||
-          (options[:markasskipped] && options[:markasskipped].include?(tag))
-        junit_output.mark_skipped(line.rstrip)
-      else
-        junit_output.mark_failure(line.rstrip)
-      end
-      tc_open = true
-    end
-
-    last_tag = tag
-
-  # Tag descriptions are prefixed with four spaces, which differentiates them
-  # from debug messages
-  when /^N:\s{4}/
-    infos[last_tag] << line if last_tag
-  end
-end
-
-junit_output.append_stdout(infos[last_tag]) if tc_open
-junit_output.write
-### }}}
 
 ## END OF FILE #################################################################
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab tw=80 sw=2 ft=ruby
