@@ -138,6 +138,12 @@ checks_and_defaults() {
     FREIGHT_VARCACHE=${FREIGHT_BASE}/${FREIGHT_REPOSITORY}
     FREIGHT_CONF=${FREIGHT_BASE}/${FREIGHT_REPOSITORY}.conf
   fi
+
+  if [ "${LINTIAN:-}" = 'true' ] ; then
+    # Will run lintian and we need pbuilder to copy the result file to
+    # $BUILDRESULT.
+    ADDITIONAL_BUILDRESULTS+=('../*lintian.txt')
+  fi
 }
 
 clean_workspace() {
