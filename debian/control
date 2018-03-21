@@ -13,8 +13,8 @@ Build-Depends:
 Package: jenkins-debian-glue
 Architecture: all
 Depends:
- ${misc:Depends},
  sudo | sudo-ldap,
+ ${misc:Depends},
 Recommends:
  jenkins-debian-glue-buildenv,
 Conflicts:
@@ -38,7 +38,6 @@ Description: Jenkins Debian glue scripts
 Package: jenkins-debian-glue-buildenv
 Architecture: all
 Depends:
- ${misc:Depends},
  build-essential,
  cowbuilder,
  devscripts,
@@ -58,6 +57,7 @@ Depends:
  rsync,
  ruby,
  subversion-tools (<= 1.6.18dfsg-1) | svn2cl,
+ ${misc:Depends},
 Conflicts:
  jenkins-debian-glue-buildenv-git,
  jenkins-debian-glue-buildenv-lintian,
