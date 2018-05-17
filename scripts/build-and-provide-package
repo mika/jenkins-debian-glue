@@ -906,7 +906,10 @@ reprepro_wrapper() {
     bailout 1 "Error: repository ${REPOSITORY} does not exist."
   fi
 
-  ${SUDO_CMD:-} generate-reprepro-codename "${REPOS}"
+  if ! grep -q "^\(Codename\|Suite\): ${REPOS}$" "${REPOSITORY}"/conf/distributions ; then
+      echo "Distribution ${REPOS} does not exist in repository ${REPOSITORY}, generating now"
+      ${SUDO_CMD:-} generate-reprepro-codename "${REPOS}"
+  fi
 
   remove_packages
   remove_missing_binary_packages
