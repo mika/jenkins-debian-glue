@@ -906,7 +906,7 @@ reprepro_wrapper() {
     bailout 1 "Error: repository ${REPOSITORY} does not exist."
   fi
 
-  if ! grep -q "^\(Codename\|Suite\): ${REPOS}$" "${REPOSITORY}"/conf/distributions ; then
+  if ! ${SUDO_CMD:-} grep -q "^\(Codename\|Suite\): ${REPOS}$" "${REPOSITORY}"/conf/distributions ; then
       echo "Distribution ${REPOS} does not exist in repository ${REPOSITORY}, generating now"
       ${SUDO_CMD:-} generate-reprepro-codename "${REPOS}"
   fi
