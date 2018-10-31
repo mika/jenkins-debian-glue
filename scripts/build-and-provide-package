@@ -14,6 +14,9 @@ PATH='/bin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin'
 # make sure qemu doesn't give us the "out of memory issue" when compiling
 export QEMU_RESERVED_VA=0x0
 
+# we assume to be running inside a dumb terminal inside Jenkins
+export TERM=dumb
+
 echo "*** Starting $0 at $(date) ***"
 start_seconds=$(sed -e 's/^\([0-9]*\).*/\1/' < /proc/uptime)
 
