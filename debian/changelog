@@ -1,3 +1,36 @@
+jenkins-debian-glue (0.19.0) unstable; urgency=medium
+
+  [ Guillem Jover ]
+  * [616d23e] Wrap and sort dependency fields
+  * [d9db869] Switch from Priority extra to optional
+  * [b9196d5] Remove boilerplate comment from debian/rules
+  * [dce1238] Add new debian/.gitignore file
+  * [575728b] Bump debhelper compatibility level to 10
+  * [cdf1b88] Use the canonical URL for the debian/copyright Format field
+  * [00602c6] Remove Copyright notice from License field
+  * [2126ad0] Bump Standards-Version to 4.1.1
+
+  [ Michael Prokop ]
+  * [3a0a8fa] puppet: ensure recent Jenkins Git client plugin dependencies
+    are fulfilled
+  * [3c53ca6] puppet: ensure that apt-transport-https is present
+  * [3529ae6] piuparts_tap: don't check only for error code 100 but accept
+    any digit
+  * [d27375d] puppet: make check for installed packages more reliable.
+    Thanks to Guillem Jover for feedback and code review
+  * [e1db6a7] puppet: don't rely on outside variable inside package_check.
+    Thanks to Alex Lutay
+  * [9e2117c] Support autopkgtest v5. Thanks to Christoph Berg
+    <myon@debian.org> for feedback
+  * [e270387] debian: run wrap-and-sort
+  * [525467d] build-and-provide-package: explicitly set TERM environment
+    variable in cowbuilder runs
+  * [d10af05] Bump Standards-Version to 4.2.1
+  * [cab6fbf] Adjust lintian-overrides file for new lintian output
+    behavior
+
+ -- Michael Prokop <mika@debian.org>  Tue, 06 Nov 2018 11:07:08 +0100
+
 jenkins-debian-glue (0.18.4) unstable; urgency=medium
 
   [ Michael Prokop ]
