@@ -1,0 +1,9 @@
+#!/bin/sh
+# Force DPKG unsafe IO
+
+set -ex
+
+if dpkg --compare-versions "$(dpkg-query -f "\${Version}\n" -W dpkg 2>/dev/null)" ge '1.15.8.6' 2>/dev/null ; then
+  echo "I: Force DPKG unsafe IO"
+  echo "force-unsafe-io" > /etc/dpkg/dpkg.cfg.d/02apt-speedup
+fi
