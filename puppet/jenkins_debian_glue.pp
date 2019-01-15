@@ -256,7 +256,14 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
-  package { 'default-jre-headless':
+  if $facts['os']['distro']['codename'] == 'bionic' {
+    notify {"Using openjdk-8-jdk-headless for Ubuntu 18.01, as Jenkins stable does not support openjdk-11 yet.":}
+    $java_package = "openjdk-8-jdk-headless"
+  } else {
+    $java_package = 'default-jre-headless'
+  }
+
+  package { $java_package:
     ensure  => present,
   }
 
@@ -274,7 +281,7 @@ class jenkins::software {
       File['/etc/apt/sources.list.d/jenkins.list'],
       File['/etc/sudoers.d/jenkins'],
       Exec['refresh-apt-jenkins'],
-      Package['default-jre-headless'],
+      Package["$java_package"],
     ]
   }
 
