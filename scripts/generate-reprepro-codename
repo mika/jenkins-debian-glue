@@ -48,6 +48,8 @@ usage() {
        "[ --udeb-components <udeb components> ]" \
        "[ --origin <origin> ]" \
        "[ --suite <suite> ]" \
+       "[ --label <label> ]" \
+       "[ --version <version> ]" \
        "<codename>"
 }
 
@@ -72,6 +74,14 @@ while [ "$#" -gt 1 ]; do
       ;;
       --suite)
         SUITE="$2"
+        shift 2
+      ;;
+      --label)
+        LABEL="$2"
+        shift 2
+      ;;
+      --version)
+        VERSION="$2"
         shift 2
       ;;
       --)
@@ -147,6 +157,14 @@ EOF
 
 if [ -n "${SUITE:-}" ]; then
   printf "Suite: ${SUITE}\n" >> "${REPOSITORY}"/conf/distributions
+fi
+
+if [ -n "${LABEL:-}" ]; then
+  printf "Label: ${LABEL}\n" >> "${REPOSITORY}"/conf/distributions
+fi
+
+if [ -n "${VERSION:-}" ]; then
+  printf "Version: ${VERSION}\n" >> "${REPOSITORY}"/conf/distributions
 fi
 
 if [ -n "${ORIGIN:-}" ]; then
