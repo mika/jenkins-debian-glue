@@ -1,3 +1,46 @@
+jenkins-debian-glue (0.20.0) unstable; urgency=medium
+
+  [ Victor Seva ]
+  * [e2beae5] lintian-junit-report: support processing a
+    lintian output file
+
+  [ Rémi Palancher ]
+  * [90ecaab] Ability to add label/version in repos conf
+
+  [ John Goerzen ]
+  * [d9d9b8f] Allow MIRRORSITE to pass sudo
+
+  [ Antoine Musso ]
+  * [e336c9e] Add pbuilder hook to run lintian (inside the
+    target system, using the cowbuiler environment)
+
+  [ Kienan Stewart ]
+  * [41b7934] Check if reprepro distribution exists
+  * [dc5dbf5] Use sudo command when grepping for distribution codename
+
+  [ Laurent Declercq ]
+  * [b63ab9d] Typo in NOTES.org
+  * [7639edb] Added pbuilder hook to force DPKG unsafe IO (unpack)
+
+  [ Will DeBerry ]
+  * [4a5093c] autopkg_binary variable needs to always be set
+
+  [ Mykola Malkov ]
+  * [52f3099] Fix 'skip tests' message for perlcritic test
+
+  [ Michael Prokop ]
+  * [9ac5ef6] piuparts_wrapper: ensure COMPONENTS variable is unset before
+    invoking debootstrap
+  * [726137c] build-and-provide-package: unify identition and logging
+    message style
+  * [0b04226] build-and-provide-package: also run generate-reprepro-
+    codename if reprepro configuration is missing
+  * [5b8aab8] puppet: ensure we have key available before setting up
+    sources.list
+  * [71a21fb] puppet: use openjdk-8-jdk-headless on Ubuntu 18.04
+
+ -- Michael Prokop <mika@debian.org>  Tue, 15 Jan 2019 17:49:39 +0100
+
 jenkins-debian-glue (0.19.0) unstable; urgency=medium
 
   [ Guillem Jover ]
