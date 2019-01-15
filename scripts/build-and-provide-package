@@ -564,21 +564,23 @@ autopkg_run() {
     return 0
   fi
 
+  changes_file="${WORKSPACE}/"*"_${newest_version}_${arch}.changes"
+
+  if [ -x "$(which autopkgtest)" ] ; then
+    # starting with autopkgtest 5.0 there's only the dedicated autopkgtest CLI
+    local autopkg_binary="autopkgtest $changes_file"
+  elif [ -x "$(which adt-run)" ] ; then
+    # autopkgtest as in Debian/jessie (v3.6jessie1) and older doesn't provide
+    # autopkgtest binary yet, but let's be backwards compatible
+    local autopkg_binary="adt-run --changes $changes_file"
+  else
+    echo "Error: neither autopkgtest nor adt-run binary found." >&2
+    exit 1
+  fi
+
   if [ -n "${ADT_OPTIONS:-}" ] ; then
     echo "*** Using provided ADT_OPTIONS $ADT_OPTIONS ***"
   else
-    if [ -x "$(which autopkgtest)" ] ; then
-      # starting with autopkgtest 5.0 there's only the dedicated autopkgtest CLI
-      local autopkg_binary=autopkgtest
-    elif [ -x "$(which adt-run)" ] ; then
-      # autopkgtest as in Debian/jessie (v3.6jessie1) and older doesn't provide
-      # autopkgtest binary yet, but let's be backwards compatible
-      local autopkg_binary=adt-run
-    else
-      echo "Error: neither autopkgtest nor adt-run binary found." >&2
-      exit 1
-    fi
-
     # since autopkgtest 3.16 the --tmp-dir option is gone, make sure
     # we've --output-dir available though before using it
     if "$autopkg_binary" --help | grep -q -- --output-dir 2>/dev/null ; then
@@ -593,9 +595,8 @@ autopkg_run() {
     echo "*** Using default ADT_OPTIONS $ADT_OPTIONS ***"
   fi
 
-  changes_file="${WORKSPACE}/"*"_${newest_version}_${arch}.changes"
-  echo "*** Executing '$autopkg_binary --changes $changes_file ${ADT_OPTIONS:-} --- $ADT_RUNNER' ***"
-  $autopkg_binary --changes $changes_file ${ADT_OPTIONS:-} --- $ADT_RUNNER || bailout $?
+  echo "*** Executing '$autopkg_binary ${ADT_OPTIONS:-} --- $ADT_RUNNER' ***"
+  $autopkg_binary ${ADT_OPTIONS:-} --- $ADT_RUNNER || bailout $?
 }
 
 use_ccache() {
