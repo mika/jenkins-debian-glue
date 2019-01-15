@@ -67,6 +67,7 @@ create_base_tgz() {
     components='main,contrib,non-free'
     echo "*** COMPONENTS is unset and looks like Debian - therefore using components $components ***"
   fi
+  unset "COMPONENTS" # ensure it's unset so debootstrap doesn't fail, see GH issue 145
 
   tmpdir=$(mktemp -d)
 
