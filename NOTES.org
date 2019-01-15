@@ -1,6 +1,6 @@
 * Misc Notes related to Jenkins
 
-This document provides some notes you might consider useful, but aren't necessarily releated to jenkins-debian-glue itself.
+This document provides some notes you might consider useful, but aren't necessarily related to jenkins-debian-glue itself.
 
 ** Install jenkins.rb on Debian
 
