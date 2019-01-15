@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# Hook to run lintian inside the cowbuilder environment.
+#
+
+BUILDDIR="${BUILDDIR:-/tmp/buildd}"
+
+if [ "${LINTIAN:-}" != "true" ] ; then
+  echo "Skipping lintian (LINTIAN is not 'true')"
+  exit 0
+fi
+
+if [ -n "${LINTIAN_OPTIONS:-}" ] ; then
+  echo "*** Using provided LINTIAN_OPTIONS $LINTIAN_OPTIONS ***"
+fi
+
+set -ex -o pipefail
+apt-get -y "${APTGETOPT[@]}" install lintian
+lintian --version
+
+package_dir=$(cd "$BUILDDIR"/*/debian/.. 2>/dev/null && pwd -P)
+PACKAGE_NAME=$(basename "$package_dir")
+
+echo "Found package name: $PACKAGE_NAME"
+
+# Requires a .pbuilderrc with:
+#  export ADDITIONAL_BUILDRESULTS=(../*.lintian.txt)
+lintian_out=${BUILDDIR}/${PACKAGE_NAME}.lintian.txt
+su -c "lintian ${LINTIAN_OPTIONS:-} \"${BUILDDIR}\"/*.changes 2>&1 | tee \"${lintian_out}\"" - pbuilder \
+  || EXIT=$?
+# We strip ANSI sequences in case lintian got --color forced
+sed -i 's%\x1B\[[0-9;]*\?[mGKH]%%g' "${lintian_out}"
+
+case ${EXIT:-0} in
+  2)
+    echo "lintian run-time error."
+    exit 2
+    ;;
+  1|*)
+    exit 0
+    ;;
+esac
