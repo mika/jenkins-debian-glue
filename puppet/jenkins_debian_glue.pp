@@ -82,7 +82,10 @@ class jenkins::repos {
   file { '/etc/apt/sources.list.d/jenkins.list':
     ensure  => present,
     content => "deb https://pkg.jenkins.io/debian-stable binary/\n",
-    require => Package['apt-transport-https'],
+    require => [
+      Apt::Key['D50582E6'],
+      Package['apt-transport-https'],
+    ],
   }
 
   exec { 'refresh-apt-jenkins':
@@ -101,6 +104,9 @@ class jenkins::repos {
   file { '/etc/apt/sources.list.d/jenkins-debian-glue.list':
     ensure  => present,
     content => "deb http://jenkins.grml.org/debian jenkins-debian-glue main\n",
+    require => [
+      Apt::Key['52D4A654'],
+    ],
   }
 
   exec { 'refresh-apt-jenkins-debian-glue':
