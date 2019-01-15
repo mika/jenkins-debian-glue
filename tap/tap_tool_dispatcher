@@ -132,7 +132,7 @@ else
   if $_opt_perlcritic ; then
     echo "${BASE_BIN}/perlcritic_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_perlcritic.tap' ';' \\" >> "${TMPFILE}"
   else
-    echo "*** Skipping pep8 tests as requested via --disable-perlcritic ***"
+    echo "*** Skipping perlcritic tests as requested via --disable-perlcritic ***"
   fi
 fi
 
