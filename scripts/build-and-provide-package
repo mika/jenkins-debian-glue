@@ -916,8 +916,8 @@ reprepro_wrapper() {
   fi
 
   if ! ${SUDO_CMD:-} grep -q "^\(Codename\|Suite\): ${REPOS}$" "${REPOSITORY}"/conf/distributions ; then
-      echo "Distribution ${REPOS} does not exist in repository ${REPOSITORY}, generating now"
-      ${SUDO_CMD:-} generate-reprepro-codename "${REPOS}"
+    echo "*** Codename ${REPOS} does not exist in repository ${REPOSITORY}, generating now ***"
+    ${SUDO_CMD:-} generate-reprepro-codename "${REPOS}"
   fi
 
   remove_packages
