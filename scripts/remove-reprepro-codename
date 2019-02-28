@@ -65,4 +65,7 @@ perl -i -00 -pe "if (!\$done && m|$codename|) { \$_=q(); \$done++}" "${REPOSITOR
 echo "*** Removing vanished data from reprepro ***"
 ${REPREPRO_CMD} $REPREPRO_OPTS -b "$REPOSITORY" --delete clearvanished
 
+echo "*** Removing package indices files (${REPOSITORY}/dists/${codename}) ***"
+rm -rf "${REPOSITORY}/dists/${codename}"
+
 # vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
