@@ -18,6 +18,11 @@ end
 
 file = ARGV[0]
 
+if not File.exists? file
+  $stderr.puts "Error: file #{file} could not be read."
+  exit 1
+end
+
 # make sure we're checking a perl script
 mimetype = `file -b #{file}`.gsub(/\n/,"")
 if not /.*perl/i.match(mimetype)
