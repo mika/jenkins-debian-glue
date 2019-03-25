@@ -122,5 +122,6 @@ piuparts \
   --log-file='piuparts.txt' \
   ${scriptsdir:+--scriptsdir "$scriptsdir"} \
   ${piuparts_tmpdir:+--tmpdir="$piuparts_tmpdir"} \
+  ${MIRROR:+--mirror="$MIRROR"} \
   ${basetgz:-} \
   "$@"
