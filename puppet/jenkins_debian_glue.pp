@@ -256,11 +256,13 @@ class jenkins::software {
     require => Package['jenkins'],
   }
 
-  if $facts['os']['distro']['codename'] == 'bionic' {
-    notify {"Using openjdk-8-jdk-headless for Ubuntu 18.01, as Jenkins stable does not support openjdk-11 yet.":}
-    $java_package = "openjdk-8-jdk-headless"
-  } else {
-    $java_package = 'default-jre-headless'
+  $java_package = $facts['os']['name'] ? {
+    'Ubuntu' => $facts['os']['distro']['codename'] ? {
+      # Using openjdk-8 for Ubuntu 18.01, as Jenkins stable does not support openjdk-11 yet.
+      'bionic' => 'openjdk-8-jre-headless',
+      default  => 'default-jre-headless',
+    },
+    default => 'default-jre-headless',
   }
 
   package { $java_package:
