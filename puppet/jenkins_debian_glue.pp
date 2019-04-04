@@ -298,7 +298,10 @@ class jenkins::software {
 
   service { 'jenkins':
     ensure  => running,
-    require => Package['jenkins'],
+    require => [
+      Package['jenkins'],
+      File['/var/lib/jenkins/users/users.xml'],
+    ]
   }
 
   package { 'sudo':
@@ -724,6 +727,25 @@ sudo piuparts_wrapper \${PWD}/artifacts/*.deb || true</command>
     </hudson.tasks.Mailer_-UserProperty>
   </properties>
 </user>
+"
+  }
+
+  file { '/var/lib/jenkins/users/users.xml':
+    ensure       => present,
+    mode         => '0644',
+    owner        => 'jenkins',
+    require      => File['/var/lib/jenkins/users/'],
+    notify       => Service['jenkins'],
+    content      => "<?xml version='1.1' encoding='UTF-8'?>
+<hudson.model.UserIdMapper>
+  <version>1</version>
+  <idToDirectoryNameMap class='concurrent-hash-map'>
+    <entry>
+      <string>jenkins-debian-glue</string>
+      <string>jenkins-debian-glue</string>
+    </entry>
+  </idToDirectoryNameMap>
+</hudson.model.UserIdMapper>
 "
   }
 }
