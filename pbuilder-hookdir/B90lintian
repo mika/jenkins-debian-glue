@@ -26,17 +26,26 @@ echo "Found package name: $PACKAGE_NAME"
 # Requires a .pbuilderrc with:
 #  export ADDITIONAL_BUILDRESULTS=(../*.lintian.txt)
 lintian_out=${BUILDDIR}/${PACKAGE_NAME}.lintian.txt
-su -c "lintian ${LINTIAN_OPTIONS:-} \"${BUILDDIR}\"/*.changes 2>&1 | tee \"${lintian_out}\"" - pbuilder \
-  || EXIT=$?
+
+DSC_EXIT=0
+if ls "${BUILDDIR}"/*.dsc &>/dev/null ; then
+  su -s /bin/bash -c "set -o pipefail; lintian ${LINTIAN_OPTIONS:-} \"${BUILDDIR}\"/*.dsc 2>&1 | tee \"${lintian_out}\"" - pbuilder \
+    || DSC_EXIT=$?
+else
+  echo "WARNING: no dsc file, not executing lintian on source package files"
+fi
+
+CHANGES_EXIT=0
+su -s /bin/bash -c "set -o pipefail; lintian ${LINTIAN_OPTIONS:-} \"${BUILDDIR}\"/*.changes 2>&1 | tee -a \"${lintian_out}\"" - pbuilder \
+  || CHANGES_EXIT=$?
+
 # We strip ANSI sequences in case lintian got --color forced
 sed -i 's%\x1B\[[0-9;]*\?[mGKH]%%g' "${lintian_out}"
 
-case ${EXIT:-0} in
-  2)
-    echo "lintian run-time error."
-    exit 2
-    ;;
-  1|*)
-    exit 0
-    ;;
-esac
+if [[ "${DSC_EXIT:-0}" =~ [01] ]] && [[ "${CHANGES_EXIT:-0}" =~ [01] ]] ; then
+  echo "Finished lintian execution [DSC_EXIT=${DSC_EXIT} CHANGES_EXIT=${CHANGES_EXIT}]"
+  exit 0
+else
+  echo "Error: lintian execution failed [DSC_EXIT=${DSC_EXIT} CHANGES_EXIT=${CHANGES_EXIT}]" >&2
+  exit 2
+fi
