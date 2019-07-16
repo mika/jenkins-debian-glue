@@ -304,6 +304,11 @@ cowbuilder_init() {
     echo "USENETWORK=yes" >> "$pbuilderrc"
   fi
 
+  # Will run lintian and we need pbuilder to copy the result file to $BUILDRESULT
+  if [ "${LINTIAN:-}" = 'true' ] ; then
+    echo "ADDITIONAL_BUILDRESULTS+=('../*lintian.txt')" >> "$pbuilderrc"
+  fi
+
   use_eatmydata
   use_ccache
 
