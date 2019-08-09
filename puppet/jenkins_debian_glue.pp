@@ -24,7 +24,7 @@ define jenkins::plugin::install($version=0, $force=0) {
     exec { "download-${name}" :
       command => "touch ${plugin_dir}/${name}.jpi.pinned; wget -O ${plugin_dir}/${name}.jpi ${base_url}${plugin}",
       cwd     => $plugin_dir,
-      require => File[$plugin_dir],
+      require => [File[$plugin_dir], Package['wget']],
       path    => ['/usr/bin', '/usr/sbin',],
       user    => 'jenkins',
       notify  => Service['jenkins'],
@@ -33,7 +33,7 @@ define jenkins::plugin::install($version=0, $force=0) {
     exec { "download-${name}" :
       command => "wget ${base_url}${plugin}",
       cwd     => $plugin_dir,
-      require => File[$plugin_dir],
+      require => [File[$plugin_dir], Package['wget']],
       path    => ['/usr/bin', '/usr/sbin',],
       user    => 'jenkins',
       unless  => "test -f ${plugin_dir}/${plugin}",
@@ -47,8 +47,9 @@ define apt::key($ensure = present, $source) {
   case $ensure {
     present: {
       exec { "/usr/bin/wget -O - '${source}' | /usr/bin/apt-key add -":
-        unless => "apt-key list | grep -Fqe '${name}'",
-        path   => '/bin:/usr/bin',
+        unless  => "apt-key list | grep -Fqe '${name}'",
+        path    => '/bin:/usr/bin',
+        require => Package['wget'],
       }
     }
 
@@ -71,6 +72,10 @@ if defined('$ec2_public_ipv4') {
 class jenkins::repos {
 
   package { 'apt-transport-https':
+    ensure => present,
+  }
+
+  package { 'wget':
     ensure => present,
   }
 
