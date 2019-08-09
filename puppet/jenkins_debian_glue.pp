@@ -65,7 +65,7 @@ if defined('$ec2_public_ipv4') {
 } elsif defined('$ipaddress') {
   $jenkins_server = $ipaddress
 } else {
-  $jenkins_server = "YOUR_JENKINS_SERVER"
+  $jenkins_server = 'YOUR_JENKINS_SERVER'
 }
 
 class jenkins::repos {
