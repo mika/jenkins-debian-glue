@@ -22,7 +22,7 @@ define jenkins::plugin::install($version=0, $force=0) {
 
   if ($force != 0) {
     exec { "download-${name}" :
-      command => "touch $plugin_dir/${name}.jpi.pinned; wget -O $plugin_dir/${name}.jpi ${base_url}${plugin}",
+      command => "touch ${plugin_dir}/${name}.jpi.pinned; wget -O ${plugin_dir}/${name}.jpi ${base_url}${plugin}",
       cwd     => $plugin_dir,
       require => File[$plugin_dir],
       path    => ['/usr/bin', '/usr/sbin',],
@@ -46,7 +46,7 @@ define jenkins::plugin::install($version=0, $force=0) {
 define apt::key($ensure = present, $source) {
   case $ensure {
     present: {
-      exec { "/usr/bin/wget -O - '$source' | /usr/bin/apt-key add -":
+      exec { "/usr/bin/wget -O - '${source}' | /usr/bin/apt-key add -":
         unless => "apt-key list | grep -Fqe '${name}'",
         path   => '/bin:/usr/bin',
       }
@@ -61,9 +61,9 @@ define apt::key($ensure = present, $source) {
 }
 
 if defined('$ec2_public_ipv4') {
-  $jenkins_server = "$ec2_public_ipv4"
+  $jenkins_server = $ec2_public_ipv4
 } elsif defined('$ipaddress') {
-  $jenkins_server = "$ipaddress"
+  $jenkins_server = $ipaddress
 } else {
   $jenkins_server = "YOUR_JENKINS_SERVER"
 }
@@ -283,7 +283,7 @@ class jenkins::software {
       File['/etc/apt/sources.list.d/jenkins.list'],
       File['/etc/sudoers.d/jenkins'],
       Exec['refresh-apt-jenkins'],
-      Package["$java_package"],
+      Package[$java_package],
     ]
   }
 
@@ -506,7 +506,7 @@ class jenkins::config {
     <hudson.matrix.TextAxis>
       <name>architecture</name>
       <values>
-        <string>$::architecture</string>
+        <string>${::architecture}</string>
       </values>
     </hudson.matrix.TextAxis>
   </axes>
@@ -591,7 +591,7 @@ class jenkins::config {
         <hudson.model.StringParameterDefinition>
           <name>architecture</name>
           <description></description>
-          <defaultValue>$::architecture</defaultValue>
+          <defaultValue>${::architecture}</defaultValue>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
