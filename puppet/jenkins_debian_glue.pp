@@ -89,11 +89,11 @@ class jenkins::repos {
   }
 
   exec { 'refresh-apt-jenkins':
-    require     => [
+    require => [
       File['/etc/apt/sources.list.d/jenkins.list'],
       Apt::Key['D50582E6'],
     ],
-    command     => '/usr/bin/apt-get update',
+    command => '/usr/bin/apt-get update',
   }
 
   apt::key { '52D4A654':
@@ -110,11 +110,11 @@ class jenkins::repos {
   }
 
   exec { 'refresh-apt-jenkins-debian-glue':
-    require     => [
+    require => [
       File['/etc/apt/sources.list.d/jenkins-debian-glue.list'],
       Apt::Key['52D4A654'],
     ],
-    command     => '/usr/bin/apt-get update';
+    command => '/usr/bin/apt-get update';
   }
 }
 
@@ -693,12 +693,12 @@ sudo piuparts_wrapper \${PWD}/artifacts/*.deb || true</command>
 
   # SEED_TO_BE_ADJUSTED and PASSWORD_HASH will be adjusted by jenkins-debian-glue's apply.sh script
   file { '/var/lib/jenkins/users/jenkins-debian-glue/config.xml':
-    ensure       => present,
-    mode         => '0644',
-    owner        => 'jenkins',
-    require      => File['/var/lib/jenkins/users/jenkins-debian-glue/'],
-    notify       => Service['jenkins'],
-    content      => "<?xml version='1.0' encoding='UTF-8'?>
+    ensure  => present,
+    mode    => '0644',
+    owner   => 'jenkins',
+    require => File['/var/lib/jenkins/users/jenkins-debian-glue/'],
+    notify  => Service['jenkins'],
+    content => "<?xml version='1.0' encoding='UTF-8'?>
 <user>
   <fullName>Jenkins Debian Glue</fullName>
   <properties>
@@ -731,12 +731,12 @@ sudo piuparts_wrapper \${PWD}/artifacts/*.deb || true</command>
   }
 
   file { '/var/lib/jenkins/users/users.xml':
-    ensure       => present,
-    mode         => '0644',
-    owner        => 'jenkins',
-    require      => File['/var/lib/jenkins/users/'],
-    notify       => Service['jenkins'],
-    content      => "<?xml version='1.1' encoding='UTF-8'?>
+    ensure  => present,
+    mode    => '0644',
+    owner   => 'jenkins',
+    require => File['/var/lib/jenkins/users/'],
+    notify  => Service['jenkins'],
+    content => "<?xml version='1.1' encoding='UTF-8'?>
 <hudson.model.UserIdMapper>
   <version>1</version>
   <idToDirectoryNameMap class='concurrent-hash-map'>
