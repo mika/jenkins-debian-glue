@@ -126,139 +126,112 @@ class jenkins::repos {
 
 class jenkins::software {
 
-  jenkins::plugin::install { 'copyartifact':
+  # Make all jenkins::plugin::install items require Package['jenkins']:
+  Jenkins::Plugin::Install {
     require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'copyartifact':
   }
 
   # required for recent versions of ssh-agent
   jenkins::plugin::install { 'credentials':
     force   => '1', # see https://issues.jenkins-ci.org/browse/JENKINS-19927
-    require => Package['jenkins'],
   }
 
   # required for recent versions of credentials
   jenkins::plugin::install { 'icon-shim':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of credentials
   jenkins::plugin::install { 'ssh-credentials':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'git-client':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'git':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of git
   jenkins::plugin::install { 'scm-api':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'matrix-project':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'junit':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'script-security':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'workflow-scm-step':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'mailer':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'display-url-api':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of git-client
   jenkins::plugin::install { 'ssh-agent':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of Jenkins Git client plugin
   jenkins::plugin::install { 'apache-httpcomponents-client-4-api':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'jsch':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of ssh-agent
   jenkins::plugin::install { 'workflow-step-api':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'bouncycastle-api':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'structs':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'tap':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'timestamper':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'ws-cleanup':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of ws-cleanup
   jenkins::plugin::install { 'workflow-durable-task-step':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'resource-disposer':
-    require => Package['jenkins'],
   }
 
   # note: workflow-aggregator is a dependency of ws-cleanup and
   # is the plugin ID for "Pipeline Plugin"
   jenkins::plugin::install { 'workflow-aggregator':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'pipeline-input-step':
-    require => Package['jenkins'],
   }
   jenkins::plugin::install { 'workflow-job':
-    require => Package['jenkins'],
   }
   jenkins::plugin::install { 'workflow-basic-steps':
-    require => Package['jenkins'],
   }
   jenkins::plugin::install { 'workflow-api':
-    require => Package['jenkins'],
   }
   jenkins::plugin::install { 'workflow-support':
-    require => Package['jenkins'],
   }
   jenkins::plugin::install { 'durable-task':
-    require => Package['jenkins'],
   }
 
   # required for usage of HTML markup in user-submitted text
   jenkins::plugin::install { 'antisamy-markup-formatter':
-    require => Package['jenkins'],
   }
 
   $java_package = $facts['os']['name'] ? {
