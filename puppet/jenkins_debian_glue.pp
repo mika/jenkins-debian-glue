@@ -161,6 +161,7 @@ class jenkins::software {
   }
 
   jenkins::plugin::install { 'junit':
+    force => '1', # needed since 2.176.2, see https://issues.jenkins-ci.org/browse/JENKINS-57528
   }
 
   jenkins::plugin::install { 'script-security':
@@ -191,6 +192,7 @@ class jenkins::software {
   }
 
   jenkins::plugin::install { 'bouncycastle-api':
+    force => '1', # needed since 2.176.2, see https://issues.jenkins-ci.org/browse/JENKINS-57528
   }
 
   jenkins::plugin::install { 'structs':
