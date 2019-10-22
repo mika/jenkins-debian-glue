@@ -288,7 +288,7 @@ dist_and_arch_settings() {
     echo "*** No COWBUILDER_BASE set, using $COWBUILDER_BASE as cowbuilder base.cow ***"
   fi
 
-  local lockfiles="/var/run/lock/${COWBUILDER_DIST}-${arch}"
+  local lockfiles="/run/lock/${COWBUILDER_DIST}-${arch}"
   build_lockfile="${lockfiles}.building.$$"
   update_lockfile="${lockfiles}.update"
   update_lockfile_pid="${lockfiles}.update.$$"
