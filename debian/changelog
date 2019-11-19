@@ -1,3 +1,43 @@
+jenkins-debian-glue (0.20.1) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [ebb7c31] remove-reprepro-codename: also get rid of package indices
+    files
+  * [629746a] perlcritic_tap: properly fail if provided file can't be read
+  * [aa23145] puppet: ensure puppet/facter from and on Debian works
+  * [d6c58cf] puppet: fix broken user setup with recent Jenkins versions
+  * [c79eb15] build-and-provide-package: set ADDITIONAL_BUILDRESULTS also
+    in custom pbuilderrc
+  * [75988c6] Bump Standards-Version to 4.4.0
+  * [ee404c2] build-and-provide-package: ensure to set
+    ADDITIONAL_BUILDRESULTS from within cowbuilder_run
+  * [31b9054] pbuilder-hookdir/B90lintian: support execution on source
+    files + improve error handling
+  * [a32ac40] puppet: ensure gnupg is present
+  * [cc328ce] puppet: depend on Trilead API plugin to get working git-
+    client plugin
+
+  [ Kienan Stewart ]
+  * [b02b435] Remove usage of SUDO_CMD from generate-reprepro-codename
+
+  [ Victor Seva ]
+  * [ebdff00] piuparts_wrapper: enable --mirror parameter
+
+  [ Guillem Jover ]
+  * [18671c6] debian: Namespace debhelper fragment file
+  * [8d9de8a] Bump Standards-Version to 4.3.0
+
+  [ Cyril Brulebois ]
+  * [3eee9ba] puppet: fix variables_not_enclosed puppet style warnings
+  * [a7ca923] puppet: fix double_quoted_strings puppet style warnings
+  * [06584f4] puppet: fix arrow_alignment puppet style warnings
+  * [0203f6b] puppet: document wget dependency
+  * [272709b] puppet: factorize all jenkins::plugin::install's require
+    attribute
+  * [ff08c1f] puppet: force bouncycastle-api and junit plugins
+
+ -- Michael Prokop <mika@debian.org>  Tue, 19 Nov 2019 15:29:47 +0100
+
 jenkins-debian-glue (0.20.0) unstable; urgency=medium
 
   [ Victor Seva ]
