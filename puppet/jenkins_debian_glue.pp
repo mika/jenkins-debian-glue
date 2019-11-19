@@ -75,6 +75,10 @@ class jenkins::repos {
     ensure => present,
   }
 
+  package { 'gnupg':
+    ensure => present,
+  }
+
   package { 'wget':
     ensure => present,
   }
