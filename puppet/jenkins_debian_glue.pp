@@ -191,6 +191,9 @@ class jenkins::software {
   jenkins::plugin::install { 'jsch':
   }
 
+  jenkins::plugin::install { 'trilead-api':
+  }
+
   # required for recent versions of ssh-agent
   jenkins::plugin::install { 'workflow-step-api':
   }
