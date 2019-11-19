@@ -22,9 +22,9 @@ define jenkins::plugin::install($version=0, $force=0) {
 
   if ($force != 0) {
     exec { "download-${name}" :
-      command => "touch $plugin_dir/${name}.jpi.pinned; wget -O $plugin_dir/${name}.jpi ${base_url}${plugin}",
+      command => "touch ${plugin_dir}/${name}.jpi.pinned; wget -O ${plugin_dir}/${name}.jpi ${base_url}${plugin}",
       cwd     => $plugin_dir,
-      require => File[$plugin_dir],
+      require => [File[$plugin_dir], Package['wget']],
       path    => ['/usr/bin', '/usr/sbin',],
       user    => 'jenkins',
       notify  => Service['jenkins'],
@@ -33,7 +33,7 @@ define jenkins::plugin::install($version=0, $force=0) {
     exec { "download-${name}" :
       command => "wget ${base_url}${plugin}",
       cwd     => $plugin_dir,
-      require => File[$plugin_dir],
+      require => [File[$plugin_dir], Package['wget']],
       path    => ['/usr/bin', '/usr/sbin',],
       user    => 'jenkins',
       unless  => "test -f ${plugin_dir}/${plugin}",
@@ -46,9 +46,10 @@ define jenkins::plugin::install($version=0, $force=0) {
 define apt::key($ensure = present, $source) {
   case $ensure {
     present: {
-      exec { "/usr/bin/wget -O - '$source' | /usr/bin/apt-key add -":
-        unless => "apt-key list | grep -Fqe '${name}'",
-        path   => '/bin:/usr/bin',
+      exec { "/usr/bin/wget -O - '${source}' | /usr/bin/apt-key add -":
+        unless  => "apt-key list | grep -Fqe '${name}'",
+        path    => '/bin:/usr/bin',
+        require => Package['wget'],
       }
     }
 
@@ -61,16 +62,20 @@ define apt::key($ensure = present, $source) {
 }
 
 if defined('$ec2_public_ipv4') {
-  $jenkins_server = "$ec2_public_ipv4"
+  $jenkins_server = $ec2_public_ipv4
 } elsif defined('$ipaddress') {
-  $jenkins_server = "$ipaddress"
+  $jenkins_server = $ipaddress
 } else {
-  $jenkins_server = "YOUR_JENKINS_SERVER"
+  $jenkins_server = 'YOUR_JENKINS_SERVER'
 }
 
 class jenkins::repos {
 
   package { 'apt-transport-https':
+    ensure => present,
+  }
+
+  package { 'wget':
     ensure => present,
   }
 
@@ -89,11 +94,11 @@ class jenkins::repos {
   }
 
   exec { 'refresh-apt-jenkins':
-    require     => [
+    require => [
       File['/etc/apt/sources.list.d/jenkins.list'],
       Apt::Key['D50582E6'],
     ],
-    command     => '/usr/bin/apt-get update',
+    command => '/usr/bin/apt-get update',
   }
 
   apt::key { '52D4A654':
@@ -110,150 +115,125 @@ class jenkins::repos {
   }
 
   exec { 'refresh-apt-jenkins-debian-glue':
-    require     => [
+    require => [
       File['/etc/apt/sources.list.d/jenkins-debian-glue.list'],
       Apt::Key['52D4A654'],
     ],
-    command     => '/usr/bin/apt-get update';
+    command => '/usr/bin/apt-get update';
   }
 }
 
 
 class jenkins::software {
 
-  jenkins::plugin::install { 'copyartifact':
+  # Make all jenkins::plugin::install items require Package['jenkins']:
+  Jenkins::Plugin::Install {
     require => Package['jenkins'],
+  }
+
+  jenkins::plugin::install { 'copyartifact':
   }
 
   # required for recent versions of ssh-agent
   jenkins::plugin::install { 'credentials':
     force   => '1', # see https://issues.jenkins-ci.org/browse/JENKINS-19927
-    require => Package['jenkins'],
   }
 
   # required for recent versions of credentials
   jenkins::plugin::install { 'icon-shim':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of credentials
   jenkins::plugin::install { 'ssh-credentials':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'git-client':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'git':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of git
   jenkins::plugin::install { 'scm-api':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'matrix-project':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'junit':
-    require => Package['jenkins'],
+    force => '1', # needed since 2.176.2, see https://issues.jenkins-ci.org/browse/JENKINS-57528
   }
 
   jenkins::plugin::install { 'script-security':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'workflow-scm-step':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'mailer':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'display-url-api':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of git-client
   jenkins::plugin::install { 'ssh-agent':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of Jenkins Git client plugin
   jenkins::plugin::install { 'apache-httpcomponents-client-4-api':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'jsch':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of ssh-agent
   jenkins::plugin::install { 'workflow-step-api':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'bouncycastle-api':
-    require => Package['jenkins'],
+    force => '1', # needed since 2.176.2, see https://issues.jenkins-ci.org/browse/JENKINS-57528
   }
 
   jenkins::plugin::install { 'structs':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'tap':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'timestamper':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'ws-cleanup':
-    require => Package['jenkins'],
   }
 
   # required for recent versions of ws-cleanup
   jenkins::plugin::install { 'workflow-durable-task-step':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'resource-disposer':
-    require => Package['jenkins'],
   }
 
   # note: workflow-aggregator is a dependency of ws-cleanup and
   # is the plugin ID for "Pipeline Plugin"
   jenkins::plugin::install { 'workflow-aggregator':
-    require => Package['jenkins'],
   }
 
   jenkins::plugin::install { 'pipeline-input-step':
-    require => Package['jenkins'],
   }
   jenkins::plugin::install { 'workflow-job':
-    require => Package['jenkins'],
   }
   jenkins::plugin::install { 'workflow-basic-steps':
-    require => Package['jenkins'],
   }
   jenkins::plugin::install { 'workflow-api':
-    require => Package['jenkins'],
   }
   jenkins::plugin::install { 'workflow-support':
-    require => Package['jenkins'],
   }
   jenkins::plugin::install { 'durable-task':
-    require => Package['jenkins'],
   }
 
   # required for usage of HTML markup in user-submitted text
   jenkins::plugin::install { 'antisamy-markup-formatter':
-    require => Package['jenkins'],
   }
 
   $java_package = $facts['os']['name'] ? {
@@ -283,7 +263,7 @@ class jenkins::software {
       File['/etc/apt/sources.list.d/jenkins.list'],
       File['/etc/sudoers.d/jenkins'],
       Exec['refresh-apt-jenkins'],
-      Package["$java_package"],
+      Package[$java_package],
     ]
   }
 
@@ -506,7 +486,7 @@ class jenkins::config {
     <hudson.matrix.TextAxis>
       <name>architecture</name>
       <values>
-        <string>$::architecture</string>
+        <string>${::architecture}</string>
       </values>
     </hudson.matrix.TextAxis>
   </axes>
@@ -591,7 +571,7 @@ class jenkins::config {
         <hudson.model.StringParameterDefinition>
           <name>architecture</name>
           <description></description>
-          <defaultValue>$::architecture</defaultValue>
+          <defaultValue>${::architecture}</defaultValue>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
@@ -693,12 +673,12 @@ sudo piuparts_wrapper \${PWD}/artifacts/*.deb || true</command>
 
   # SEED_TO_BE_ADJUSTED and PASSWORD_HASH will be adjusted by jenkins-debian-glue's apply.sh script
   file { '/var/lib/jenkins/users/jenkins-debian-glue/config.xml':
-    ensure       => present,
-    mode         => '0644',
-    owner        => 'jenkins',
-    require      => File['/var/lib/jenkins/users/jenkins-debian-glue/'],
-    notify       => Service['jenkins'],
-    content      => "<?xml version='1.0' encoding='UTF-8'?>
+    ensure  => present,
+    mode    => '0644',
+    owner   => 'jenkins',
+    require => File['/var/lib/jenkins/users/jenkins-debian-glue/'],
+    notify  => Service['jenkins'],
+    content => "<?xml version='1.0' encoding='UTF-8'?>
 <user>
   <fullName>Jenkins Debian Glue</fullName>
   <properties>
@@ -731,12 +711,12 @@ sudo piuparts_wrapper \${PWD}/artifacts/*.deb || true</command>
   }
 
   file { '/var/lib/jenkins/users/users.xml':
-    ensure       => present,
-    mode         => '0644',
-    owner        => 'jenkins',
-    require      => File['/var/lib/jenkins/users/'],
-    notify       => Service['jenkins'],
-    content      => "<?xml version='1.1' encoding='UTF-8'?>
+    ensure  => present,
+    mode    => '0644',
+    owner   => 'jenkins',
+    require => File['/var/lib/jenkins/users/'],
+    notify  => Service['jenkins'],
+    content => "<?xml version='1.1' encoding='UTF-8'?>
 <hudson.model.UserIdMapper>
   <version>1</version>
   <idToDirectoryNameMap class='concurrent-hash-map'>
