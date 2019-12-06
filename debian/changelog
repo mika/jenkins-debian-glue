@@ -4,6 +4,7 @@ jenkins-debian-glue (0.20.2) UNRELEASED; urgency=medium
   * Update standards version to 4.4.1, no changes needed.
   * Bump debhelper from old 10 to 12.
   * Set debhelper-compat version in Build-Depends.
+  * Add missing colon in closes line.
 
  -- Debian Janitor <janitor@jelmer.uk>  Fri, 06 Dec 2019 04:39:15 +0000
 
@@ -302,13 +303,13 @@ jenkins-debian-glue (0.15.0) unstable; urgency=medium
   * [220f87e] Support eatmydata (automatically enabled if host +
     distribution needs match) + ccache
   * [a1cba38] Rename global REPOSITORY to DEFAULT_REPOSITORY to support
-    overwriting it on demand (Closes #94) Thanks to Jean Baptiste Favre
+    overwriting it on demand (Closes: #94) Thanks to Jean Baptiste Favre
     for the bug report
   * [469a1ed] Ensure that eatmydata version on host is recent enough
   * [fdd0c85] Use debian-archive-keyring when building for recent Debian
-    on Ubuntu (Closes #130)
+    on Ubuntu (Closes: #130)
   * [89d3400] Update informational message regarding sub-directory
-    checkout for Git (Closes #107)
+    checkout for Git (Closes: #107)
 
  -- Michael Prokop <mika@debian.org>  Fri, 28 Aug 2015 16:19:06 +0200
 
@@ -325,7 +326,7 @@ jenkins-debian-glue (0.14.2) unstable; urgency=medium
 jenkins-debian-glue (0.14.1) unstable; urgency=medium
 
   * [b9b7c13] Get rid of cowbuilder environment if creating it failed
-  * [3da4c8a] Support disabling specific tap tool checks (Closes #132)
+  * [3da4c8a] Support disabling specific tap tool checks (Closes: #132)
   * [d414549] Conflict with old jenkins-debian-glue-buildenv-* to fix
     upgrade issues
   * [4025da3] Support parallel from moreutils as alternative to GNU
@@ -368,11 +369,11 @@ jenkins-debian-glue (0.14.0) unstable; urgency=medium
     implementation
   * [6446c02] Use /var/run/lock/ for cowbuilder lockfiles to fix
     permission issues
-  * [8e88422] Reduce number of binary packages (Closes #131) Thanks to
+  * [8e88422] Reduce number of binary packages (Closes: #131) Thanks to
     Christian Hofstaedtler <christian@hofstaedtler.name>
   * [1a1102c] Update debian/copyright
   * [0aebca1] Get rid of generate-reprepro-codename lockfile
-  * [e9e533c] Get rid of mount bind for autopkgtest (Closes #123) Thanks
+  * [e9e533c] Get rid of mount bind for autopkgtest (Closes: #123) Thanks
     to Christoph Berg <myon@debian.org>
 
   [ Victor Seva ]
@@ -417,7 +418,7 @@ jenkins-debian-glue (0.13.0) unstable; urgency=medium
   * [ca53ec4] generate-git-snapshot: support overwriting DBP_EXTRA_OPTS +
     adjust coding style
   * [d0c30f2] Support listing Debian package content via new script jdg-
-    debc (Closes #119)
+    debc (Closes: #119)
 
   [ Franco (nextime) Lanza / Daniel Reurich  ]
   * [5cb9bd6] Add git format deb pkgs support thanks to Daniel Reurich for
@@ -911,7 +912,7 @@ jenkins-debian-glue (0.2.0) unstable; urgency=low
     - [de56110] remove_missing_binary_packages: make check for missing
       package match whole words
     - [a00449e] Enable cowbuilder_run() for all architectures
-    - [a12b28a] Always include $distribution in cow base name [closes #17]
+    - [a12b28a] Always include $distribution in cow base name [closes: #17]
       Thanks to Christoph Berg for the suggestion
     - [456305e] Call generate-reprepro-codename in reprepro_wrapper + update
       README accordingly. Thanks to Christoph Berg <myon@debian.org> for
@@ -962,7 +963,7 @@ jenkins-debian-glue (0.2.0) unstable; urgency=low
     - [14e8b79] Mention Debian packages
     - [c2f8835] Document how to find console output of Jenkins jobs
     - [0f3b985] Clarify best practices, current development + cover
-      some FAQs, closes #9
+      some FAQs, closes: #9
     - [9c52b4b] Minor syntax fixes and rewordings
     - [1bcac3d] Document COWBUILDER_BASE and COWBUILDER_DIST
     - [0c907e0] Mention the "Delete workspace before build starts"
