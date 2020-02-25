@@ -52,7 +52,7 @@ create_base_tgz() {
     if lsb_release --id 2>/dev/null | grep -q Ubuntu ; then
       MIRROR='http://archive.ubuntu.com/ubuntu'
     else
-      MIRROR='http://http.debian.net/debian'
+      MIRROR='http://deb.debian.org/debian'
     fi
     echo "*** Using mirror $MIRROR ***"
   fi
