@@ -28,6 +28,15 @@ if [ -z "$PASSWORD_HASH" ] ; then
   exit 1
 fi
 
+# workaround for puppet's facter, which looks at `uname -m` (reporting e.g. aarch64)
+# while `dpkg --print-architecture` reports arm64
+export FACTER_JDG_DEBIAN_ARCH="$(dpkg --print-architecture)"
+
+if [ -z "${FACTER_JDG_DEBIAN_ARCH:-}" ] ; then
+  echo "Error reporting Debian architecture (via 'dpkg --print-architecture')" >&2
+  exit 1
+fi
+
 if [ -n "$2" ] ; then
   if [ -r jenkins_debian_glue.pp ] ; then
     echo "Error: file jenkins_debian_glue.pp exists already. Exiting to avoid possible data loss." >&2

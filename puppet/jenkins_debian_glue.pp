@@ -493,7 +493,7 @@ class jenkins::config {
     <hudson.matrix.TextAxis>
       <name>architecture</name>
       <values>
-        <string>${::architecture}</string>
+        <string>${::jdg_debian_arch}</string>
       </values>
     </hudson.matrix.TextAxis>
   </axes>
@@ -578,7 +578,7 @@ class jenkins::config {
         <hudson.model.StringParameterDefinition>
           <name>architecture</name>
           <description></description>
-          <defaultValue>${::architecture}</defaultValue>
+          <defaultValue>${::jdg_debian_arch}</defaultValue>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
