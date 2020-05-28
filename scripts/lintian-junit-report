@@ -4,6 +4,9 @@
 # Notes:
 # * for JUnit spec details see http://windyroad.org/dl/Open%20Source/JUnit.xsd
 #
+# This is loosely based on PHPUnit 4.x JUnit output an XSD for it can be found
+# at https://github.com/jenkinsci/xunit-plugin
+#
 # Ideas:
 # * integrate within Jenkins plugin (using jruby)
 # * integrate in Violations plugin (for further reporting options)
@@ -124,7 +127,7 @@ class JUnitOutput
     @document << REXML::XMLDecl::new
     @failures = 0
     @skipped = 0
-    @suite = @document.add_element 'testsuite', {'time' => duration}
+    @suite = @document.add_element 'testsuite', {'time' => duration, 'name' => 'lintian'}
   end
 
   def add_case(package, tag)
