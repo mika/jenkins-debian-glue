@@ -43,9 +43,16 @@ set_debootstrap() {
   fi
 
   # we can compile i386 packages on amd64, so don't use qemu-debootstrap there
+  # and the same goes for armhf/armel on arm64
   case "$HOST_ARCH" in
     amd64)
       if [ "${architecture:-}" = "i386" ] ; then
+        DEBOOTSTRAP="debootstrap"
+        return 0
+      fi
+      ;;
+    arm64)
+      if [ "${architecture:-}" = "armhf" ] || [ "${architecture:-}" = "armel" ] ; then
         DEBOOTSTRAP="debootstrap"
         return 0
       fi
