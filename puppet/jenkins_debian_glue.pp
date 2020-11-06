@@ -167,6 +167,23 @@ class jenkins::software {
   jenkins::plugin::install { 'junit':
     force => '1', # needed since 2.176.2, see https://issues.jenkins-ci.org/browse/JENKINS-57528
   }
+  # dependencies for junit plugin
+  jenkins::plugin::install { 'bootstrap4-api': }
+  jenkins::plugin::install { 'plugin-util-api': }
+  jenkins::plugin::install { 'echarts-api': }
+  jenkins::plugin::install { 'jackson2-api': }
+  jenkins::plugin::install { 'checks-api': }
+  # dependency for Bootstrap 4 API + ECharts API plugins
+  jenkins::plugin::install { 'jquery3-api': }
+  # dependencies for Bootstrap 4 API Plugin
+  jenkins::plugin::install { 'popper-api': }
+  jenkins::plugin::install { 'font-awesome-api': }
+  # dependency for Jackson 2 API Plugin
+  jenkins::plugin::install { 'snakeyaml-api': }
+  # dependency for Checks API plugin
+  jenkins::plugin::install { 'workflow-cps': }
+  # dependency for Groovy plugin (which is required by Checks API plugin)
+  jenkins::plugin::install { 'ace-editor': }
 
   jenkins::plugin::install { 'script-security':
   }
