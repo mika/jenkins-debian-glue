@@ -1,3 +1,39 @@
+jenkins-debian-glue (0.21.0) unstable; urgency=medium
+
+  [ Michael Prokop ]
+  * [bec262f] Trim trailing whitespace
+  * [67b3e51] scripts/piuparts_wrapper: switch to deb.debian.org as
+    default mirror
+  * [787018b] puppet: use Debian arch for configuring architecture axes
+  * [d33fc2c] Bump Standards-Version to 4.5.0
+  * [74c4861] puppet: depend on several plugins to get a working junit
+    plugin
+  * [eb3bb89] Bump Standards-Version to 4.5.1
+
+  [ Debian Janitor ]
+  * [e0455d1] Update standards version to 4.4.1, no changes needed.
+  * [ed994b5] Bump debhelper from old 10 to 12.
+  * [b9bc2dd] Set debhelper-compat version in Build-Depends.
+
+  [ Ratchanan Srirattanamet ]
+  * [54cfa30] build-and-provide-package: fix debian/control lookup for
+    non-native pkgs
+
+  [ Calvin Walton ]
+  * [79ab9b4] Ensure the keyring generated for REPOSITORY_EXTRA_KEYS is
+    not a keybox
+
+  [ Guillem Jover ]
+  * [93e8909] Switch from deprecated /var/run to /run
+
+  [ Antoine Musso ]
+  * [edc8cc9] lintian-junit-report: fix for xunit 2.x Jenkins plugin
+
+  [ parazyd ]
+  * [b222860] Support building armhf/armel on arm64 without QEMU.
+
+ -- Michael Prokop <mika@debian.org>  Wed, 23 Dec 2020 14:24:22 +0100
+
 jenkins-debian-glue (0.20.1) unstable; urgency=medium
 
   [ Michael Prokop ]
