@@ -236,7 +236,7 @@ build_info() {
 identify_sourcefile() {
   if [ -n "${sources:-}" ] ; then
     echo "*** WARNING: sources variable [$sources] is set, please use BASE_PATH variable instead ***"
-    echo "*** If \$sources is unrelated to build-and-provide-package you can ignore this warning ***"
+    echo "*** If \$sources is unrelated to jdg-build-and-provide-package you can ignore this warning ***"
   fi
 
   echo "*** Identifying newest package version ***"
@@ -938,10 +938,10 @@ reprepro_wrapper() {
 
   if ! [ -r "${REPOSITORY}"/conf/distributions ] ; then
     echo "*** reprepro configuration file ${REPOSITORY}/conf/distributions does not exist, generating now ***"
-    ${SUDO_CMD:-} generate-reprepro-codename "${REPOS}"
+    ${SUDO_CMD:-} jdg-generate-reprepro-codename "${REPOS}"
   elif ! ${SUDO_CMD:-} grep -q "^\(Codename\|Suite\): ${REPOS}$" "${REPOSITORY}"/conf/distributions ; then
     echo "*** Codename ${REPOS} does not exist in repository ${REPOSITORY}, generating now ***"
-    ${SUDO_CMD:-} generate-reprepro-codename "${REPOS}"
+    ${SUDO_CMD:-} jdg-generate-reprepro-codename "${REPOS}"
   fi
 
   remove_packages
@@ -1026,7 +1026,7 @@ trunk_release() {
   else
     echo "*** TRUNK_RELEASE is enabled ($TRUNK_RELEASE) ***"
 
-    ${SUDO_CMD:-} generate-reprepro-codename "$TRUNK_RELEASE"
+    ${SUDO_CMD:-} jdg-generate-reprepro-codename "$TRUNK_RELEASE"
 
 
     if [ -n "${SKIP_REPREPRO_WRAPPER:-}" ] ; then
@@ -1100,9 +1100,9 @@ release_repos() {
   cp "${WORKSPACE}/binaries/"* "${REPOSITORY}/incoming/${RELEASE_DISTRIBUTION}/"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to copy binary packages to release directory."
 
-  REPOSITORY=$REPOSITORY generate-reprepro-codename "${RELEASE_DISTRIBUTION}"
+  REPOSITORY=$REPOSITORY jdg-generate-reprepro-codename "${RELEASE_DISTRIBUTION}"
 
-  # lock access to file to avoid duplicate entries when two build-and-provide-package
+  # lock access to file to avoid duplicate entries when two jdg-build-and-provide-package
   # runs happen at the very same time with regard to conf/incoming setup
   (
   flock --timeout 5 9 || bailout 1 "Error: could not lock file ${REPOSITORY}/conf/incoming, giving up."

@@ -317,13 +317,13 @@ class jenkins::software {
     content => '## Deployed via jenkins_debian_glue.pp
 
 # Make sure DEB_* options reach cowbuilder, like e.g.:
-#  export DEB_BUILD_OPTIONS="parallel=8" /usr/bin/build-and-provide-package
+#  export DEB_BUILD_OPTIONS="parallel=8" /usr/bin/jdg-build-and-provide-package
 Defaults  env_keep+="DEB_* DIST ARCH ADT MIRRORSITE"
 
 # for *-binaries job
 jenkins ALL=NOPASSWD: /usr/sbin/cowbuilder, /usr/sbin/chroot
 # for *-piuparts job
-jenkins ALL=NOPASSWD: /usr/sbin/piuparts, /usr/sbin/debootstrap, /usr/bin/piuparts_wrapper
+jenkins ALL=NOPASSWD: /usr/sbin/piuparts, /usr/sbin/debootstrap, /usr/bin/jdg-piuparts-wrapper
 ',
     require => Package['sudo'],
   }
@@ -426,14 +426,14 @@ class jenkins::config {
     </hudson.tasks.Shell>
     <hudson.tasks.Shell>
       <command># when using git:
-/usr/bin/generate-git-snapshot
+/usr/bin/jdg-generate-git-snapshot
 
 # when using subversion:
-# /usr/bin/generate-svn-snapshot</command>
+# /usr/bin/jdg-generate-svn-snapshot</command>
     </hudson.tasks.Shell>
     <hudson.tasks.Shell>
       <command>mkdir -p report
-/usr/bin/lintian-junit-report *.dsc &gt; report/lintian.xml</command>
+/usr/bin/jdg-lintian-junit-report *.dsc &gt; report/lintian.xml</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
@@ -525,15 +525,15 @@ class jenkins::config {
     </hudson.plugins.copyartifact.CopyArtifact>
     <hudson.tasks.Shell>
       <command>export POST_BUILD_HOOK=/usr/bin/jdg-debc
-/usr/bin/build-and-provide-package</command>
+/usr/bin/jdg-build-and-provide-package</command>
     </hudson.tasks.Shell>
     <hudson.tasks.Shell>
       <command>echo &quot;Listing packages inside the jenkins-debian-glue repository:&quot;
-/usr/bin/repository_checker --list-repos jenkins-debian-glue</command>
+/usr/bin/jdg-repository_checker --list-repos jenkins-debian-glue</command>
     </hudson.tasks.Shell>
     <hudson.tasks.Shell>
       <command>mkdir -p report
-/usr/bin/lintian-junit-report *.dsc &gt; report/lintian.xml</command>
+/usr/bin/jdg-lintian-junit-report *.dsc &gt; report/lintian.xml</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
@@ -619,10 +619,10 @@ class jenkins::config {
     </hudson.plugins.copyartifact.CopyArtifact>
     <hudson.tasks.Shell>
       <command># sadly piuparts always returns with exit code 1 :((
-sudo piuparts_wrapper \${PWD}/artifacts/*.deb || true</command>
+sudo jdg-piuparts-wrapper \${PWD}/artifacts/*.deb || true</command>
     </hudson.tasks.Shell>
     <hudson.tasks.Shell>
-      <command>piuparts_tap piuparts.txt &gt; piuparts.tap</command>
+      <command>jdg-tap-piuparts piuparts.txt &gt; piuparts.tap</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>

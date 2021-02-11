@@ -180,7 +180,7 @@ trap bailout SIGHUP SIGINT SIGQUIT SIGABRT SIGALRM SIGTERM
 # command line handling
 CMDLINE_OPTS=list-package:,list-binary-package:,list-binary-repos:,list-repos:,list-source-package:,list-source-repos:,repository:,,help,validate-incoming,validate-source-bin-versions,version,version-remove-epoch,validate-skip-package:
 
-_opt_temp=$(getopt --name repository_checker -o +vhV --long $CMDLINE_OPTS -- "$@")
+_opt_temp=$(getopt --name jdg-repository-checker -o +vhV --long $CMDLINE_OPTS -- "$@")
 if [ $? -ne 0 ]; then
   echo "Try '$0 --help' for more information." >& 2
   exit 1

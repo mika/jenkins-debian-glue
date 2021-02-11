@@ -1,3 +1,14 @@
+jenkins-debian-glue (0.22.0) UNRELEASED; urgency=medium
+
+  To reduce the namespace pollution, all programs are namespaced now with
+  «jdg-» or «jdg-tap-» and their names had their ‘_’ replaced with ‘-’.
+
+  For backwards compatibility symlinks are provided for a transition period
+  to avoid breakage, but projects should be switched to the new names, which
+  will disappear eventually.
+
+ -- Guillem Jover <gjover@sipwise.com>  Thu, 11 Feb 2021 22:24:37 +0100
+
 jenkins-debian-glue (0.14.0) unstable; urgency=medium
 
   To reduce the amount of Debian binary packages we decided to
