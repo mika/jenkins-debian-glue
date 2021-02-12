@@ -138,7 +138,7 @@ if [ -z "${KEY_ID:-}" ] ; then
   echo "***          and then adjust /etc/jenkins/debian_glue."
 fi
 
-# lock access to file to avoid duplicate entries when two generate-reprepro-codename
+# lock access to file to avoid duplicate entries when two jdg-generate-reprepro-codename
 # runs happen at the very same time
 (
 flock --timeout 5 9 || bailout 1 "Error: could not lock file ${REPOSITORY}/conf/distributions, giving up."

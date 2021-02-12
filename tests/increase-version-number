@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SCRIPT=./scripts/increase-version-number
+SCRIPT=./scripts/jdg-increase-version-number
 
 testEquality()
 {

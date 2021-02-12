@@ -89,7 +89,7 @@ fi
 tar acf /tmp/buildd/autopkgtest.tar.gz /tmp/buildd/autopkgtest.out
 
 case ${EXIT:-0} in
-  2|4|6|8) # let adtsummary_tap report the failure
+  2|4|6|8) # let jdg-tap-adtsummary report the failure
     exit 0
     ;;
   *)

@@ -16,7 +16,7 @@ fi
 # where $existing_old_version is the provided <version_number>,
 # $snapshot_version is a version number based on the output of
 # the script (as used inside scripts like
-# generate-{git,svn}-snapshot) and $new_version is a version
+# jdg-generate-{git,svn}-snapshot) and $new_version is a version
 # number that might show up in the future.
 #
 # NOTE: The author of jenkins-debian-glue is aware of only one

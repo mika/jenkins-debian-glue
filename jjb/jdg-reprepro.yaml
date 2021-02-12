@@ -27,10 +27,10 @@
             wipe-workspace: false
       builders:
         - shell: 'rm -f ./* || true'
-        - shell: '/usr/bin/generate-git-snapshot'
+        - shell: '/usr/bin/jdg-generate-git-snapshot'
         - shell: |
             mkdir -p report
-            /usr/bin/lintian-junit-report *.dsc > report/lintian.xml
+            /usr/bin/jdg-lintian-junit-report *.dsc > report/lintian.xml
       publishers:
         - archive:
             artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.git,*.changes,*.buildinfo,lintian.txt'
@@ -74,13 +74,13 @@
             filter: '*'
             which-build: upstream-build
             fallback-to-last-successful: true
-        - shell: "/usr/bin/build-and-provide-package"
+        - shell: "/usr/bin/jdg-build-and-provide-package"
         - shell: |
             echo "Listing packages inside the {name} repository:"
-            /usr/bin/repository_checker --list-repos {name}
+            /usr/bin/jdg-repository-checker --list-repos {name}
         - shell: |
             mkdir -p report
-            /usr/bin/lintian-junit-report *.changes > report/lintian.xml
+            /usr/bin/jdg-lintian-junit-report *.changes > report/lintian.xml
       publishers:
         - archive:
             artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.git,*.changes,*.buildinfo,lintian.txt'
@@ -116,8 +116,8 @@
             target: 'artifacts/'
         - shell: |
             # sadly piuparts always returns with exit code 1 :((
-            sudo piuparts_wrapper $PWD/artifacts/*.deb || true
-        - shell: 'piuparts_tap piuparts.txt > piuparts.tap'
+            sudo jdg-piuparts-wrapper $PWD/artifacts/*.deb || true
+        - shell: 'jdg-tap-piuparts piuparts.txt > piuparts.tap'
       publishers:
         - tap:
             results: 'piuparts.tap'
