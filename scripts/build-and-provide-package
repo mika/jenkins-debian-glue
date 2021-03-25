@@ -419,8 +419,14 @@ cowbuilder_init() {
       echo "*** Skipping cowbuilder update as requested via SKIP_COWBUILDER_UPDATE ***"
     else
       echo "*** Updating cowbuilder cow base ***"
+      if [ "${OVERRIDE_COWBUILDER_CONFIG:-}" = "true" ] ; then
+        OVERRIDE_CONFIG="--override-config"
+      else
+        OVERRIDE_CONFIG=""
+      fi
       sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
-        cowbuilder --update --basepath "${COWBUILDER_BASE}" --configfile="${pbuilderrc}"
+        cowbuilder --update --basepath "${COWBUILDER_BASE}" --distribution "${COWBUILDER_DIST}" \
+           ${OVERRIDE_CONFIG} --configfile="${pbuilderrc}"
       [ $? -eq 0 ] || exit 3
     fi
   fi
@@ -783,7 +789,7 @@ EOF
     i386)
       linux32 sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
         cowbuilder --buildresult "$WORKSPACE"/binaries/ \
-        --build $sourcefile \
+        --build $sourcefile --distribution ${COWBUILDER_DIST} \
         --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}" \
         --hookdir "${PBUILDER_HOOKDIR}" --bindmounts "$BINDMOUNTS" --configfile="${pbuilderrc}"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
@@ -791,7 +797,7 @@ EOF
     amd64|all|*)
       sudo DIST="${distribution:-}" ARCH="${architecture:-}" ${ADT:+ADT=$ADT} \
         cowbuilder --buildresult "$WORKSPACE"/binaries/ \
-        --build $sourcefile \
+        --build $sourcefile --distribution ${COWBUILDER_DIST} \
         --basepath "${COWBUILDER_BASE}" --debbuildopts "${DEBBUILDOPTS:-}" \
         --hookdir "${PBUILDER_HOOKDIR}" --bindmounts "$BINDMOUNTS" --configfile="${pbuilderrc}"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to build with cowbuilder."
