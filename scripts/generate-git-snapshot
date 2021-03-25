@@ -60,8 +60,14 @@ gbp_opts() {
   if [ -n "${GBP_OPTS:-}" ] ; then
     echo "Found environment variable GBP_OPTS, set to ${GBP_OPTS}"
   else
-    GBP_OPTS=" -nc --git-force-create --git-ignore-new --git-ignore-branch -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true --git-export-dir= "
     echo "Using git-buildpackage default options provided by jenkins-debian-glue"
+
+    if gbp config buildpackage.overlay | grep -q 'True' ; then
+      echo "Identified Debian package with overlay enabled, explicitly setting '--git-export-dir=../'"
+      GBP_OPTS=" -nc --git-force-create --git-ignore-new --git-ignore-branch -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true --git-export-dir=../ "
+    else
+      GBP_OPTS=" -nc --git-force-create --git-ignore-new --git-ignore-branch -S -us -uc --git-verbose --git-builder=/bin/true --git-cleaner=/bin/true --git-export-dir= "
+    fi
   fi
 }
 
