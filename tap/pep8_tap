@@ -14,8 +14,14 @@ if ARGV[0].nil?
   exit 1
 end
 
-if not system "which pep8 >/dev/null 2>&1"
-  $stderr.puts "Error: program pep8 does not exist (install pep8 package)."
+if system "which pep8 >/dev/null 2>&1"
+  tool = "pep8"
+elsif system "which pycodestyle >/dev/null 2>&1"
+  tool = "pycodestyle"
+end
+
+if not tool
+  $stderr.puts "Error: Neither pep8 nor pycodestyle tool exists (install pep8/pycodestyle package)."
   exit 1
 end
 
@@ -28,7 +34,7 @@ end
 
 # Make sure we're looking at Python code.
 mimetype = `file -b -i #{file}`.gsub(/\n/,"")
-if not /.*x-python/i.match(mimetype)
+if not /.*x-python/i.match(mimetype) and not /.*x-script\.python/i.match(mimetype)
   $stderr.puts "File #{file} doesn't look like Python [#{mimetype}]. Ignoring."
   exit 0
 end
@@ -36,7 +42,7 @@ end
 
 ISSUE_PREFIX = 'ISSUE:'
 
-output = %x{pep8 -r --show-source --format 'ISSUE:%(path)s:%(row)d:%(col)d: %(code)s %(text)s' #{file} 2>&1}
+output = %x{#{tool} -r --show-source --format 'ISSUE:%(path)s:%(row)d:%(col)d: %(code)s %(text)s' #{file} 2>&1}
 
 def is_issue_line(l)
   l.start_with?(ISSUE_PREFIX)
@@ -76,7 +82,7 @@ issues = []
 
 output.each_line do |l|
   if defined? Encoding
-    l = l.rstrip().encode(output_encoding, {:invalid => :replace, :undef => :replace})
+    l = l.rstrip().encode(output_encoding, **{:invalid => :replace, :undef => :replace})
   else
     l = l.rstrip()
   end
