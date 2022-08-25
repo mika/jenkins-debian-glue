@@ -260,6 +260,94 @@ class jenkins::software {
   jenkins::plugin::install { 'antisamy-markup-formatter':
   }
 
+  # indirectly dependent plugins as of Jenkins >=2.346.3 and plugins we depend on
+  jenkins::plugin::install { 'bootstrap5-api':
+  }
+  jenkins::plugin::install { 'branch-api':
+  }
+  jenkins::plugin::install { 'build-timeout':
+  }
+  jenkins::plugin::install { 'caffeine-api':
+  }
+  jenkins::plugin::install { 'cloudbees-folder':
+  }
+  jenkins::plugin::install { 'command-launcher':
+  }
+  jenkins::plugin::install { 'credentials-binding':
+  }
+  jenkins::plugin::install { 'email-ext':
+  }
+  jenkins::plugin::install { 'github':
+  }
+  jenkins::plugin::install { 'github-api':
+  }
+  jenkins::plugin::install { 'github-branch-source':
+  }
+  jenkins::plugin::install { 'gradle':
+  }
+  jenkins::plugin::install { 'handlebars':
+  }
+  jenkins::plugin::install { 'jakarta-activation-api':
+  }
+  jenkins::plugin::install { 'jakarta-mail-api':
+  }
+  jenkins::plugin::install { 'javax-activation-api':
+  }
+  jenkins::plugin::install { 'javax-mail-api':
+  }
+  jenkins::plugin::install { 'jaxb':
+  }
+  jenkins::plugin::install { 'jdk-tool':
+  }
+  jenkins::plugin::install { 'jjwt-api':
+  }
+  jenkins::plugin::install { 'ldap':
+  }
+  jenkins::plugin::install { 'matrix-auth':
+  }
+  jenkins::plugin::install { 'momentjs':
+  }
+  jenkins::plugin::install { 'okhttp-api':
+  }
+  jenkins::plugin::install { 'pam-auth':
+  }
+  jenkins::plugin::install { 'pipeline-build-step':
+  }
+  jenkins::plugin::install { 'pipeline-github-lib':
+  }
+  jenkins::plugin::install { 'pipeline-graph-analysis':
+  }
+  jenkins::plugin::install { 'pipeline-groovy-lib':
+  }
+  jenkins::plugin::install { 'pipeline-milestone-step':
+  }
+  jenkins::plugin::install { 'pipeline-model-api':
+  }
+  jenkins::plugin::install { 'pipeline-model-definition':
+  }
+  jenkins::plugin::install { 'pipeline-model-extensions':
+  }
+  jenkins::plugin::install { 'pipeline-rest-api':
+  }
+  jenkins::plugin::install { 'pipeline-stage-step':
+  }
+  jenkins::plugin::install { 'pipeline-stage-tags-metadata':
+  }
+  jenkins::plugin::install { 'pipeline-stage-view':
+  }
+  jenkins::plugin::install { 'plain-credentials':
+  }
+  jenkins::plugin::install { 'popper2-api':
+  }
+  jenkins::plugin::install { 'ssh-slaves':
+  }
+  jenkins::plugin::install { 'token-macro':
+  }
+  jenkins::plugin::install { 'variant':
+  }
+  jenkins::plugin::install { 'workflow-multibranch':
+  }
+
   $java_package = $facts['os']['name'] ? {
     'Ubuntu' => $facts['os']['distro']['codename'] ? {
       # Using openjdk-8 for Ubuntu 18.01, as Jenkins stable does not support openjdk-11 yet.
