@@ -1,3 +1,18 @@
+jenkins-debian-glue (0.21.1) unstable; urgency=medium
+
+  [ Sergii Kipot ]
+  * [6749b85] Add support for pycodestyle tool
+
+  [ Michael Prokop ]
+  * [7105d59] puppet: drop package dependency on ttf-dejavu
+  * [05f82bb] Switch everything from git:// to https://
+  * [eeb543e] puppet: drop user setup and management of
+    /var/lib/jenkins/config.xml
+  * [22c9255] puppet: add a bunch of indirectly dependent plugins
+  * [81aaa61] debian: Bump Standards-Version to 4.6.1
+
+ -- Michael Prokop <mika@debian.org>  Thu, 25 Aug 2022 13:54:47 +0200
+
 jenkins-debian-glue (0.21.0) unstable; urgency=medium
 
   [ Michael Prokop ]
