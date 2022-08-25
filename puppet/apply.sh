@@ -4,28 +4,14 @@ start_seconds=$(sed -e 's/^\([0-9]*\).*/\1/' < /proc/uptime)
 [ -n "$start_seconds" ] && SECONDS="$[$(sed -e 's/^\([0-9]*\).*/\1/' < /proc/uptime)-$start_seconds]" || SECONDS="unknown"
 
 if [ -r /var/lib/jenkins/config.xml ] ; then
-  echo "Configuration file /var/lib/jenkins/config.xml exists already." >&2
-  echo "Exiting to avoid possible data loss." >&2
-  exit 1
-fi
+  echo "NOTE: Configuration file /var/lib/jenkins/config.xml exists already."
 
-if [ $# -lt 1 ] ; then
-  echo "Usage: $0 <password> [<http://path/to/some/puppetfile.pp>]" >&2
-  exit 1
-fi
-
-SEED=$(head -c 12 /dev/urandom | base64)
-
-if [ -z "$SEED" ] ; then
-  echo "Error calculating seed. :(" >&2
-  exit 1
-fi
-
-PASSWORD_HASH=$(echo -n "${1}"{"${SEED}"} | sha256sum | awk '{print $1}')
-
-if [ -z "$PASSWORD_HASH" ] ; then
-  echo "Error calculating password hash. :(" >&2
-  exit 1
+  if [ "$1" == "--force" ] ; then
+    echo "Continuing execution as requested via --force."
+  else
+    echo "Exiting to avoid possible data loss. To force execution, run '$0 --force'" >&2
+    exit 1
+  fi
 fi
 
 # workaround for puppet's facter, which looks at `uname -m` (reporting e.g. aarch64)
@@ -37,41 +23,13 @@ if [ -z "${FACTER_JDG_DEBIAN_ARCH:-}" ] ; then
   exit 1
 fi
 
-if [ -n "$2" ] ; then
-  if [ -r jenkins_debian_glue.pp ] ; then
-    echo "Error: file jenkins_debian_glue.pp exists already. Exiting to avoid possible data loss." >&2
-    exit 1
-  else
-    echo "Retrieving $2 and storing as jenkins_debian_glue.pp"
-    wget -O jenkins_debian_glue.pp "$2"
-  fi
-else
-  if ! [ -r jenkins_debian_glue.pp ] ; then
-    wget https://raw.github.com/mika/jenkins-debian-glue/master/puppet/jenkins_debian_glue.pp
-  fi
-fi
-
-if ! grep -q PASSWORD_HASH_TO_BE_ADJUSTED jenkins_debian_glue.pp ; then
-  echo "################################################################################"
-  echo "Warning: string PASSWORD_HASH_TO_BE_ADJUSTED not found in jenkins_debian_glue.pp"
-  echo "Notice that rerunning $0 with a different password might not work as expected."
-  echo "To make sure adjusting the password works please execute:
-
-  rm jenkins_debian_glue.pp
-  $0 <your_password> https://raw.github.com/mika/jenkins-debian-glue/master/puppet/jenkins_debian_glue.pp"
-  echo
-  echo "################################################################################"
-else
-  printf "Adjusting password in jenkins_debian_glue.pp: "
-  sed -i "s;PASSWORD_HASH_TO_BE_ADJUSTED;$PASSWORD_HASH;" jenkins_debian_glue.pp || exit 1
-  sed -i "s;SEED_TO_BE_ADJUSTED;$SEED;" jenkins_debian_glue.pp || exit 1
-  echo OK
+if ! [ -r jenkins_debian_glue.pp ] ; then
+  wget https://raw.github.com/mika/jenkins-debian-glue/master/puppet/jenkins_debian_glue.pp
 fi
 
 if ! [ -r jenkins_debian_glue.pp ] ; then
   echo "Error: can not find jenkins_debian_glue.pp." >&2
-  echo "Either manually grab https://raw.github.com/mika/jenkins-debian-glue/master/puppet/jenkins_debian_glue.pp" >&2
-  echo "       or run $0 <http://path/to/some/puppetfile.pp>" >&2
+  echo "Make sure to fetch e.g. https://raw.github.com/mika/jenkins-debian-glue/master/puppet/jenkins_debian_glue.pp" >&2
   exit 1
 fi
 
