@@ -5,7 +5,7 @@
 
 - project:
     name: jenkins-debian-glue
-    repos: git://github.com/mika/jenkins-debian-glue.git
+    repos: https://github.com/mika/jenkins-debian-glue.git
     jobs:
       - '{name}-source'
       - '{name}-binaries'

@@ -376,7 +376,7 @@ class jenkins::config {
       <hudson.plugins.git.UserRemoteConfig>
         <name></name>
         <refspec></refspec>
-        <url>git://github.com/mika/jenkins-debian-glue.git</url>
+        <url>https://github.com/mika/jenkins-debian-glue.git</url>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>

@@ -10,7 +10,7 @@
 # Ideas:
 # * integrate within Jenkins plugin (using jruby)
 # * integrate in Violations plugin (for further reporting options)
-#   git://github.com/jenkinsci/violations-plugin.git
+#   https://github.com/jenkinsci/violations-plugin.git
 ################################################################################
 
 require 'shellwords'

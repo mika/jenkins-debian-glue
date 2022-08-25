@@ -20,7 +20,7 @@ sudo dpkg -i ruby-crack_*.deb  ruby-httparty_*.deb  ruby-jenkins_*.deb  ruby-tho
 Recipe provided by Michael Gebetsroither:
 
 #+BEGIN_EXAMPLE
-git clone git://github.com/gebi/rubyrrdtool.git
+git clone https://github.com/gebi/rubyrrdtool.git
 cd rubyrrdtool
 ruby extconf.rb
 make
