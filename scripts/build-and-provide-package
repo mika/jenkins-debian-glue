@@ -520,10 +520,10 @@ identify_build_type() {
   local old_dir=$(pwd)
   cd "$TMPDIR"
   for file in  ${BASE_PATH}/${SOURCE_PACKAGE}_*.tar.* ; do
-    if tar atf "$file" 2>/dev/null | egrep -q '^([^/]+/)?debian/control$' ; then
+    if tar atf "$file" 2>/dev/null | grep -qE '^([^/]+/)?debian/control$' ; then
       # might be source/debian/control - so let's identify the path to debian/control
       # This assumes that no one will put `debian/debian/control` in debian tarball.
-      local control_file=$(tar atf "$file" 2>/dev/null | egrep '^([^/]+/)?debian/control$')
+      local control_file=$(tar atf "$file" 2>/dev/null | grep -E '^([^/]+/)?debian/control$')
       tar axf "$file" "$control_file" || bailout 1 "Error while looking at debian/control in source archive."
 
       if grep -q '^Architecture: all' "$control_file" ; then
@@ -856,7 +856,7 @@ remove_packages() {
 
     if $skip ; then
       echo "*** Package '$binpackage' listed in SKIP_PACKAGE_FROM_REMOVAL - skipping removal therefore ***"
-    elif echo "$file" | egrep -q '_all.u?deb$'; then
+    elif echo "$file" | grep -qE '_all.u?deb$'; then
       # note: "removesrc" would remove foreign arch files (of different builds)
       echo "*** Removing existing package ${binpackage} from repository ${REPOS} (arch all) ***"
       ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} remove "${REPOS}" "${binpackage}"
