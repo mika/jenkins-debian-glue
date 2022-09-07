@@ -701,7 +701,7 @@ cowbuilder_run() {
     if [ -d "${REPOSITORY}/dists/${release}" ]; then
       BINDMOUNTS="$BINDMOUNTS $REPOSITORY"
       local components="$(awk -F': ' '/^Components:/ { print $2 }' \
-        "${REPOSITORY}/dists/${release}/Release")"
+        "${REPOSITORY}/dists/${release}/InRelease")"
       # Check if keyring is provided so the repository can be verified.
       if [ -n "${REPOSITORY_KEYRING:-}" ]; then
         local trusted=
