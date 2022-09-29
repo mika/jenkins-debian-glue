@@ -1,0 +1,16 @@
+usr/bin/jdg-build-and-provide-package usr/bin/build-and-provide-package
+usr/bin/jdg-generate-git-snapshot usr/bin/generate-git-snapshot
+usr/bin/jdg-generate-reprepro-codename usr/bin/generate-reprepro-codename
+usr/bin/jdg-generate-svn-snapshot usr/bin/generate-svn-snapshot
+usr/bin/jdg-increase-version-number usr/bin/increase-version-number
+usr/bin/jdg-lintian-junit-report usr/bin/lintian-junit-report
+usr/bin/jdg-piuparts-wrapper usr/bin/piuparts_wrapper
+usr/bin/jdg-remove-reprepro-codename usr/bin/remove-reprepro-codename
+usr/bin/jdg-repository-checker usr/bin/repository_checker
+usr/bin/jdg-tap-adtsummary usr/bin/adtsummary_tap
+usr/bin/jdg-tap-checkbashism usr/bin/checkbashism_tap
+usr/bin/jdg-tap-pep8 usr/bin/pep8_tap
+usr/bin/jdg-tap-perlcritic usr/bin/perlcritic_tap
+usr/bin/jdg-tap-piuparts usr/bin/piuparts_tap
+usr/bin/jdg-tap-shellcheck usr/bin/shellcheck_tap
+usr/bin/jdg-tap-tool-dispatcher usr/bin/tap_tool_dispatcher

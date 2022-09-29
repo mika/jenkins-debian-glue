@@ -107,7 +107,7 @@ build_snapshot() {
     SNAPSHOT_VERSION="${PREVIOUS_VERSION}~${TIMESTAMP}.svn${SVN_REVISION}.${BUILD_NUMBER}"
   else
     # calculate new snapshot version
-    SNAPSHOT_VERSION="$(increase-version-number "$PREVIOUS_VERSION")~${TIMESTAMP}.svn${SVN_REVISION}.${BUILD_NUMBER}"
+    SNAPSHOT_VERSION="$(jdg-increase-version-number "$PREVIOUS_VERSION")~${TIMESTAMP}.svn${SVN_REVISION}.${BUILD_NUMBER}"
   fi
 
   # generate changelog

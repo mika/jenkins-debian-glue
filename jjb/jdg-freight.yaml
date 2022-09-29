@@ -26,10 +26,10 @@
             wipe-workspace: false
       builders:
         - shell: 'rm -f ./* || true'
-        - shell: '/usr/bin/generate-git-snapshot'
+        - shell: '/usr/bin/jdg-generate-git-snapshot'
         - shell: |
             mkdir -p report
-            /usr/bin/lintian-junit-report *.dsc > report/lintian.xml
+            /usr/bin/jdg-lintian-junit-report *.dsc > report/lintian.xml
       publishers:
         - archive:
             artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.git,*.changes,*.buildinfo,lintian.txt'
@@ -77,10 +77,10 @@
             export USE_FREIGHT=true
             export SUDO_CMD=sudo
             export KEY_ID=DEADBEEF # please adjust, or edit /etc/freight.conf
-            /usr/bin/build-and-provide-package
+            /usr/bin/jdg-build-and-provide-package
         - shell: |
             mkdir -p report
-            /usr/bin/lintian-junit-report *.changes > report/lintian.xml
+            /usr/bin/jdg-lintian-junit-report *.changes > report/lintian.xml
       publishers:
         - archive:
             artifacts: '*.gz,*.bz2,*.xz,*.deb,*.dsc,*.git,*.changes,*.buildinfo,lintian.txt'

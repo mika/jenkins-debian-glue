@@ -59,7 +59,7 @@ cp -ax "$BUILD" "/var/cache/pbuilder/build/debug.$ID"
 cat <<EOF
   ┌──────────────────────────────────────────────────────────────────────────────┐
   │  FTBFS - execute the following commands to debug this issue:                 │
-  └──────────────────────────────────────────────────────────────────────────────┘
+  ├──────────────────────────────────────────────────────────────────────────────┘
   │
   │  chroot /var/cache/pbuilder/build/debug.$ID
   │  su - pbuilder
@@ -67,7 +67,7 @@ cat <<EOF
   │  cd ${BUILD_DIR}/*/debian/..
   │  env PATH="/usr/sbin:/usr/bin:/sbin:/bin" dpkg-buildpackage -us -uc -nc -rfakeroot
   │
-  ┌──────────────────────────────────────────────────────────────────────────────┐
+  ├──────────────────────────────────────────────────────────────────────────────┐
   │  To invoke any hook use /tmp/hooks/NAMEOFHOOK                                │
   └──────────────────────────────────────────────────────────────────────────────┘
 EOF

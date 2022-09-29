@@ -8,7 +8,7 @@ BASE_BIN=${BASE_BIN:-/usr/bin}
 CMDLINE_OPTS=disable-checkbashism,disable-pep8,disable-perlcritic,disable-shellcheck
 CMDLINE_OPTS+=,file-list,help
 
-_opt_temp=$(getopt --name tap_tool_dispatcher -o -f+h --long $CMDLINE_OPTS -- "$@")
+_opt_temp=$(getopt --name jdg-tap-tool-dispatcher -o -f+h --long $CMDLINE_OPTS -- "$@")
 if [ $? -ne 0 ]; then
   echo "Try '$0 --help' for more information." >& 2
   exit 1
@@ -110,7 +110,7 @@ if ! [ -x "$(which checkbashisms)" ] ; then
   echo "*** Skipping checkbashism checks as tool checkbashisms isn't present ***"
 else
   if $_opt_checkbashism ; then
-    echo "${BASE_BIN}/checkbashism_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_checkbashism.tap' ';' \\" >> "${TMPFILE}"
+    echo "${BASE_BIN}/jdg-tap-checkbashism '{}' '>' ${REPORTS_DIRECTORY}'/{}_checkbashism.tap' ';' \\" >> "${TMPFILE}"
   else
     echo "*** Skipping checkbashism tests as requested via --disable-checkbashism ***"
   fi
@@ -120,7 +120,7 @@ if ! [ -x "$(which pep8)" ] ; then
   echo "*** Skipping pep8 checks as tool pep8 isn't present ***"
 else
   if $_opt_pep8 ; then
-    echo "${BASE_BIN}/pep8_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_pep8.tap' ';' \\" >> "${TMPFILE}"
+    echo "${BASE_BIN}/jdg-tap-pep8 '{}' '>' ${REPORTS_DIRECTORY}'/{}_pep8.tap' ';' \\" >> "${TMPFILE}"
   else
     echo "*** Skipping pep8 tests as requested via --disable-pep8 ***"
   fi
@@ -130,7 +130,7 @@ if ! [ -x "$(which perlcritic)" ] ; then
   echo "*** Skipping perlcritic checks as tool perlcritic (package libperl-critic-perl) isn't present ***"
 else
   if $_opt_perlcritic ; then
-    echo "${BASE_BIN}/perlcritic_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_perlcritic.tap' ';' \\" >> "${TMPFILE}"
+    echo "${BASE_BIN}/jdg-tap-perlcritic '{}' '>' ${REPORTS_DIRECTORY}'/{}_perlcritic.tap' ';' \\" >> "${TMPFILE}"
   else
     echo "*** Skipping perlcritic tests as requested via --disable-perlcritic ***"
   fi
@@ -140,7 +140,7 @@ if ! [ -x "$(which shellcheck)" ] ; then
   echo "*** Skipping shellcheck checks as tool shellcheck isn't present ***"
 else
   if $_opt_shellcheck ; then
-    echo "${BASE_BIN}/shellcheck_tap '{}' '>' ${REPORTS_DIRECTORY}'/{}_shellcheck.tap' ';'" >> "${TMPFILE}"
+    echo "${BASE_BIN}/jdg-tap-shellcheck '{}' '>' ${REPORTS_DIRECTORY}'/{}_shellcheck.tap' ';'" >> "${TMPFILE}"
   else
     echo "*** Skipping shellcheck tests as requested via --disable-shellcheck ***"
   fi
