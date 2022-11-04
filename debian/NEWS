@@ -1,4 +1,4 @@
-jenkins-debian-glue (0.22.0) UNRELEASED; urgency=medium
+jenkins-debian-glue (0.22.0) unstable; urgency=medium
 
   To reduce the namespace pollution, all programs are namespaced now with
   «jdg-» or «jdg-tap-» and their names had their ‘_’ replaced with ‘-’.

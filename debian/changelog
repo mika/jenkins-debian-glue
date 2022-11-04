@@ -1,3 +1,23 @@
+jenkins-debian-glue (0.22.0) unstable; urgency=medium
+
+  [ Guillem Jover ]
+  * [a7ca611] Use better characters for text boxing in piuparts hook
+  * [c232683] Remove superfluous debian/tmp prefix from debhelper .install
+    file
+  * [886884c] Namespace and rename programs to reduce the namespace
+    pollution
+
+  [ Michael Prokop ]
+  * [55d040d] build-and-provide-package: Use InRelease file instead of
+    Release. Thanks to Mykola Malkov
+  * [81fb098] scripts/build-and-provide-package: replace egrep usage with
+    grep -E
+
+  [ Debian Janitor ]
+  * [94d0d46] Remove constraints unnecessary since buster(oldstable)
+
+ -- Michael Prokop <mika@debian.org>  Fri, 04 Nov 2022 17:00:16 +0100
+
 jenkins-debian-glue (0.21.1) unstable; urgency=medium
 
   [ Sergii Kipot ]
