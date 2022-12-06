@@ -608,7 +608,7 @@ class jenkins::config {
     </hudson.tasks.Shell>
     <hudson.tasks.Shell>
       <command>echo &quot;Listing packages inside the jenkins-debian-glue repository:&quot;
-/usr/bin/jdg-repository_checker --list-repos jenkins-debian-glue</command>
+/usr/bin/jdg-repository-checker --list-repos jenkins-debian-glue</command>
     </hudson.tasks.Shell>
     <hudson.tasks.Shell>
       <command>mkdir -p report
