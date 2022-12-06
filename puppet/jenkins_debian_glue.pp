@@ -273,6 +273,10 @@ class jenkins::software {
   }
   jenkins::plugin::install { 'command-launcher':
   }
+  jenkins::plugin::install { 'commons-lang3-api':
+  }
+  jenkins::plugin::install { 'commons-text-api':
+  }
   jenkins::plugin::install { 'credentials-binding':
   }
   jenkins::plugin::install { 'email-ext':
@@ -286,6 +290,8 @@ class jenkins::software {
   jenkins::plugin::install { 'gradle':
   }
   jenkins::plugin::install { 'handlebars':
+  }
+  jenkins::plugin::install { 'ionicons-api':
   }
   jenkins::plugin::install { 'jakarta-activation-api':
   }
