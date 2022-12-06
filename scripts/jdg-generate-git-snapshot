@@ -435,7 +435,12 @@ source_format_opts() {
 
 # main execution
 echo "*** source package build phase ***"
-rm -f ./* || true
+
+if [ -n "${SKIP_PRE_CLEANUP:-}" ] ; then
+  echo '*** SKIP_PRE_CLEANUP is set ***'
+else
+  rm -f ./* || true
+fi
 
 if [ -n "${PRE_SOURCE_HOOK:-}" ] ; then
   echo "*** Found environment variable PRE_SOURCE_HOOK, set to ${PRE_SOURCE_HOOK:-} ***"
