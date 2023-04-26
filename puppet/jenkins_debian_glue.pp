@@ -83,16 +83,16 @@ class jenkins::repos {
     ensure => present,
   }
 
-  apt::key { 'D50582E6':
+  apt::key { 'EF5975CA':
     ensure => present,
-    source => 'https://pkg.jenkins.io/debian-stable/jenkins.io.key',
+    source => 'https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key',
   }
 
   file { '/etc/apt/sources.list.d/jenkins.list':
     ensure  => present,
     content => "deb https://pkg.jenkins.io/debian-stable binary/\n",
     require => [
-      Apt::Key['D50582E6'],
+      Apt::Key['EF5975CA'],
       Package['apt-transport-https'],
     ],
   }
@@ -100,7 +100,7 @@ class jenkins::repos {
   exec { 'refresh-apt-jenkins':
     require => [
       File['/etc/apt/sources.list.d/jenkins.list'],
-      Apt::Key['D50582E6'],
+      Apt::Key['EF5975CA'],
     ],
     command => '/usr/bin/apt-get update',
   }
