@@ -1,0 +1,5 @@
+<<<<<<< HEAD
+What a nice test this is.
+=======
+#
+>>>>>>> 47509bb6 (MT#58115 WIP)

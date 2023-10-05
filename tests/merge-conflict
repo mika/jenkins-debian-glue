@@ -1,0 +1,24 @@
+#!/bin/sh
+
+SCRIPT=./tap/jdg-tap-merge-conflict
+
+KO_FILE=./tests/fixtures/merge-conflict/ko.txt
+KO_OUT="1..3
+not ok 1           <<<<<<< HEAD
+not ok 2           =======
+not ok 3           >>>>>>> 47509bb6 (MT#58115 WIP)"
+OK_FILE=./tests/fixtures/merge-conflict/ok.txt
+
+testDetection()
+{
+  assertEquals "$($SCRIPT $KO_FILE)" "$KO_OUT"
+}
+
+testPass()
+{
+  assertEquals "$($SCRIPT $OK_FILE)" ""
+}
+
+. /usr/share/shunit2/shunit2
+
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2
