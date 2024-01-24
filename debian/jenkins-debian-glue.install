@@ -10,6 +10,7 @@ usr/bin/jdg-remove-reprepro-codename usr/bin/
 usr/bin/jdg-repository-checker usr/bin/
 usr/bin/jdg-tap-adtsummary usr/bin/
 usr/bin/jdg-tap-checkbashism usr/bin/
+usr/bin/jdg-tap-merge-conflict usr/bin
 usr/bin/jdg-tap-pep8 usr/bin/
 usr/bin/jdg-tap-perlcritic usr/bin/
 usr/bin/jdg-tap-piuparts usr/bin/

@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+if ARGV[0].nil?
+  $stderr.puts "Usage: #{File.basename $0} <file>"
+  exit 1
+end
+
+if not system "which grep >/dev/null 2>&1"
+  $stderr.puts "Error: program grep does not exist (install grep package)."
+  exit 1
+end
+
+file = ARGV[0]
+
+if not File.exists? file
+  $stderr.puts "Error: file #{file} could not be read."
+  exit 1
+end
+
+output = %x{grep -e '^<<<<<<< ' -e '^=======$' -e '^>>>>>>> ' #{file} 2>&1}
+
+num_lines = output.lines.count
+exit 0 if num_lines == 0 # nothing found, jey
+counter = 1
+
+# output result in TAP format
+puts "1..#{num_lines}"
+output.gsub(/:\n/, ':').each_line do |critic|
+  puts "not ok #{counter}           #{critic}"
+  counter += 1
+end
