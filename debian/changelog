@@ -1,3 +1,18 @@
+jenkins-debian-glue (0.23.0) unstable; urgency=medium
+
+  [ Oleh Horbachov ]
+  * [0d3b8ab] Updated jenkins PGP key
+
+  [ Victor Seva ]
+  * [0d54b7f] tap: detect merge conflicts tool
+  * [f1caf36] tap: add merge-conflict by default on tap-tool-dispatcher
+
+  [ Michael Prokop ]
+  * [c2b1d1f] Fix lintian issue with ruby-script-but-no-ruby-dep. Thanks
+    to Victor Seva for feedback
+
+ -- Michael Prokop <mika@debian.org>  Wed, 19 Jun 2024 12:01:10 +0200
+
 jenkins-debian-glue (0.22.1) unstable; urgency=medium
 
   [ Marius Gripsgard ]
