@@ -20,6 +20,7 @@ _opt_checkbashism=true
 _opt_pep8=true
 _opt_perlcritic=true
 _opt_shellcheck=true
+_opt_mergecheck=true
 
 usage() {
   echo "$0 - run code style quality tools in parallel
@@ -32,6 +33,7 @@ usage() {
    --disable-pep8          Disable pep8 execution
    --disable-perlcritic    Disable perlcritic execution
    --disable-shellcheck    Disable shellcheck execution
+   --disable-mergecheck    Disable merge-conflict execution
    -f|--file-list FILE     File with the list of files to check
    -h|--help               Display this usage information and exit
    "
@@ -53,6 +55,9 @@ while :; do
     ;;
   --disable-shellcheck)
     _opt_shellcheck=false
+    ;;
+  --disable-mergecheck)
+    _opt_mergecheck=false
     ;;
   --file-list|-f)
     [ -f "$2" ] || { echo "No $2 file found" >&2; exit 1; }
@@ -144,6 +149,12 @@ else
   else
     echo "*** Skipping shellcheck tests as requested via --disable-shellcheck ***"
   fi
+fi
+
+if $_opt_mergecheck ; then
+  echo "${BASE_BIN}/jdg-tap-merge-conflict '{}' '>' ${REPORTS_DIRECTORY}'/{}_mergecheck.tap' ';'" >> "${TMPFILE}"
+else
+  echo "*** Skipping merge-conflict check tests as requested via --disable-mergecheck ***"
 fi
 
 # generate the executed script
