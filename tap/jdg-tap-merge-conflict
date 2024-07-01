@@ -12,7 +12,10 @@ end
 
 file = ARGV[0]
 
-if not File.exists? file
+if File.directory? file
+  $stderr.puts "#{file} is a directory. Ignoring."
+  exit 0
+elsif not File.exists? file
   $stderr.puts "Error: file #{file} could not be read."
   exit 1
 end
