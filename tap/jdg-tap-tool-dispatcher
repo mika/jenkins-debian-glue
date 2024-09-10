@@ -5,7 +5,7 @@ set -u
 BASE_BIN=${BASE_BIN:-/usr/bin}
 
 # command line handling
-CMDLINE_OPTS=disable-checkbashism,disable-pep8,disable-perlcritic,disable-shellcheck
+CMDLINE_OPTS=disable-checkbashism,disable-pep8,disable-perlcritic,disable-shellcheck,disable-mergecheck
 CMDLINE_OPTS+=,file-list,help
 
 _opt_temp=$(getopt --name jdg-tap-tool-dispatcher -o -f+h --long $CMDLINE_OPTS -- "$@")
