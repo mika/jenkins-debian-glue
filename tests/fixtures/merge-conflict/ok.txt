@@ -1,1 +1,10 @@
 What a nice test this is.
+=======
+This is not a merge conflict
+=======
+<<<<<<< 
+Really not
+=======
+<<<<<<< 
+I'm sure
+=======
