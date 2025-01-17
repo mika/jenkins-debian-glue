@@ -14,14 +14,14 @@ if ARGV[0].nil?
   exit 1
 end
 
-if system "which pep8 >/dev/null 2>&1"
-  tool = "pep8"
-elsif system "which pycodestyle >/dev/null 2>&1"
+if system "which pycodestyle >/dev/null 2>&1"
   tool = "pycodestyle"
+elsif system "which pep8 >/dev/null 2>&1"
+  tool = "pep8"
 end
 
 if not tool
-  $stderr.puts "Error: Neither pep8 nor pycodestyle tool exists (install pep8/pycodestyle package)."
+  $stderr.puts "Error: Neither pycodestyle nor pep8 tool exists (install pycodestyle package)."
   exit 1
 end
 
