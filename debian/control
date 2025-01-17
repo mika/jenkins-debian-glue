@@ -75,7 +75,7 @@ Replaces:
 Recommends:
  curl,
  libperl-critic-perl,
- pep8,
+ pycodestyle,
  qemu-user-static,
  shellcheck,
 Description: Jenkins Debian glue scripts - dependency package
