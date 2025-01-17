@@ -121,8 +121,8 @@ else
   fi
 fi
 
-if ! [ -x "$(which pep8)" ] ; then
-  echo "*** Skipping pep8 checks as tool pep8 isn't present ***"
+if ! [ -x "$(which pycodestyle)" ] ; then
+  echo "*** Skipping pep8 checks as tool pycodestyle isn't present ***"
 else
   if $_opt_pep8 ; then
     echo "${BASE_BIN}/jdg-tap-pep8 '{}' '>' ${REPORTS_DIRECTORY}'/{}_pep8.tap' ';' \\" >> "${TMPFILE}"
