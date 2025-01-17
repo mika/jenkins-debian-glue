@@ -1,3 +1,12 @@
+jenkins-debian-glue (0.23.2) unstable; urgency=medium
+
+  * d/control: replace deprecated Recommends on pep8 with pycodestyle.
+    Thanks to Alexandre Detiste (Closes: #1093162)
+  * tap/jdg-tap-pep8: check for pycodestyle by default
+  * tap/jdg-tap-tool-dispatcher: enable jdg-tap-pep8 via pycodestyle
+
+ -- Michael Prokop <mika@debian.org>  Fri, 17 Jan 2025 12:20:23 +0100
+
 jenkins-debian-glue (0.23.1) unstable; urgency=medium
 
   [ Victor Seva ]
