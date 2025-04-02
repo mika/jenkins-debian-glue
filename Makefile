@@ -3,6 +3,7 @@ PREFIX := /usr
 PROGRAMS := scripts/* tap/*
 
 build:
+	tests/merge-conflict
 	tests/increase-version-number
 	tests/file-detection
 
