@@ -24,7 +24,7 @@ if not File.exists? file
 end
 
 # make sure we're checking a perl script
-mimetype = `file -b #{file}`.gsub(/\n/,"")
+mimetype = `file -Pbytes=32 -b #{file}`.gsub(/\n/,"")
 if not /.*perl/i.match(mimetype)
   $stderr.puts "File #{file} doesn't look like perl [#{mimetype}]. Ignoring."
   exit 0

@@ -1,0 +1,23 @@
+#!/bin/sh
+
+SCRIPT=./tap/jdg-tap-shellcheck
+SCRIPT_KO=./tap/jdg-tap-perlcritic
+FILE=./tests/fixtures/file-detection/test.sh
+NOT_PERL="File ./tests/fixtures/file-detection/test.sh doesn't look like perl [POSIX shell script, ASCII text executable]. Ignoring."
+FAKE_PATH=./tests/fixtures/file-detection/
+
+PATH="${FAKE_PATH}:${PATH}"
+
+testOK()
+{
+  assertEquals "1..0" "$(PATH="${PATH}" $SCRIPT $FILE)"
+}
+
+testDetection()
+{
+  assertEquals "$NOT_PERL" "$(PATH="${PATH}" $SCRIPT_KO $FILE 2>&1)"
+}
+
+. /usr/share/shunit2/shunit2
+
+# vim:foldmethod=marker ts=2 ft=sh ai expandtab sw=2

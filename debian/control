@@ -8,7 +8,8 @@ Vcs-Git: https://github.com/mika/jenkins-debian-glue.git
 Vcs-Browser: https://github.com/mika/jenkins-debian-glue
 Build-Depends:
  debhelper-compat (= 12),
- shunit2,
+ ruby <!nocheck>,
+ shunit2 <!nocheck>,
 
 Package: jenkins-debian-glue
 Architecture: all

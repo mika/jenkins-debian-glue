@@ -4,6 +4,7 @@ PROGRAMS := scripts/* tap/*
 
 build:
 	tests/increase-version-number
+	tests/file-detection
 
 install: $(scripts)
 	mkdir -p $(DESTDIR)/$(PREFIX)/bin/
