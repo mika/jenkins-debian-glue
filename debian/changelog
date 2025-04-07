@@ -1,3 +1,11 @@
+jenkins-debian-glue (0.23.3) unstable; urgency=medium
+
+  [ Victor Seva ]
+  * [11da68f] tap: improve file detection
+  * [ddb1157] Makefile: add missing test
+
+ -- Michael Prokop <mika@debian.org>  Mon, 07 Apr 2025 13:10:42 +0200
+
 jenkins-debian-glue (0.23.2) unstable; urgency=medium
 
   * d/control: replace deprecated Recommends on pep8 with pycodestyle.
