@@ -1,3 +1,10 @@
+jenkins-debian-glue (0.23.4) unstable; urgency=medium
+
+  * [f3c55ce] tap: replace deprecated File.exists? with File.exist?
+    (Closes: #1102381)
+
+ -- Michael Prokop <mika@debian.org>  Tue, 08 Apr 2025 15:39:06 +0200
+
 jenkins-debian-glue (0.23.3) unstable; urgency=medium
 
   [ Victor Seva ]
