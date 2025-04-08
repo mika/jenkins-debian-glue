@@ -12,7 +12,7 @@ end
 
 file = ARGV[0]
 
-if not File.exists? file
+if not File.exist? file
   $stderr.puts "Error: file #{file} could not be read."
   exit 1
 end

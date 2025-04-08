@@ -11,14 +11,14 @@ if not system "which perlcritic >/dev/null 2>&1"
 end
 
 # not sure whether we really should check this here..
-#if !File.exists?('/usr/share/perl5/Test/Log4perl.pm')
+#if !File.exist?('/usr/share/perl5/Test/Log4perl.pm')
 #  $stderr.puts "Error: libtest-log4perl-perl not installed."
 #  exit 1
 #end
 
 file = ARGV[0]
 
-if not File.exists? file
+if not File.exist? file
   $stderr.puts "Error: file #{file} could not be read."
   exit 1
 end

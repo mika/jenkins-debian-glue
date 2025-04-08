@@ -15,7 +15,7 @@ file = ARGV[0]
 if File.directory? file
   $stderr.puts "#{file} is a directory. Ignoring."
   exit 0
-elsif not File.exists? file
+elsif not File.exist? file
   $stderr.puts "Error: file #{file} could not be read."
   exit 1
 end
