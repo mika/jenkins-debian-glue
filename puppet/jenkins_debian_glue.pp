@@ -64,17 +64,8 @@ class jenkins::repos {
 
 class jenkins::software {
 
-  $java_package = $facts['os']['name'] ? {
-    'Ubuntu' => $facts['os']['distro']['codename'] ? {
-      # Using openjdk-8 for Ubuntu 18.01, as Jenkins stable does not support openjdk-11 yet.
-      'bionic' => 'openjdk-8-jre-headless',
-      default  => 'default-jre-headless',
-    },
-    default => 'default-jre-headless',
-  }
-
-  package { $java_package:
-    ensure  => present,
+  package { 'default-jre-headless':
+    ensure => present,
   }
 
   package { 'jenkins':
@@ -83,7 +74,7 @@ class jenkins::software {
       File['/etc/apt/sources.list.d/jenkins.list'],
       File['/etc/sudoers.d/jenkins'],
       Exec['refresh-apt-jenkins'],
-      Package[$java_package],
+      Package['default-jre-headless'],
     ]
   }
 
