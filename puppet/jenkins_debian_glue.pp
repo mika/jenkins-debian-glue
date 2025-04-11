@@ -104,27 +104,6 @@ class jenkins::repos {
     ],
     command => '/usr/bin/apt-get update',
   }
-
-  apt::key { '52D4A654':
-    ensure => present,
-    source => 'http://jenkins.grml.org/debian/C525F56752D4A654.asc',
-  }
-
-  file { '/etc/apt/sources.list.d/jenkins-debian-glue.list':
-    ensure  => present,
-    content => "deb http://jenkins.grml.org/debian jenkins-debian-glue main\n",
-    require => [
-      Apt::Key['52D4A654'],
-    ],
-  }
-
-  exec { 'refresh-apt-jenkins-debian-glue':
-    require => [
-      File['/etc/apt/sources.list.d/jenkins-debian-glue.list'],
-      Apt::Key['52D4A654'],
-    ],
-    command => '/usr/bin/apt-get update';
-  }
 }
 
 
@@ -380,10 +359,6 @@ class jenkins::software {
   package { [ 'jenkins-debian-glue',
             'jenkins-debian-glue-buildenv' ]:
     ensure  => present,
-    require => [
-      File['/etc/apt/sources.list.d/jenkins-debian-glue.list'],
-      Exec['refresh-apt-jenkins-debian-glue'],
-    ]
   }
 
   service { 'jenkins':
