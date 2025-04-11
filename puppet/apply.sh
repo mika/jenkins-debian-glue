@@ -102,28 +102,24 @@ else
 fi
 
 echo "
-NOTE: if you should notice failing Jenkins jobs this might be related to
+NOTE: if you should notice failing Jenkins jobs, this might be related to
 incomplete Jenkins plugin dependencies (see
 https://github.com/jenkinsci/puppet-jenkins/issues/64 +
 https://github.com/jenkinsci/puppet-jenkins/issues/12 for details why we
 can't easily automate that yet).
 
-Usually this is related to the Git plugin. You can check whether the
-Git plugin for Jenkins is installed by checking if the following URL
-displays '<installed/>':
+Take care by following the Jenkins setup wizard, to unlock your Jenkins system
+and also install the suggested plugins within the setup wizard, to do so visit
+http://${IP}:8080
 
-  http://${IP}:8080/updateCenter/plugin/git/api/xml?xpath=plugin/installed
+IMPORTANT: You also need to manually install the 'Copy Artifact' Jenkins plugin,
+           visit http://${IP}:8080/manage/pluginManager/available
 
-If it returns something like 'XPath plugin/installed didn't match' then
-please install the plugin by visiting:
+If building the jenkins-debian-glue* Jenkins jobs should still fail,
+ensure that the Jenkins server was restarted ('sudo systemctl restart jenkins'),
+and also rebuild the jenkins-debian-glue* Jenkins jobs after taking care of
+the plugin situation mentioned above, by running:
 
-  http://${IP}:8080/pluginManager/install?plugin.git.default
+  sudo puppet apply ./jenkins_debian_glue.pp
 
-and then click on the 'Restart Jenkins' option there.
-
-If the Git plugin is missing a dependency please report this at
-https://github.com/mika/jenkins-debian-glue/issues
-
-Enjoy your jenkins-debian-glue system!
-
-Now point your browser to http://${IP}:8080"
+Enjoy your Jenkins setup."
