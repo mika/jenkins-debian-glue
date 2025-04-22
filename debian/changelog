@@ -1,3 +1,17 @@
+jenkins-debian-glue (0.23.5) unstable; urgency=medium
+
+  * [6fa08b8] jdg-tap-tool-dispatcher: fix file-list handling with
+    jdg-tap-merge-conflict
+  * [2f0ce4e] puppet: drop jenkins.grml.org usage, use j-d-g packages from
+    Debian instead
+  * [f263a20] puppet: drop Jenkins plugin support
+  * [58059f7] puppet: drop support for ancient openjdk releases
+  * [ebfa17b] puppet: update usage instructions to clarify current plugin
+    situation
+  * [2044974] d/control: Bump Standards-Version to 4.7.2
+
+ -- Michael Prokop <mika@debian.org>  Tue, 22 Apr 2025 09:46:27 +0200
+
 jenkins-debian-glue (0.23.4) unstable; urgency=medium
 
   * [f3c55ce] tap: replace deprecated File.exists? with File.exist?
