@@ -11,7 +11,7 @@ check: build
 	tests/increase-version-number
 	tests/file-detection
 
-install:
+install: build
 	mkdir -p $(DESTDIR)/$(PREFIX)/bin/
 	for prog in $(PROGRAMS); do \
 		install -m 0755 $$prog $(DESTDIR)/$(PREFIX)/bin; \
@@ -29,7 +29,7 @@ uninstall:
 	rm -rf $(DESTDIR)/usr/share/jenkins-debian-glue/examples
 	rmdir --ignore-fail-on-non-empty $(DESTDIR)/usr/share/jenkins-debian-glue
 
-deploy:
+deploy: build
 	fab all
 
 clean:
