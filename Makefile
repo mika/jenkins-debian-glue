@@ -1,6 +1,6 @@
 PREFIX := /usr
 
-PROGRAMS := scripts/* tap/*
+PROGRAMS := $(wildcard scripts/* tap/*)
 
 all: build
 
