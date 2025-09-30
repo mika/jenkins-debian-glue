@@ -34,9 +34,5 @@ deploy:
 
 clean:
 	rm -f fabfile.pyc
-	# avoid recursion via debian/rules clean, so manually rm:
-	rm -f debian/files debian/jenkins-debian-glue.debhelper.log
-	rm -f debian/jenkins-debian-glue.substvars
-	rm -rf debian/jenkins-debian-glue/
 
 .PHONY: all build check install uninstall deploy clean
