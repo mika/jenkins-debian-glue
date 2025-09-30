@@ -11,7 +11,7 @@ check: build
 	tests/increase-version-number
 	tests/file-detection
 
-install: $(scripts)
+install:
 	mkdir -p $(DESTDIR)/$(PREFIX)/bin/
 	for prog in $(PROGRAMS); do \
 		install -m 0755 $$prog $(DESTDIR)/$(PREFIX)/bin; \
@@ -22,7 +22,7 @@ install: $(scripts)
 	mkdir -p $(DESTDIR)/usr/share/jenkins-debian-glue/pbuilder-hookdir/
 	install -m 0775 pbuilder-hookdir/* $(DESTDIR)/usr/share/jenkins-debian-glue/pbuilder-hookdir/
 
-uninstall: $(scripts)
+uninstall:
 	for prog in $(PROGRAMS); do \
 		rm $(DESTDIR)/$(PREFIX)/bin/$${prog#scripts} ; \
 	done
