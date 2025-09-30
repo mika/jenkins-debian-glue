@@ -2,7 +2,11 @@ PREFIX := /usr
 
 PROGRAMS := scripts/* tap/*
 
+all: build
+
 build:
+
+check: build
 	tests/merge-conflict
 	tests/increase-version-number
 	tests/file-detection
@@ -35,4 +39,4 @@ clean:
 	rm -f debian/jenkins-debian-glue.substvars
 	rm -rf debian/jenkins-debian-glue/
 
-.PHONY: build install uninstall deploy clean
+.PHONY: all build check install uninstall deploy clean
