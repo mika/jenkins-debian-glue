@@ -35,4 +35,4 @@ clean:
 	rm -f debian/jenkins-debian-glue.substvars
 	rm -rf debian/jenkins-debian-glue/
 
-.PHONY: build install
+.PHONY: build install uninstall deploy clean
