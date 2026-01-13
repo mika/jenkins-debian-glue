@@ -949,7 +949,7 @@ reprepro_wrapper() {
 
   echo "*** Including packages in repository $REPOS ***"
   ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} \
-    --priority=optional --ignore=wrongdistribution --ignore=uploaders --ignore=surprisingbinary \
+    --ignore=wrongdistribution --ignore=uploaders --ignore=surprisingbinary \
     include "${REPOS}" "${WORKSPACE}/binaries/"*"_${newest_version}_$(get_arch_changes).changes"
   [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in $REPOS repository."
 }
@@ -1031,12 +1031,12 @@ trunk_release() {
 
     if [ -n "${SKIP_REPREPRO_WRAPPER:-}" ] ; then
       ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} \
-        --priority=optional --ignore=wrongdistribution --ignore=uploaders --ignore=surprisingbinary \
+        --ignore=wrongdistribution --ignore=uploaders --ignore=surprisingbinary \
         include "${TRUNK_RELEASE}" "${WORKSPACE}/binaries/"*"_${newest_version}_$(get_arch_changes).changes"
       [ $? -eq 0 ] || bailout 1 "Error: Failed to include binary package in ${TRUNK_RELEASE} repository."
     else
       ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} \
-        --priority=optional --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
+        --ignore=wrongdistribution copymatched "$TRUNK_RELEASE" "$REPOS" '*'
       [ $? -eq 0 ] || bailout 1 "Error: Failed to copy packages from ${REPOS} to ${TRUNK_RELEASE}."
     fi
   fi
@@ -1125,7 +1125,7 @@ EOF
 
   local old_dir=$(pwd)
   cd "${REPOSITORY}/incoming/${RELEASE_DISTRIBUTION}"
-  ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} --priority=optional --ignore=wrongdistribution \
+  ${SUDO_CMD:-} ${REPREPRO_CMD} -b "${REPOSITORY}" ${REPREPRO_OPTS} --ignore=wrongdistribution \
                 processincoming "${RELEASE_DISTRIBUTION}" "$(basename ${WORKSPACE}/binaries/*.changes)"
   local RC=$?
   cd "$old_dir"
