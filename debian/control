@@ -39,10 +39,10 @@ Description: Jenkins Debian glue scripts
 Package: jenkins-debian-glue-buildenv
 Architecture: all
 Depends:
+ dpkg-dev,
  build-essential,
  cowbuilder,
  devscripts,
- dpkg-dev,
  eatmydata,
  fakeroot,
  file,
